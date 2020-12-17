@@ -1,0 +1,22 @@
+/*
+ * Author:
+ *   Sven Czarnian <devel@svcz.de>
+ * License:
+ *   Closed source
+ * Brief:
+ *   Defines all relevant definitions.
+ *   The file is auto-generated.
+ */
+
+#pragma once
+
+#define PLUGIN_NAME          "@PROJECT_NAME@"
+#define PLUGIN_SCREEN_NAME   "@PROJECT_NAME@ RADAR Screen"
+#define PLUGIN_MAJOR_VERSION @PROJECT_VERSION_MAJOR@
+#define PLUGIN_MINOR_VERSION @PROJECT_VERSION_MINOR@
+#define PLUGIN_PATCH_VERSION @PROJECT_VERSION_PATCH@
+#define PLUGIN_BUILD_VERSION 0x@PROJECT_VERSION_BUILD@
+#define PLUGIN_VERSION       "@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@"
+#define PLUGIN_VERSION_BUILD "@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@ - Build: @PROJECT_VERSION_BUILD@"
+#define PLUGIN_DEVELOPER     "Sven Czarnian"
+#define PLUGIN_COPYRIGHT     "(c) Sven Czarnian - Closed Source"

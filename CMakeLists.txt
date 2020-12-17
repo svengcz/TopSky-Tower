@@ -1,0 +1,97 @@
+# Author:
+#   Sven Czarnian <devel@svcz.de>
+# License:
+#   Closed Source
+# Brief:
+#   Creates a GatePlanner project for EuroScope
+
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
+
+# define the project
+PROJECT(TopSky-Tower LANGUAGES CXX VERSION "0.1.0")
+SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
+IF (MSVC)
+    IF (CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        STRING(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    ELSE ()
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    ENDIF ()
+ELSE ()
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+ENDIF ()
+
+# add the binary, include and installation directories to the search paths
+INCLUDE_DIRECTORIES(
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_INSTALL_PREFIX}/include
+    ${CMAKE_INSTALL_PREFIX}/include/eigen3
+)
+LINK_DIRECTORIES(
+    ${CMAKE_INSTALL_PREFIX}/lib
+)
+
+INCLUDE(ExternalProject)
+# add third-party-dependencies
+ExternalProject_Add(
+    Eigen
+    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+    GIT_TAG 3.3.7
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DEIGEN_TEST_CXX11=OFF
+        -DEIGEN_BUILD_BTL=OFF
+        -DBUILD_TESTING=OFF
+)
+ExternalProject_Add(
+    Nanoflann
+    GIT_REPOSITORY https://github.com/jlblancoc/nanoflann.git
+    GIT_TAG v1.3.1
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DBUILD_EXAMPLES=OFF
+        -DBUILD_BENCHMARKS=OFF
+        -DBUILD_TESTS=OFF
+)
+ExternalProject_Add(
+    Curl
+    GIT_REPOSITORY https://github.com/curl/curl.git
+    GIT_TAG curl-7_71_1
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DPICKY_COMPILER=OFF
+        -DBUILD_CURL_EXE=OFF
+        -DBUILD_SHARED_LIBS=OFF
+        -DENABLE_ARES=OFF
+        -DENABLE_DEBUG=OFF
+        -DENABLE_CURLDEBUG=OFF
+        -DHTTP_ONLY=ON
+        -DCURL_DISABLE_COOKIES=ON
+        -DCURL_DISABLE_CRYPTO_AUTH=ON
+        -DCURL_DISABLE_VERBOSE_STRINGS=ON
+        -DCMAKE_USE_WINSSL=ON
+)
+
+# integrate the components
+ADD_SUBDIRECTORY(euroscope)
+
+# generate the documentation target
+FIND_PACKAGE(Doxygen REQUIRED dot)
+
+CONFIGURE_FILE(
+    ${PROJECT_SOURCE_DIR}/doc/Doxyfile.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+)
+
+ADD_CUSTOM_TARGET(
+    doc
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating API-documentation with Doxygen"
+    VERBATIM
+)
