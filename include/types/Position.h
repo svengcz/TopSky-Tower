@@ -18,6 +18,7 @@ namespace topskytower {
         private:
             Coordinate m_coordinate;
             Length     m_altitude;
+            Angle      m_heading;
 
         public:
             /**
@@ -28,8 +29,9 @@ namespace topskytower {
              * @brief Creates a position with initial values
              * @param[in] coordinate The initial coordinate
              * @param[in] altitude The initial altitude
+             * @param[in] heading The initial heading
              */
-            Position(const Coordinate& coordinate, const Length& altitude);
+            Position(const Coordinate& coordinate, const Length& altitude, const Angle& heading);
 
             /**
              * @brief Returns the coordinate
@@ -41,6 +43,11 @@ namespace topskytower {
              * @return The altitude
              */
             const Length& altitude() const;
+            /**
+             * @brief Returns the heading
+             * @return The heading
+             */
+            const Angle& heading() const;
         };
     }
 }

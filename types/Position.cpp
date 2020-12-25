@@ -11,11 +11,13 @@ using namespace topskytower::types;
 
 Position::Position() :
         m_coordinate(),
-        m_altitude() { }
+        m_altitude(),
+        m_heading() { }
 
-Position::Position(const Coordinate& coordinate, const Length& altitude) :
+Position::Position(const Coordinate& coordinate, const Length& altitude, const Angle& heading) :
         m_coordinate(coordinate),
-        m_altitude(altitude) { }
+        m_altitude(altitude),
+        m_heading(heading) { }
 
 const Coordinate& Position::coordinate() const {
     return this->m_coordinate;
@@ -23,4 +25,8 @@ const Coordinate& Position::coordinate() const {
 
 const Length& Position::altitude() const {
     return this->m_altitude;
+}
+
+const Angle& Position::heading() const {
+    return this->m_heading;
 }
