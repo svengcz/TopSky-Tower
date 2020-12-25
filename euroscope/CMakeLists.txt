@@ -34,6 +34,8 @@ ADD_DEFINITIONS(-D_AFXDLL)
 SET(CMAKE_MFC_FLAG 2)
 
 SET(SOURCE_FILES
+    Converter.cpp
+    Converter.h
     MFCApplication.cpp
     MFCApplication.h
     PlugIn.cpp
