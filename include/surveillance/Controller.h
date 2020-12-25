@@ -7,7 +7,9 @@
 #pragma once
 
 #include <list>
+#include <map>
 
+#include <types/Flight.h>
 #include <types/Sector.h>
 
 namespace topskytower {
@@ -40,9 +42,14 @@ namespace topskytower {
             static Node* createGraph(const std::list<Node*>& nodes);
             void finalizeGraph(const std::list<types::Sector>& sectors);
             static Node* findNode(Controller::Node* node, const std::string_view& identifier);
+            static Node* findSectorInList(const std::list<Node*>& nodes, const types::Position& position);
+            Node* findNextResponsible(const types::Position& position) const;
+            Node* findNextOnline(Node* node);
 
-            Node* m_rootNode;
-            Node* m_ownSector;
+            Node                                          m_unicom;
+            Node*                                         m_rootNode;
+            Node*                                         m_ownSector;
+            std::map<std::string, std::pair<Node*, bool>> m_handoffs;
 
         public:
             /**
@@ -71,10 +78,33 @@ namespace topskytower {
              */
             void setOwnSector(const std::string_view& identifier);
             /**
-             * @brief Returns the own sector
-             * @return The own sector
+             * @brief Analysis the flight and checks if an handoff is needed
+             * @param[in] flight The checked flight
              */
-            const types::Sector& ownSector() const;
+            void update(const types::Flight& flight);
+            /**
+             * @brief Checks if an handoff is required for a specific callsign
+             * @param[in] callsign The requested callsign
+             * @return True if an handoff is required, else false
+             */
+            bool handoffRequired(const std::string& callsign) const;
+            /**
+             * @brief Marks that the handoff is performed for a specific callsign
+             * @param[in] callsign The requested callsign
+             */
+            void handoffPerformed(const std::string& callsign);
+            /**
+             * @brief Returns the next frequency of a specific callsign
+             * @param[in] callsign The requested callsign
+             * @return The next frequency
+             */
+            const std::string& nextFrequency(const std::string& callsign) const;
+            /**
+             * @brief Returns the next sector identifier of a specific callsign
+             * @param[in] callsign The requested callsign
+             * @return The next sector identifier
+             */
+            const std::string& nextStation(const std::string& callsign) const;
         };
     }
 }
