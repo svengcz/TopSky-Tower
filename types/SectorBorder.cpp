@@ -177,7 +177,7 @@ bool SectorBorder::intersects(const LineSegment& segment0, const LineSegment& se
     return true;
 }
 
-bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate) {
+bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate) const {
     /* a polygon needs to contain at least three line segments */
     if (3 > this->m_segments.size())
         return false;
@@ -204,8 +204,8 @@ bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate) {
     return 0 != (intersections % 2);
 }
 
-bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate, const types::Length& altitude) {
-    if (this->m_lowerAltitude > altitude || this->m_upperAltitude < altitude)
+bool SectorBorder::isInsideBorder(const types::Position& position) const {
+    if (this->m_lowerAltitude > position.altitude() || this->m_upperAltitude < position.altitude())
         return false;
-    return this->isInsideBorder(coordinate);
+    return this->isInsideBorder(position.coordinate());
 }

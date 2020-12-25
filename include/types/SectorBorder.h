@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <types/Coordinate.h>
+#include <types/Position.h>
 #include <types/Quantity.hpp>
 
 namespace topskytower {
@@ -117,14 +118,13 @@ namespace topskytower {
              * @param[in] coordinate The checked coordinate
              * @return True if the coordinate is inside the border, else false
              */
-            bool isInsideBorder(const types::Coordinate& coordinate);
+            bool isInsideBorder(const types::Coordinate& coordinate) const;
             /**
-             * @brief Checks if a coordinate is inside the border
-             * @param[in] coordinate The checked coordinate
-             * @param[in] altitude The checked altitude
-             * @return True if the coordinate is inside the border, else false
+             * @brief Checks if a position is inside the border
+             * @param[in] position The checked position
+             * @return True if the position is inside the border, else false
              */
-            bool isInsideBorder(const types::Coordinate& coordinate, const types::Length& altitude);
+            bool isInsideBorder(const types::Position& position) const;
         };
     }
 }
