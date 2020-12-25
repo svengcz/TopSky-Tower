@@ -73,7 +73,7 @@ namespace topskytower {
              * @param[in] minGroundSpeed The minimum assumed ground speed if the actual one is smaller
              * @return The predicted position
              */
-            Position predict(const Time& duration, const Velocity& minGroundSpeed);
+            Position predict(const Time& duration, const Velocity& minGroundSpeed) const;
         };
     }
 }

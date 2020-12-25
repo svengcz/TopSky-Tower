@@ -48,7 +48,7 @@ void Flight::setVerticalSpeed(const Velocity& verticalSpeed) {
     this->m_verticalSpeed = verticalSpeed;
 }
 
-Position Flight::predict(const Time& duration, const Velocity& minGroundSpeed) {
+Position Flight::predict(const Time& duration, const Velocity& minGroundSpeed) const {
     auto distance = (minGroundSpeed > this->m_groundSpeed ? minGroundSpeed : this->m_groundSpeed) * duration;
     auto altChange = this->m_verticalSpeed * duration;
 
