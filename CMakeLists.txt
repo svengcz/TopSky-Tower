@@ -81,6 +81,7 @@ ExternalProject_Add(
 ADD_SUBDIRECTORY(helper)
 ADD_SUBDIRECTORY(types)
 ADD_SUBDIRECTORY(formats)
+ADD_SUBDIRECTORY(surveillance)
 ADD_SUBDIRECTORY(euroscope)
 
 # generate the documentation target
