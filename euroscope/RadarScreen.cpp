@@ -9,8 +9,11 @@
 
 #include "stdafx.h"
 
+#include <gdiplus.h>
+
 #include <formats/EseFileFormat.h>
 
+#include "Converter.h"
 #include "PlugIn.h"
 #include "RadarScreen.h"
 
@@ -73,8 +76,18 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     if (EuroScopePlugIn::REFRESH_PHASE_BEFORE_TAGS != phase)
         return;
 
-    auto plugin = static_cast<PlugIn*>(this->GetPlugIn());
-
     /* check if we need to initialize the system */
     this->initialize();
+    if (false == this->m_initialized)
+        return;
+
+    auto plugin = static_cast<PlugIn*>(this->GetPlugIn());
+    this->m_controller->setOwnSector(plugin->ControllerMyself().GetPositionId());
+
+    /* update the internal information of the radar targets */
+    for (auto rt = plugin->RadarTargetSelectFirst(); true == rt.IsValid(); rt = plugin->RadarTargetSelectNext(rt)) {
+        types::Flight flight = Converter::convert(rt);
+
+        this->m_controller->update(flight);
+    }
 }
