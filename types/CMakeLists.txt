@@ -7,12 +7,14 @@
 
 SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/types/Coordinate.h
+    ${CMAKE_SOURCE_DIR}/include/types/Position.h
     ${CMAKE_SOURCE_DIR}/include/types/Quantity.hpp
     ${CMAKE_SOURCE_DIR}/include/types/Sector.h
     ${CMAKE_SOURCE_DIR}/include/types/SectorBorder.h
 )
 SET(SOURCE_FILES
     Coordinate.cpp
+    Position.cpp
     Sector.cpp
     SectorBorder.cpp
 )
