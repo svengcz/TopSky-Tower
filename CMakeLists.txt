@@ -79,6 +79,7 @@ ExternalProject_Add(
 
 # integrate the components
 ADD_SUBDIRECTORY(helper)
+ADD_SUBDIRECTORY(types)
 ADD_SUBDIRECTORY(euroscope)
 
 # generate the documentation target
