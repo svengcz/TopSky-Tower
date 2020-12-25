@@ -123,6 +123,18 @@ namespace topskytower {
              * @return The borders
              */
             const std::list<SectorBorder>& borders() const;
+            /**
+             * @brief Checks if a coordinate is inside one of the sector's borders
+             * @param[in] coordinate The checked coordinate
+             * @return True if the coordinate is inside one of the borders, else false
+             */
+            bool isInsideSector(const types::Coordinate& coordinate) const;
+            /**
+             * @brief Checks if a position is inside one of the sector's borders
+             * @param[in] position The checked position
+             * @return True if the position is inside one of the borders, else false
+             */
+            bool isInsideSector(const types::Position& position) const;
         };
     }
 }

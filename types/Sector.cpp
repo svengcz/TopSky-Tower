@@ -127,3 +127,21 @@ void Sector::setBorders(std::list<SectorBorder>&& borders) {
 const std::list<SectorBorder>& Sector::borders() const {
     return this->m_borders;
 }
+
+bool Sector::isInsideSector(const types::Coordinate& coordinate) const {
+    for (const auto& border : std::as_const(this->m_borders)) {
+        if (true == border.isInsideBorder(coordinate))
+            return true;
+    }
+
+    return false;
+}
+
+bool Sector::isInsideSector(const types::Position& position) const {
+    for (const auto& border : std::as_const(this->m_borders)) {
+        if (true == border.isInsideBorder(position))
+            return true;
+    }
+
+    return false;
+}
