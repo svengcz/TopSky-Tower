@@ -23,9 +23,14 @@ PlugIn::PlugIn() :
                                  PLUGIN_NAME,
                                  PLUGIN_VERSION_BUILD,
                                  PLUGIN_DEVELOPER,
-                                 PLUGIN_COPYRIGHT) { }
+                                 PLUGIN_COPYRIGHT),
+        m_screens() { }
 
-PlugIn::~PlugIn() { }
+PlugIn::~PlugIn() {
+    for (auto& screen : this->m_screens)
+        delete screen;
+    this->m_screens.clear();
+}
 
 EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayName, bool needsRadarContent, bool geoReferenced,
                                                             bool canBeSaved, bool canBeCreated) {
@@ -34,7 +39,9 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
     (void)canBeSaved;
     (void)canBeCreated;
     (void)displayName;
-    return nullptr;
+
+    this->m_screens.push_back(new RadarScreen());
+    return this->m_screens.back();
 }
 
 void PlugIn::OnAirportRunwayActivityChanged() { }

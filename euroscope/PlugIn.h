@@ -10,11 +10,11 @@
 #error "include 'stdafx.h' before including this file for PCH"
 #endif
 
-#include <vector>
-
 #pragma warning(push, 0)
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
+
+#include "RadarScreen.h"
 
 namespace topskytower {
     namespace euroscope {
@@ -23,6 +23,9 @@ namespace topskytower {
          * @ingroup euroscope
          */
         class PlugIn : public EuroScopePlugIn::CPlugIn {
+        private:
+            std::list<RadarScreen*> m_screens;
+
         public:
             /**
              * @brief Creates a new plug-in
