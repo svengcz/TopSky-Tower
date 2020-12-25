@@ -44,8 +44,5 @@ void __declspec (dllexport) EuroScopePlugInInit(EuroScopePlugIn::CPlugIn** ppPlu
 
 void __declspec(dllexport) EuroScopePlugInExit() {
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
-    delete plugin;
-    plugin = nullptr;
-
     Gdiplus::GdiplusShutdown(__gdiplusToken);
 }
