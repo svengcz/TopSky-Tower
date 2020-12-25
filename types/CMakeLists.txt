@@ -7,6 +7,7 @@
 
 SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/types/Coordinate.h
+    ${CMAKE_SOURCE_DIR}/include/types/Flight.h
     ${CMAKE_SOURCE_DIR}/include/types/Position.h
     ${CMAKE_SOURCE_DIR}/include/types/Quantity.hpp
     ${CMAKE_SOURCE_DIR}/include/types/Sector.h
@@ -14,6 +15,7 @@ SET(HEADER_FILES
 )
 SET(SOURCE_FILES
     Coordinate.cpp
+    Flight.cpp
     Position.cpp
     Sector.cpp
     SectorBorder.cpp
