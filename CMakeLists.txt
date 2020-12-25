@@ -24,8 +24,8 @@ ENDIF ()
 
 # add the binary, include and installation directories to the search paths
 INCLUDE_DIRECTORIES(
-    ${CMAKE_SOURCE_DIR}
     ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_INSTALL_PREFIX}/include
     ${CMAKE_INSTALL_PREFIX}/include/eigen3
 )
