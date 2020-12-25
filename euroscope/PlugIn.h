@@ -24,6 +24,10 @@ namespace topskytower {
          */
         class PlugIn : public EuroScopePlugIn::CPlugIn {
         private:
+            enum class TagItemElement {
+                HandoffFrequency = 2001
+            };
+
             std::list<RadarScreen*> m_screens;
 
         public:

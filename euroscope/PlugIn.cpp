@@ -24,7 +24,9 @@ PlugIn::PlugIn() :
                                  PLUGIN_VERSION_BUILD,
                                  PLUGIN_DEVELOPER,
                                  PLUGIN_COPYRIGHT),
-        m_screens() { }
+        m_screens() {
+    this->RegisterTagItemType("Handoff frequency", static_cast<int>(PlugIn::TagItemElement::HandoffFrequency));
+}
 
 PlugIn::~PlugIn() {
     for (auto& screen : this->m_screens)
