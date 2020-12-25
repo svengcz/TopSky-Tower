@@ -70,6 +70,11 @@ namespace topskytower {
              * @brief Defines the sector of this controller
              */
             void setOwnSector(const std::string_view& identifier);
+            /**
+             * @brief Returns the own sector
+             * @return The own sector
+             */
+            const types::Sector& ownSector() const;
         };
     }
 }

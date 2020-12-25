@@ -352,3 +352,12 @@ void Controller::setOwnSector(const std::string_view& identifier) {
 
     this->m_ownSector = Controller::findNode(this->m_rootNode, identifier);
 }
+
+const types::Sector& Controller::ownSector() const {
+    static types::Sector __empty;
+
+    if (nullptr != this->m_ownSector)
+        return this->m_ownSector->sector;
+    else
+        return __empty;
+}
