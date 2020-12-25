@@ -2,7 +2,7 @@
  * Author:
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
- *   Implements the position to abstract global coordinates
+ *   Implements the coordinate to abstract global coordinates
  */
 
 #define _USE_MATH_DEFINES
