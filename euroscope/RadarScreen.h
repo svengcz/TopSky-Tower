@@ -67,6 +67,16 @@ namespace topskytower {
              * @param[in] phase The rendering phase
              */
             void OnRefresh(HDC hdc, int phase) override;
+            /**
+             * @brief Returns the changable controller manager
+             * @return The controller manager
+             */
+            surveillance::Controller& controllerManager();
+            /**
+             * @brief Returns the constant controller manager
+             * @return The controller manager
+             */
+            const surveillance::Controller& controllerManager() const;
         };
     }
 }

@@ -91,3 +91,11 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
         this->m_controller->update(flight);
     }
 }
+
+surveillance::Controller& RadarScreen::controllerManager() {
+    return *this->m_controller;
+}
+
+const surveillance::Controller& RadarScreen::controllerManager() const {
+    return *this->m_controller;
+}
