@@ -10,9 +10,13 @@
 #error "include 'stdafx.h' before including this file for PCH"
 #endif
 
+#include <string>
+
 #pragma warning(push, 0)
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
+
+#include <surveillance/Controller.h>
 
 namespace topskytower {
     namespace euroscope {
@@ -21,6 +25,13 @@ namespace topskytower {
          * @ingroup euroscope
          */
         class RadarScreen : public EuroScopePlugIn::CRadarScreen {
+        private:
+            bool                      m_initialized;
+            std::string               m_airport;
+            surveillance::Controller* m_controller;
+
+            void initialize();
+
         public:
             /**
              * @brief Creates a new RADAR screen
@@ -30,6 +41,32 @@ namespace topskytower {
              * @brief Destroys all internal structures
              */
             ~RadarScreen();
+
+            /**
+             * @brief Called as soon as an ASR file is loaded
+             * @param[in] loaded True if the file is loaded
+             */
+            void OnAsrContentLoaded(bool loaded) override;
+            /**
+             * @brief Called as soon as the ASR file is closed
+             */
+            void OnAsrContentToBeClosed() override;
+            /**
+             * @brief Called as soon as a controller station is updated
+             * @param[in] controller The updated controller station
+             */
+            void OnControllerPositionUpdate(EuroScopePlugIn::CController controller) override;
+            /**
+             * @brief Called as soon as a controller station is offline
+             * @param[in] controller The diconnected controller station
+             */
+            void OnControllerDisconnect(EuroScopePlugIn::CController controller) override;
+            /**
+             * @brief Called as soon as the screen needs to be rendered
+             * @param[in] hdc The window instance
+             * @param[in] phase The rendering phase
+             */
+            void OnRefresh(HDC hdc, int phase) override;
         };
     }
 }
