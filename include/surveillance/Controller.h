@@ -98,13 +98,13 @@ namespace topskytower {
              * @param[in] callsign The requested callsign
              * @return The next frequency
              */
-            const std::string& nextFrequency(const std::string& callsign) const;
+            const std::string& handoffFrequency(const std::string& callsign) const;
             /**
              * @brief Returns the next sector identifier of a specific callsign
              * @param[in] callsign The requested callsign
              * @return The next sector identifier
              */
-            const std::string& nextStation(const std::string& callsign) const;
+            const std::string& handoffStation(const std::string& callsign) const;
         };
     }
 }

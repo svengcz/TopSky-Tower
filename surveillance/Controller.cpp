@@ -442,12 +442,12 @@ void Controller::handoffPerformed(const std::string& callsign) {
         it->second.second = true;
 }
 
-const std::string& Controller::nextFrequency(const std::string& callsign) const {
+const std::string& Controller::handoffFrequency(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
     return it->second.first->sector.frequency();
 }
 
-const std::string& Controller::nextStation(const std::string& callsign) const {
+const std::string& Controller::handoffStation(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
     return it->second.first->sector.identifier();
 }
