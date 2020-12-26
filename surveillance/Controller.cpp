@@ -54,7 +54,16 @@ Controller::Controller(const std::string& airport, const std::list<types::Sector
     }
 
     /* get all relevant sectors and sort them in a top-down order */
-    auto nodes = Controller::findRelevantSectors(deputies, sectors);
+    auto sortedSectors(sectors);
+    sortedSectors.sort([](const types::Sector& sector0, const types::Sector& sector1) {
+        if (sector0.type() != sector1.type())
+            return sector0.type() > sector1.type();
+        else if (0 == sector0.borders().size() || 0 == sector1.borders().size())
+            return sector0.borders().size() > sector1.borders().size();
+        else
+            return sector0.borders().back().upperAltitude() > sector1.borders().back().upperAltitude();
+    });
+    auto nodes = Controller::findRelevantSectors(deputies, sortedSectors);
     for (const auto& sector : std::as_const(airportSectors))
         Controller::insertNode(nodes, sector);
 
