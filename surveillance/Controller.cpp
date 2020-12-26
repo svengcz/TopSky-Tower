@@ -350,14 +350,14 @@ Controller::Node* Controller::findNode(Controller::Node* node, const std::string
     return nullptr;
 }
 
-void Controller::controllerOnline(const std::string_view& identifier) {
-    auto node = Controller::findNode(this->m_rootNode, identifier);
+void Controller::controllerUpdate(const types::ControllerInfo& info) {
+    auto node = Controller::findNode(this->m_rootNode, info.identifier());
     if (nullptr != node)
         node->isOnline = true;
 }
 
-void Controller::controllerOffline(const std::string_view& identifier) {
-    auto node = Controller::findNode(this->m_rootNode, identifier);
+void Controller::controllerOffline(const types::ControllerInfo& info) {
+    auto node = Controller::findNode(this->m_rootNode, info.identifier());
     if (nullptr != node)
         node->isOnline = false;
 }

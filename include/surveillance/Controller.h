@@ -72,15 +72,15 @@ namespace topskytower {
             ~Controller();
 
             /**
-             * @brief Marks a controller as online
-             * @param[in] identifier The sector's identifier
+             * @brief Updates the online state of a sector based on the information
+             * @param[in] info The controller's information
              */
-            void controllerOnline(const std::string_view& identifier);
+            void controllerUpdate(const types::ControllerInfo& info);
             /**
              * @brief Marks a controller as offline
-             * @param[in] identifier The sector's identifier
+             * @param[in] info The controller's information
              */
-            void controllerOffline(const std::string_view& identifier);
+            void controllerOffline(const types::ControllerInfo& info);
             /**
              * @brief Defines the sector of this controller
              */
