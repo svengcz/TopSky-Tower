@@ -26,7 +26,18 @@ namespace topskytower {
          */
         class Converter {
         public:
+            /**
+             * @brief Converts an ES position to a TopSky-Tower coordinate
+             * @param[in] position The ES position
+             * @return The converted coordinate
+             */
             static types::Coordinate convert(const EuroScopePlugIn::CPosition& position);
+            /**
+             * @brief Converts an ES radar target into a TopSky-Tower flight structure
+             * @param[in] target The radar target
+             * @param[in] airport The controlled airport to estimate departures and arrivals
+             * @return The converted flight structure
+             */
             static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target, const std::string& airport);
         };
     }
