@@ -21,16 +21,16 @@ namespace topskytower {
         class Controller {
         private:
             struct Node {
-                std::list<Node*> parents;
-                types::Sector    sector;
-                bool             isOnline;
-                std::list<Node*> siblings;
-                std::list<Node*> children;
+                std::list<Node*>                 parents;
+                types::Sector                    sector;
+                std::list<types::ControllerInfo> controllers;
+                std::list<Node*>                 siblings;
+                std::list<Node*>                 children;
 
                 Node(const types::Sector& sector) :
                         parents(),
                         sector(sector),
-                        isOnline(false),
+                        controllers(),
                         siblings(),
                         children() { }
             };
@@ -48,11 +48,14 @@ namespace topskytower {
             static void linkSiblings(std::list<Node*>& nodes);
             static Node* createGraph(const std::list<Node*>& nodes);
             void finalizeGraph(const std::list<types::Sector>& sectors);
-            static Node* findNode(Controller::Node* node, const std::string_view& identifier);
+            static Node* findNodeBasedOnIdentifier(Node* node, const std::string_view& identifier);
+            static Node* findNodeBasedOnInformation(Node* node, const types::ControllerInfo& info);
             static Node* findSectorInList(const std::list<Node*>& nodes, const types::Position& position,
                                           types::Flight::Type type, bool lowerSectors);
             Node* findNextResponsible(const types::Position& position, types::Flight::Type type) const;
             Node* findNextOnline(Node* node);
+            static Node* findLowestSector(Node* node, const types::Position& position);
+            bool isInOwnSectors(const types::Position& position) const;
 
             Node                              m_unicom;
             Node*                             m_rootNode;

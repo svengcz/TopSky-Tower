@@ -92,7 +92,7 @@ Controller::Controller(const std::string& airport, const std::list<types::Sector
     /* add the centers of the top-level to get the complete hierarchy */
     this->finalizeGraph(sectors);
 
-    this->m_unicom.isOnline = true;
+    this->m_unicom.controllers.push_back(types::ControllerInfo());
 }
 
 Controller::~Controller() {
@@ -326,7 +326,7 @@ void Controller::finalizeGraph(const std::list<types::Sector>& sectors) {
     }
 }
 
-Controller::Node* Controller::findNode(Controller::Node* node, const std::string_view& identifier) {
+Controller::Node* Controller::findNodeBasedOnIdentifier(Controller::Node* node, const std::string_view& identifier) {
     if (nullptr == node)
         return nullptr;
 
@@ -342,7 +342,7 @@ Controller::Node* Controller::findNode(Controller::Node* node, const std::string
 
     /* check every child recursivly */
     for (const auto& child : std::as_const(node->children)) {
-        auto retval = Controller::findNode(child, identifier);
+        auto retval = Controller::findNodeBasedOnIdentifier(child, identifier);
         if (nullptr != retval)
             return retval;
     }
@@ -350,16 +350,64 @@ Controller::Node* Controller::findNode(Controller::Node* node, const std::string
     return nullptr;
 }
 
+Controller::Node* Controller::findNodeBasedOnInformation(Controller::Node* node, const types::ControllerInfo& info) {
+    /* test the unique information */
+    if (node->sector.controllerInfo().identifier() == info.identifier())
+        return node;
+    if (node->sector.controllerInfo().primaryFrequency() == info.primaryFrequency())
+        return node;
+
+    /* check the controller's name which is likely to be unique */
+    for (const auto& controller : std::as_const(node->controllers)) {
+        if (controller.controllerName() == info.controllerName())
+            return node;
+    }
+
+    for (const auto& sibling : std::as_const(node->siblings)) {
+        auto candidate = Controller::findNodeBasedOnInformation(sibling, info);
+        if (nullptr != candidate)
+            return candidate;
+    }
+
+    for (const auto& child : std::as_const(node->children)) {
+        auto candidate = Controller::findNodeBasedOnInformation(child, info);
+        if (nullptr != candidate)
+            return candidate;
+    }
+
+    return nullptr;
+}
+
 void Controller::controllerUpdate(const types::ControllerInfo& info) {
-    auto node = Controller::findNode(this->m_rootNode, info.identifier());
-    if (nullptr != node)
-        node->isOnline = true;
+    auto node = Controller::findNodeBasedOnInformation(this->m_rootNode, info);
+    if (nullptr != node) {
+        /* check if the info is already registered */
+        for (auto it = node->controllers.begin(); node->controllers.end() != it; ++it) {
+            /* found the controller -> check if the controller changed the identifier */
+            if (it->controllerName() == info.controllerName()) {
+                if (node->sector.controllerInfo().identifier() != info.identifier())
+                    node->controllers.erase(it);
+                else
+                    *it = info;
+                return;
+            }
+        }
+
+    }
 }
 
 void Controller::controllerOffline(const types::ControllerInfo& info) {
-    auto node = Controller::findNode(this->m_rootNode, info.identifier());
-    if (nullptr != node)
-        node->isOnline = false;
+    auto node = Controller::findNodeBasedOnInformation(this->m_rootNode, info);
+
+    if (nullptr != node) {
+        /* remove the controller info */
+        for (auto it = node->controllers.begin(); node->controllers.end() != it; ++it) {
+            if (it->controllerName() == info.controllerName()) {
+                node->controllers.erase(it);
+                return;
+            }
+        }
+    }
 }
 
 void Controller::setOwnSector(const std::string_view& identifier) {
@@ -367,7 +415,7 @@ void Controller::setOwnSector(const std::string_view& identifier) {
     if (nullptr != this->m_ownSector && identifier == this->m_ownSector->sector.controllerInfo().identifier())
         return;
 
-    this->m_ownSector = Controller::findNode(this->m_rootNode, identifier);
+    this->m_ownSector = Controller::findNodeBasedOnIdentifier(this->m_rootNode, identifier);
 }
 
 Controller::Node* Controller::findSectorInList(const std::list<Controller::Node*>& nodes, const types::Position& position,
@@ -419,18 +467,48 @@ Controller::Node* Controller::findNextOnline(Controller::Node* node) {
         return &this->m_unicom;
 
     /* this is the next online station */
-    if (true == node->isOnline)
+    if (0 != node->controllers.size())
         return node;
 
     /* check which deputy is online */
     for (const auto& deputy : std::as_const(node->sector.borders().front().deputies())) {
-        auto deputyNode = Controller::findNode(this->m_rootNode, deputy);
-        if (nullptr != deputyNode && true == deputyNode->isOnline)
+        auto deputyNode = Controller::findNodeBasedOnIdentifier(this->m_rootNode, deputy);
+        if (nullptr != deputyNode && 0 != deputyNode->controllers.size())
             return deputyNode;
     }
 
     /* no other real station is online */
     return &this->m_unicom;
+}
+
+Controller::Node* Controller::findLowestSector(Controller::Node* node, const types::Position& position) {
+    /* check the children */
+    for (const auto& child : std::as_const(node->children)) {
+        auto retval = Controller::findLowestSector(child, position);
+        if (nullptr != retval)
+            return retval;
+    }
+
+    /* check the node itself */
+    if (true == node->sector.isInsideSector(position))
+        return node;
+
+    /* check the siblings */
+    for (const auto& sibling : std::as_const(node->siblings)) {
+        auto retval = Controller::findLowestSector(sibling, position);
+        if (nullptr != retval)
+            return retval;
+    }
+
+    return nullptr;
+}
+
+bool Controller::isInOwnSectors(const types::Position& position) const {
+    auto node = Controller::findLowestSector(this->m_ownSector, position);
+    if (nullptr != node)
+        return 0 == node->controllers.size();
+    else
+        return false;
 }
 
 void Controller::update(const types::Flight& flight) {
@@ -442,10 +520,10 @@ void Controller::update(const types::Flight& flight) {
     if (this->m_handoffs.end() != it && (true == it->second.manuallyChanged || true == it->second.handoffPerformed))
         return;
 
-    if (true == this->m_ownSector->sector.isInsideSector(flight.currentPosition())) {
+    if (true == this->isInOwnSectors(flight.currentPosition())) {
         /* the aircraft remains in own sector */
         auto predicted = flight.predict(30_s, 20_kn);
-        if (true == this->m_ownSector->sector.isInsideSector(predicted))
+        if (true == this->isInOwnSectors(predicted))
             return;
 
         /* get the next responsible node and the next online station */
