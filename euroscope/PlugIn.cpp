@@ -57,13 +57,33 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
                           int itemCode, int tagData, char itemString[16], int* colorCode, COLORREF* rgb,
                           double* fontSize) {
     (void)flightPlan;
-    (void)radarTarget;
-    (void)itemCode;
-    (void)itemString;
-    (void)colorCode;
     (void)fontSize;
     (void)tagData;
     (void)rgb;
+
+    /* do not handle invalid radar targets */
+    if (false == radarTarget.IsValid())
+        return;
+
+    /* initialize default values */
+    std::string callsign(radarTarget.GetCallsign());
+    itemString[0] = '\0';
+    *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
+
+    switch (static_cast<PlugIn::TagItemElement>(itemCode)) {
+    case PlugIn::TagItemElement::HandoffFrequency:
+        /* test all loaded screens */
+        for (const auto& screen : std::as_const(this->m_screens)) {
+            /* found the correct screen with the handoff */
+            if (true == screen->controllerManager().handoffRequired(callsign)) {
+                std::strcpy(itemString, screen->controllerManager().handoffFrequency(callsign).c_str());
+                break;
+            }
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
