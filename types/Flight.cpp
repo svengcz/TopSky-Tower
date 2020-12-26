@@ -2,7 +2,7 @@
  * Author:
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
- *   Implements the flgiht structure
+ *   Implements the flight structure
  */
 
 #include <types/Flight.h>
