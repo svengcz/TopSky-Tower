@@ -18,7 +18,7 @@ Sector::Sector() :
 
 Sector::Sector(std::string&& identifier, std::string&& prefix, std::string&& midfix,
                std::string&& suffix, std::string&& frequency) :
-        m_info(identifier, prefix, midfix, suffix, frequency),
+        m_info(identifier, prefix, midfix, suffix, frequency, ""),
         m_type(Type::Undefined),
         m_borders() {
     if ("DEL" == this->m_info.suffix())

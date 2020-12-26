@@ -14,15 +14,17 @@ ControllerInfo::ControllerInfo() :
         m_prefix(),
         m_midfix(),
         m_suffix(),
-        m_primaryFrequency() { }
+        m_primaryFrequency(),
+        m_controllerName() { }
 
 ControllerInfo::ControllerInfo(const std::string& identifer, const std::string& prefix, const std::string& midfix,
-                               const std::string& suffix, const std::string& primaryFrequency) :
+                               const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName) :
         m_identifier(identifer),
         m_prefix(prefix),
         m_midfix(midfix),
         m_suffix(suffix),
-        m_primaryFrequency(primaryFrequency) { }
+        m_primaryFrequency(primaryFrequency),
+        m_controllerName(fullName) { }
 
 const std::string& ControllerInfo::identifier() const {
     return this->m_identifier;
@@ -42,4 +44,8 @@ const std::string& ControllerInfo::suffix() const {
 
 const std::string& ControllerInfo::primaryFrequency() const {
     return this->m_primaryFrequency;
+}
+
+const std::string& ControllerInfo::controllerName() const {
+    return this->m_controllerName;
 }

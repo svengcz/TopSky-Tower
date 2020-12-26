@@ -21,6 +21,7 @@ namespace topskytower {
             std::string m_midfix;
             std::string m_suffix;
             std::string m_primaryFrequency;
+            std::string m_controllerName;
 
         public:
             /**
@@ -34,9 +35,10 @@ namespace topskytower {
              * @param[in] midfix The controller's callsign midfix
              * @param[in] suffix The controller's callsign suffix
              * @param[in] primaryFrequency The controller's primary frequency
+             * @param[in] fullName The controller's full name
              */
             ControllerInfo(const std::string& identifer, const std::string& prefix, const std::string& midfix,
-                           const std::string& suffix, const std::string& primaryFrequency);
+                           const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName);
 
             /**
              * @brief Returns the identifier
@@ -63,6 +65,11 @@ namespace topskytower {
              * @return The callsign's primary frequency
              */
             const std::string& primaryFrequency() const;
+            /**
+             * @brief Returns the controller's full name
+             * @return The controller's full name
+             */
+            const std::string& controllerName() const;
         };
     }
 }

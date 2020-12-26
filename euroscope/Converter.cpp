@@ -69,5 +69,6 @@ types::ControllerInfo Converter::convert(const EuroScopePlugIn::CController& con
     std::stringstream stream;
     stream << std::fixed << std::setprecision(3) << controller.GetPrimaryFrequency();
 
-    return types::ControllerInfo(controller.GetPositionId(), prefix, midfix, suffix, stream.str());
+    return types::ControllerInfo(controller.GetPositionId(), prefix, midfix, suffix,
+                                 stream.str(), controller.GetFullName());
 }
