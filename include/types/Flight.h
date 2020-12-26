@@ -15,8 +15,19 @@ namespace topskytower {
          * @ingroup types
          */
         class Flight {
+        public:
+            /**
+             * @brief Defines if the flight is a departing, arriving or unknown
+             */
+            enum class Type {
+                Unknown   = 0, /**< Unable to determine if it is departing or arriving */
+                Departure = 1, /**< It is a departing flight */
+                Arrival   = 2  /**< It is an arriving flight */
+            };
+
         private:
             std::string     m_callsign;
+            Type            m_type;
             Position        m_currentPosition;
             Velocity        m_groundSpeed;
             Velocity        m_verticalSpeed;
@@ -32,6 +43,11 @@ namespace topskytower {
              */
             Flight(const std::string& callsign);
 
+            /**
+             * @brief Returns the flight's type
+             * @return The type
+             */
+            Flight::Type type() const;
             /**
              * @brief Returns the flight's callsign
              * @return The callsign
@@ -52,6 +68,11 @@ namespace topskytower {
              * @return The vertical speed
              */
             const Velocity& verticalSpeed() const;
+            /**
+             * @brief Sets the flight type
+             * @param[in] type The type
+             */
+            void setType(Flight::Type type);
             /**
              * @brief Sets the current position
              * @param[in] position The current position

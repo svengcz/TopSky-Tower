@@ -11,14 +11,21 @@ using namespace topskytower::types;
 
 Flight::Flight() :
         m_callsign(),
+        m_type(Flight::Type::Unknown),
         m_currentPosition(),
         m_groundSpeed(),
         m_verticalSpeed() { }
+
 Flight::Flight(const std::string& callsign) :
         m_callsign(callsign),
+        m_type(Flight::Type::Unknown),
         m_currentPosition(),
         m_groundSpeed(),
         m_verticalSpeed() { }
+
+Flight::Type Flight::type() const {
+    return this->m_type;
+}
 
 const std::string& Flight::callsign() const {
     return this->m_callsign;
@@ -34,6 +41,10 @@ const Velocity& Flight::groundSpeed() const {
 
 const Velocity& Flight::verticalSpeed() const {
     return this->m_verticalSpeed;
+}
+
+void Flight::setType(Flight::Type type) {
+    this->m_type = type;
 }
 
 void Flight::setCurrentPosition(const Position& position) {
