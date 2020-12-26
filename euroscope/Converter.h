@@ -16,6 +16,7 @@
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
 
+#include <types/ControllerInfo.h>
 #include <types/Flight.h>
 
 namespace topskytower {
@@ -39,6 +40,12 @@ namespace topskytower {
              * @return The converted flight structure
              */
             static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target, const std::string& airport);
+            /**
+             * @brief Converts an ES controller structure into a TopSky-Tower controller information
+             * @param[in] controller The ES controller
+             * @return The converted controller information
+             */
+            static types::ControllerInfo convert(const EuroScopePlugIn::CController& controller);
         };
     }
 }

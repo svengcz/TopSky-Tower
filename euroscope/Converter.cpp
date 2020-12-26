@@ -9,6 +9,12 @@
 
 #include "stdafx.h"
 
+#include <algorithm>
+#include <iomanip>
+#include <sstream>
+
+#include <helper/String.h>
+
 #include "Converter.h"
 
 using namespace topskytower;
@@ -46,4 +52,22 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, co
     }
 
     return retval;
+}
+
+types::ControllerInfo Converter::convert(const EuroScopePlugIn::CController& controller) {
+    auto elements = helper::String::splitString(controller.GetCallsign(), "_");
+    std::string prefix(elements[0]), midfix, suffix(elements.back());
+    if (3 == elements.size())
+        midfix = elements[1];
+
+    /* transform callsign to upper cases */
+    std::transform(prefix.begin(), prefix.end(), prefix.begin(), std::toupper);
+    std::transform(midfix.begin(), midfix.end(), midfix.begin(), std::toupper);
+    std::transform(suffix.begin(), suffix.end(), suffix.begin(), std::toupper);
+
+    /* transform the frequency into a string */
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(3) << controller.GetPrimaryFrequency();
+
+    return types::ControllerInfo(controller.GetPositionId(), prefix, midfix, suffix, stream.str());
 }
