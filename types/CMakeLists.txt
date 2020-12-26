@@ -6,6 +6,7 @@
 #   Creates the types library
 
 SET(HEADER_FILES
+    ${CMAKE_SOURCE_DIR}/include/types/ControllerInfo.h
     ${CMAKE_SOURCE_DIR}/include/types/Coordinate.h
     ${CMAKE_SOURCE_DIR}/include/types/Flight.h
     ${CMAKE_SOURCE_DIR}/include/types/Position.h
@@ -14,6 +15,7 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/types/SectorBorder.h
 )
 SET(SOURCE_FILES
+    ControllerInfo.cpp
     Coordinate.cpp
     Flight.cpp
     Position.cpp
