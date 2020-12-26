@@ -12,7 +12,7 @@ using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
 Controller::Controller(const std::string& airport, const std::list<types::Sector>& sectors) :
-        m_unicom(types::Sector("", "", "", "FSS", "122.800")),
+        m_unicom(types::Sector("UNICOM", "", "", "FSS", "122.800")),
         m_rootNode(nullptr),
         m_ownSector(nullptr),
         m_handoffs() {
