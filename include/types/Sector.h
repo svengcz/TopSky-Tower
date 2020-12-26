@@ -9,6 +9,7 @@
 #include <list>
 #include <string>
 
+#include <types/ControllerInfo.h>
 #include <types/SectorBorder.h>
 
 namespace topskytower {
@@ -35,12 +36,8 @@ namespace topskytower {
             };
 
         private:
-            std::string             m_identifier;
+            ControllerInfo          m_info;
             Type                    m_type;
-            std::string             m_prefix;
-            std::string             m_midfix;
-            std::string             m_suffix;
-            std::string             m_frequency;
             std::list<SectorBorder> m_borders;
 
         public:
@@ -83,35 +80,15 @@ namespace topskytower {
             Sector& operator=(Sector&& other) noexcept;
 
             /**
-             * @brief Returns the sector's identifier
-             * @return The identifier
-             */
-            const std::string& identifier() const;
-            /**
              * @brief Returns the sector's type
              * @return The sector's type
              */
             Type type() const;
             /**
-             * @brief Returns the prefix of the sector's login code
-             * @return The sector's login code prefix
+             * @brief Returns the controller information
+             * @return The controller information
              */
-            const std::string& prefix() const;
-            /**
-             * @brief Returns the midfix of the sector's login code
-             * @return The sector's login code midfix
-             */
-            const std::string& midfix() const;
-            /**
-             * @brief Returns the suffix of the sector's login code
-             * @return The sector's login code suffix
-             */
-            const std::string& suffix() const;
-            /**
-             * @brief Returns the sector's frequency
-             * @return The sector's frequency
-             */
-            const std::string& frequency() const;
+            const ControllerInfo& controllerInfo() const;
             /**
              * @brief Sets the borders of the sector
              * The borders are sorted by the maximum altitude of the borders from lower to higher.

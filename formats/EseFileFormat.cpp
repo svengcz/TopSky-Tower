@@ -138,7 +138,7 @@ void EseFileFormat::parseSectors(const std::vector<std::string>& positions, cons
             continue;
 
         /* find the borders */
-        auto it = borders.find(sector.identifier());
+        auto it = borders.find(sector.controllerInfo().identifier());
         if (borders.end() != it)
             sector.setBorders(std::move(it->second));
 

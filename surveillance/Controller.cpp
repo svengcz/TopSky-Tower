@@ -20,7 +20,7 @@ Controller::Controller(const std::string& airport, const std::list<types::Sector
 
     /* find the tower sectors of the airport */
     for (const auto& sector : std::as_const(sectors)) {
-        if (airport == sector.prefix()) {
+        if (airport == sector.controllerInfo().prefix()) {
             switch (sector.type()) {
             case types::Sector::Type::Tower:
             case types::Sector::Type::Ground:
@@ -40,7 +40,7 @@ Controller::Controller(const std::string& airport, const std::list<types::Sector
                 /* check if the deputy is an other airport sector */
                 bool isAirportSector = false;
                 for (const auto& other : std::as_const(airportSectors)) {
-                    if (other.identifier() == deputy) {
+                    if (other.controllerInfo().identifier() == deputy) {
                         isAirportSector = true;
                         break;
                     }
@@ -73,8 +73,8 @@ Controller::Controller(const std::string& airport, const std::list<types::Sector
         if (node0->sector.type() != node1->sector.type())
             return node0->sector.type() > node1->sector.type();
         /* ensure that the siblings are sorted together */
-        else if (node0->sector.prefix() != node1->sector.prefix())
-            return node0->sector.prefix() > node1->sector.prefix();
+        else if (node0->sector.controllerInfo().prefix() != node1->sector.controllerInfo().prefix())
+            return node0->sector.controllerInfo().prefix() > node1->sector.controllerInfo().prefix();
         /* ensure that the sector without borders is lower */
         else if (0 == node0->sector.borders().size() || node1->sector.borders().size())
             return node0->sector.borders().size() > node1->sector.borders().size();
@@ -123,7 +123,7 @@ void Controller::insertNode(std::list<Node*>& nodes, const types::Sector& sector
     /* check if the sector is already a node */
     bool alreadyRegistered = false;
     for (const auto& node : std::as_const(nodes)) {
-        if (node->sector.identifier() == sector.identifier()) {
+        if (node->sector.controllerInfo().identifier() == sector.controllerInfo().identifier()) {
             alreadyRegistered = true;
             break;
         }
@@ -144,7 +144,7 @@ std::list<Controller::Node*> Controller::findRelevantSectors(std::list<std::stri
         bool erased = false, found = false;
 
         for (const auto& sector : std::as_const(sectors)) {
-            if (*it == sector.identifier()) {
+            if (*it == sector.controllerInfo().identifier()) {
                 found = true;
                 if (types::Sector::Type::Center == sector.type() || types::Sector::Type::FlightService == sector.type()) {
                     it = deputies.erase(it);
@@ -164,13 +164,13 @@ std::list<Controller::Node*> Controller::findRelevantSectors(std::list<std::stri
     std::string approachPrefix;
     for (const auto& deputy : std::as_const(deputies)) {
         for (const auto& sector : std::as_const(sectors)) {
-            if (sector.identifier() == deputy) {
+            if (sector.controllerInfo().identifier() == deputy) {
                 /* assume that all approaches have the same prefix */
                 if (types::Sector::Type::Approach == sector.type() && 0 == approachPrefix.length())
-                    approachPrefix = sector.prefix();
+                    approachPrefix = sector.controllerInfo().prefix();
 
                 if (types::Sector::Type::Approach == sector.type()) {
-                    if (approachPrefix == sector.prefix())
+                    if (approachPrefix == sector.controllerInfo().prefix())
                         Controller::insertNode(retval, sector);
                 }
                 else {
@@ -181,7 +181,7 @@ std::list<Controller::Node*> Controller::findRelevantSectors(std::list<std::stri
                 auto it = std::find(sector.borders().front().deputies().cbegin(), sector.borders().front().deputies().cend(), deputy);
                 if (sector.borders().front().deputies().cend() != it) {
                     if (types::Sector::Type::Approach == sector.type()) {
-                        if (approachPrefix == sector.prefix())
+                        if (approachPrefix == sector.controllerInfo().prefix())
                             Controller::insertNode(retval, sector);
                     }
                     else {
@@ -233,7 +233,7 @@ void Controller::linkSiblings(std::list<Controller::Node*>& nodes) {
                      *
                      * Assume that all siblings have the same prefix.
                      */
-                    if (lastNode->sector.prefix() == (*it)->sector.prefix()) {
+                    if (lastNode->sector.controllerInfo().prefix() == (*it)->sector.controllerInfo().prefix()) {
                         lastNode->siblings.push_back(*it);
                         it = nodes.erase(it);
                         erased = true;
@@ -290,7 +290,9 @@ Controller::Node* Controller::createGraph(const std::list<Controller::Node*>& no
             else if (types::Sector::Type::Ground == node->sector.type()) {
                 auto& children = parents.front()->children;
                 for (auto& child : children) {
-                    if (types::Sector::Type::Tower == child->sector.type() && child->sector.prefix() == node->sector.prefix()) {
+                    if (types::Sector::Type::Tower == child->sector.type() &&
+                        child->sector.controllerInfo().prefix() == node->sector.controllerInfo().prefix())
+                    {
                         child->children.push_back(node);
                         node->parents.push_back(child);
                     }
@@ -313,7 +315,7 @@ void Controller::finalizeGraph(const std::list<types::Sector>& sectors) {
 
     for (const auto& deputy : std::as_const(this->m_rootNode->sector.borders().front().deputies())) {
         for (const auto& sector : std::as_const(sectors)) {
-            if (sector.identifier() == deputy && types::Sector::Type::Center <= sector.type()) {
+            if (sector.controllerInfo().identifier() == deputy && types::Sector::Type::Center <= sector.type()) {
                 Controller::Node* newNode = new Controller::Node(sector);
 
                 newNode->children.push_back(this->m_rootNode);
@@ -329,12 +331,12 @@ Controller::Node* Controller::findNode(Controller::Node* node, const std::string
         return nullptr;
 
     /* this node is the correct one */
-    if (node->sector.identifier() == identifier)
+    if (node->sector.controllerInfo().identifier() == identifier)
         return node;
 
     /* check the siblings */
     for (const auto& sibling : std::as_const(node->siblings)) {
-        if (sibling->sector.identifier() == identifier)
+        if (sibling->sector.controllerInfo().identifier() == identifier)
             return sibling;
     }
 
@@ -362,7 +364,7 @@ void Controller::controllerOffline(const std::string_view& identifier) {
 
 void Controller::setOwnSector(const std::string_view& identifier) {
     /* mark the same sector as the own sector */
-    if (nullptr != this->m_ownSector && identifier == this->m_ownSector->sector.identifier())
+    if (nullptr != this->m_ownSector && identifier == this->m_ownSector->sector.controllerInfo().identifier())
         return;
 
     this->m_ownSector = Controller::findNode(this->m_rootNode, identifier);
@@ -474,10 +476,10 @@ void Controller::handoffPerformed(const std::string& callsign) {
 
 const std::string& Controller::handoffFrequency(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
-    return it->second.nextSector->sector.frequency();
+    return it->second.nextSector->sector.controllerInfo().primaryFrequency();
 }
 
 const std::string& Controller::handoffStation(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
-    return it->second.nextSector->sector.identifier();
+    return it->second.nextSector->sector.controllerInfo().primaryFrequency();
 }
