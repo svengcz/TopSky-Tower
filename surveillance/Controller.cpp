@@ -368,28 +368,45 @@ void Controller::setOwnSector(const std::string_view& identifier) {
     this->m_ownSector = Controller::findNode(this->m_rootNode, identifier);
 }
 
-Controller::Node* Controller::findSectorInList(const std::list<Controller::Node*>& nodes, const types::Position& position) {
-    for (const auto& node : std::as_const(nodes)) {
-        if (true == node->sector.isInsideSector(position))
-            return node;
+Controller::Node* Controller::findSectorInList(const std::list<Controller::Node*>& nodes, const types::Position& position,
+                                               types::Flight::Type type, bool lowerSectors) {
+    types::Sector::Type bestType = types::Sector::Type::Approach;
+
+    if (types::Flight::Type::Unknown == type) {
+        for (const auto& node : std::as_const(nodes)) {
+            if (true == node->sector.isInsideSector(position))
+                return node;
+        }
+    }
+    else if (types::Flight::Type::Departure == type && false == lowerSectors) {
+        bestType = types::Sector::Type::Departure;
     }
 
-    return nullptr;
+    /* find the next responsible sector and priorize the correct sector type */
+    Controller::Node* retval = nullptr;
+    for (const auto& node : std::as_const(nodes)) {
+        if (true == node->sector.isInsideSector(position)) {
+            if (nullptr == retval || node->sector.type() == bestType)
+                retval = node;
+        }
+    }
+
+    return retval;
 }
 
-Controller::Node* Controller::findNextResponsible(const types::Position& position) const {
+Controller::Node* Controller::findNextResponsible(const types::Position& position, types::Flight::Type type) const {
     Controller::Node* next = nullptr;
 
     /* test the children */
-    next = Controller::findSectorInList(this->m_ownSector->children, position);
+    next = Controller::findSectorInList(this->m_ownSector->children, position, type, true);
 
     /* test the siblings */
     if (nullptr == next)
-        next = Controller::findSectorInList(this->m_ownSector->siblings, position);
+        next = Controller::findSectorInList(this->m_ownSector->siblings, position, type, false);
 
     /* test the parents */
     if (nullptr == next)
-        next = Controller::findSectorInList(this->m_ownSector->parents, position);
+        next = Controller::findSectorInList(this->m_ownSector->parents, position, type, false);
 
     return next;
 }
@@ -418,7 +435,11 @@ void Controller::update(const types::Flight& flight) {
     if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
         return;
 
+    /* check if the handoff is initiated or manually changed */
     auto it = this->m_handoffs.find(flight.callsign());
+    if (this->m_handoffs.end() != it && (true == it->second.manuallyChanged || true == it->second.handoffPerformed))
+        return;
+
     if (true == this->m_ownSector->sector.isInsideSector(flight.currentPosition())) {
         /* the aircraft remains in own sector */
         auto predicted = flight.predict(30_s, 20_kn);
@@ -426,14 +447,14 @@ void Controller::update(const types::Flight& flight) {
             return;
 
         /* get the next responsible node and the next online station */
-        auto nextNode = this->findNextResponsible(predicted);
+        auto nextNode = this->findNextResponsible(predicted, flight.type());
         auto nextOnline = this->findNextOnline(nextNode);
 
-        this->m_handoffs[flight.callsign()] = std::make_pair(nextOnline, false);
+        this->m_handoffs[flight.callsign()] = { false, false, flight, nextOnline };
     }
     else {
         /* check if we have to remove the handoff information */
-        if (this->m_handoffs.end() != it && true == it->second.second)
+        if (this->m_handoffs.end() != it && true == it->second.handoffPerformed)
             this->m_handoffs.erase(it);
     }
 }
@@ -441,22 +462,22 @@ void Controller::update(const types::Flight& flight) {
 bool Controller::handoffRequired(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
     if (this->m_handoffs.cend() != it)
-        return it->second.second;
+        return false == it->second.handoffPerformed;
     return false;
 }
 
 void Controller::handoffPerformed(const std::string& callsign) {
     auto it = this->m_handoffs.find(callsign);
     if (this->m_handoffs.end() != it)
-        it->second.second = true;
+        it->second.handoffPerformed = true;
 }
 
 const std::string& Controller::handoffFrequency(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
-    return it->second.first->sector.frequency();
+    return it->second.nextSector->sector.frequency();
 }
 
 const std::string& Controller::handoffStation(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
-    return it->second.first->sector.identifier();
+    return it->second.nextSector->sector.identifier();
 }

@@ -35,6 +35,13 @@ namespace topskytower {
                         children() { }
             };
 
+            struct FlightData {
+                bool          manuallyChanged;
+                bool          handoffPerformed;
+                types::Flight flight;
+                Node*         nextSector;
+            };
+
             static void insertNode(std::list<Node*>& nodes, const types::Sector& sector);
             static void destroyNode(Node* node);
             static std::list<Node*> findRelevantSectors(std::list<std::string>& deputies, const std::list<types::Sector>& sectors);
@@ -42,14 +49,15 @@ namespace topskytower {
             static Node* createGraph(const std::list<Node*>& nodes);
             void finalizeGraph(const std::list<types::Sector>& sectors);
             static Node* findNode(Controller::Node* node, const std::string_view& identifier);
-            static Node* findSectorInList(const std::list<Node*>& nodes, const types::Position& position);
-            Node* findNextResponsible(const types::Position& position) const;
+            static Node* findSectorInList(const std::list<Node*>& nodes, const types::Position& position,
+                                          types::Flight::Type type, bool lowerSectors);
+            Node* findNextResponsible(const types::Position& position, types::Flight::Type type) const;
             Node* findNextOnline(Node* node);
 
-            Node                                          m_unicom;
-            Node*                                         m_rootNode;
-            Node*                                         m_ownSector;
-            std::map<std::string, std::pair<Node*, bool>> m_handoffs;
+            Node                              m_unicom;
+            Node*                             m_rootNode;
+            Node*                             m_ownSector;
+            std::map<std::string, FlightData> m_handoffs;
 
         public:
             /**
