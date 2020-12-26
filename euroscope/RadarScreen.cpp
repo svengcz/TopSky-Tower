@@ -41,7 +41,7 @@ void RadarScreen::OnAsrContentToBeClosed() {
 }
 
 void RadarScreen::OnControllerPositionUpdate(EuroScopePlugIn::CController controller) {
-    if (nullptr != this->m_controller && true == controller.IsValid()) {
+    if (nullptr != this->m_controller && true == controller.IsValid() && true == controller.IsController()) {
         std::string_view view(controller.GetPositionId());
         if ("" != view && "XX" != view)
             this->m_controller->controllerUpdate(Converter::convert(controller));
@@ -49,7 +49,7 @@ void RadarScreen::OnControllerPositionUpdate(EuroScopePlugIn::CController contro
 }
 
 void RadarScreen::OnControllerDisconnect(EuroScopePlugIn::CController controller) {
-    if (nullptr != this->m_controller && true == controller.IsValid()) {
+    if (nullptr != this->m_controller && true == controller.IsValid() && true == controller.IsController()) {
         std::string_view view(controller.GetPositionId());
         if ("" != view && "XX" != view)
             this->m_controller->controllerOffline(Converter::convert(controller));
