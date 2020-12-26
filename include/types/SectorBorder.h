@@ -23,12 +23,9 @@ namespace topskytower {
         public:
             /**
              * @brief Defines a line segment of the border
-             * The line segment is defined by the start and end point.
-             * The mathematical description is 0 = a * x + b * y + c
              */
             struct LineSegment {
                 types::Coordinate points[2];     /**< Start and end point of the segment */
-                float             parameters[3]; /**< The three parameters (a, b, c) for the line form */
             };
 
         private:
@@ -40,7 +37,6 @@ namespace topskytower {
             std::vector<LineSegment>       m_segments;
             types::Angle                   m_boundingBox[2][2];
 
-            static void calculateLineParameters(LineSegment& segment);
             static bool intersects(const LineSegment& segment0, const LineSegment& segment1);
 
         public:

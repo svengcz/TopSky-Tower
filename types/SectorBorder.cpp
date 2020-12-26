@@ -101,13 +101,6 @@ const types::Length& SectorBorder::upperAltitude() const {
     return this->m_upperAltitude;
 }
 
-void SectorBorder::calculateLineParameters(LineSegment& segment) {
-    segment.parameters[0] = segment.points[1].latitude().value() - segment.points[0].latitude().value();
-    segment.parameters[1] = segment.points[0].longitude().value() - segment.points[1].longitude().value();
-    segment.parameters[2] = segment.points[1].longitude().value() * segment.points[0].latitude().value();
-    segment.parameters[2] -= segment.points[0].longitude().value() * segment.points[1].latitude().value();
-}
-
 void SectorBorder::addEdge(const types::Coordinate& coord0, const types::Coordinate& coord1) {
     /* calculate the bounding box */
     this->m_boundingBox[0][0] = std::min(coord0.longitude(), this->m_boundingBox[0][0]);
@@ -123,7 +116,6 @@ void SectorBorder::addEdge(const types::Coordinate& coord0, const types::Coordin
     LineSegment segment;
     segment.points[0] = coord0;
     segment.points[1] = coord1;
-    SectorBorder::calculateLineParameters(segment);
     this->m_segments.push_back(segment);
 
     /* insert the point if it does not exist */
@@ -145,36 +137,47 @@ const std::vector<SectorBorder::LineSegment>& SectorBorder::segments() const {
     return this->m_segments;
 }
 
-bool SectorBorder::intersects(const LineSegment& segment0, const LineSegment& segment1) {
-    float d1 = segment0.parameters[0] * segment1.points[0].longitude().value() +
-               segment0.parameters[1] * segment1.points[0].latitude().value() +
-               segment0.parameters[2];
-    float d2 = segment0.parameters[0] * segment1.points[1].longitude().value() +
-               segment0.parameters[1] * segment1.points[1].latitude().value() +
-               segment0.parameters[2];
-    if (0.0f >= d1 * d2)
-        return false;
-
-    d1 = segment1.parameters[0] * segment0.points[0].longitude().value() +
-         segment1.parameters[1] + segment0.points[0].latitude().value() +
-         segment1.parameters[2];
-    d2 = segment1.parameters[0] * segment0.points[1].longitude().value() +
-         segment1.parameters[1] + segment0.points[1].latitude().value() +
-         segment1.parameters[2];
-    if (0.0f >= d1 * d2)
-        return false;
-
-    /* test if the point is inside the line */
-    if (true == helper::Math::almostEqual(segment1.parameters[0] * segment0.parameters[1] -
-                                          segment0.parameters[0] * segment1.parameters[1], 0.0f)) {
-        auto checkDistance = segment1.points[0].distanceTo(segment1.points[1]);
-
-        /* check if the tested point is inside the segment of the second line */
-        if (checkDistance > segment1.points[0].distanceTo(segment0.points[1]) || checkDistance > segment1.points[1].distanceTo(segment0.points[1]))
-            return false;
+static bool __onSegment(const types::Coordinate& p, const types::Coordinate& q, const types::Coordinate& r) {
+    if (q.latitude().value() <= std::max(p.latitude().value(), r.latitude().value()) &&
+        q.latitude().value() >= std::min(p.latitude().value(), r.latitude().value()) &&
+        q.longitude().value() <= std::max(p.longitude().value(), r.longitude().value()) &&
+        q.longitude().value() >= std::min(p.longitude().value(), r.longitude().value()))
+    {
+        return true;
     }
 
-    return true;
+    return false;
+}
+
+static int __orientation(const types::Coordinate& p, const types::Coordinate& q, const types::Coordinate& r) {
+    float value = (q.longitude().value() - p.longitude().value()) * (r.latitude().value() - q.latitude().value()) -
+                  (q.latitude().value() - p.latitude().value()) * (r.longitude().value() - q.longitude().value());
+
+    if (true == helper::Math::almostEqual(value, 0.0))
+        return 0;
+    return (0.0f < value ? 1 : 2);
+}
+
+bool SectorBorder::intersects(const LineSegment& segment0, const LineSegment& segment1) {
+    int o1 = __orientation(segment0.points[0], segment0.points[1], segment1.points[0]);
+    int o2 = __orientation(segment0.points[0], segment0.points[1], segment1.points[1]);
+    int o3 = __orientation(segment1.points[0], segment1.points[1], segment0.points[0]);
+    int o4 = __orientation(segment1.points[0], segment1.points[1], segment0.points[1]);
+
+    if (o1 != o2 && o3 != o4)
+        return true;
+
+    if (0 == o1 && true == __onSegment(segment0.points[0], segment1.points[0], segment0.points[1]))
+        return true;
+    if (0 == o2 && true == __onSegment(segment0.points[0], segment1.points[1], segment0.points[1]))
+        return true;
+
+    if (0 == o3 && true == __onSegment(segment1.points[0], segment0.points[0], segment1.points[1]))
+        return true;
+    if (0 == o4 && true == __onSegment(segment1.points[0], segment0.points[1], segment1.points[1]))
+        return true;
+
+    return false;
 }
 
 bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate) const {
@@ -191,14 +194,17 @@ bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate) const {
     /* calculate the line segment of the searched point and a point outside of the polygon */
     LineSegment testSegment;
     testSegment.points[0] = coordinate;
-    testSegment.points[1] = types::Coordinate(types::Angle(this->m_boundingBox[0][0] - 0.1f * types::degree), coordinate.latitude());
-    SectorBorder::calculateLineParameters(testSegment);
+    testSegment.points[1] = types::Coordinate(types::Angle(this->m_boundingBox[0][1] + 0.1f * types::degree), coordinate.latitude());
 
     /* check how many line segments are intersected */
     std::size_t intersections = 0;
     for (const auto& segment : std::as_const(this->m_segments)) {
-        if (true == SectorBorder::intersects(segment, testSegment))
+        if (true == SectorBorder::intersects(segment, testSegment)) {
+            if (0 == __orientation(segment.points[0], testSegment.points[0], segment.points[1]))
+                return __onSegment(segment.points[0], testSegment.points[0], segment.points[1]);
+
             intersections += 1;
+        }
     }
 
     return 0 != (intersections % 2);
