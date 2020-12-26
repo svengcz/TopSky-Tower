@@ -86,7 +86,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
 
     /* update the internal information of the radar targets */
     for (auto rt = plugin->RadarTargetSelectFirst(); true == rt.IsValid(); rt = plugin->RadarTargetSelectNext(rt)) {
-        types::Flight flight = Converter::convert(rt);
+        types::Flight flight = Converter::convert(rt, this->m_airport);
 
         this->m_controller->update(flight);
     }

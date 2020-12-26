@@ -27,7 +27,7 @@ namespace topskytower {
         class Converter {
         public:
             static types::Coordinate convert(const EuroScopePlugIn::CPosition& position);
-            static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target);
+            static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target, const std::string& airport);
         };
     }
 }
