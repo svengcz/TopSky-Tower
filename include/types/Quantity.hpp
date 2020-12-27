@@ -73,6 +73,13 @@ namespace topskytower {
                 return this->m_value;
             }
             /**
+             * @brief Sets the value in SI units
+             * @param[in] value The new SI unit based value
+             */
+            constexpr void setValue(float value) {
+                this->m_value = value;
+            }
+            /**
              * @brief Converts the value into a specific unit
              * @param[in] rhs The scaling factor to convert the value
              * @return The converted value
@@ -327,14 +334,14 @@ namespace topskytower {
         constexpr float operator"" _pi(long double value) { return static_cast<float>(value) * 3.1415926535897932384626433832795f; }
         /**< Defines the literal of PI */
         constexpr float operator"" _pi(unsigned long long int value) { return static_cast<float>(value) * 3.1415926535897932384626433832795f; }
-        /**< Defines a radian */
-        constexpr Angle radian(1.0f);
         /**< Defines a degree */
-        constexpr Angle degree = (2_pi / 360.0f) * radian;
+        constexpr Angle degree = 1.0f;
+        /**< Defines a radian */
+        constexpr Angle radian = 180.0f / 1_pi * degree;
         /**< Defines the literal of radians */
-        constexpr Angle operator"" _rad(long double value) { return Angle(static_cast<float>(value)); }
+        constexpr Angle operator"" _rad(long double value) { return static_cast<float>(value) * radian; }
         /**< Defines the literal of radians */
-        constexpr Angle operator"" _rad(unsigned long long int value) { return Angle(static_cast<float>(value)); }
+        constexpr Angle operator"" _rad(unsigned long long int value) { return static_cast<float>(value) * radian; }
         /**< Defines the literal of degrees */
         constexpr Angle operator"" _deg(long double value) { return static_cast<float>(value) * degree; }
         /**< Defines the literal of degrees */
