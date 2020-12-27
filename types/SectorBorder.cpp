@@ -126,7 +126,7 @@ void SectorBorder::addEdge(const types::Coordinate& coord0, const types::Coordin
     /* insert the point if it does not exist */
     it = std::find(this->m_edges.cbegin(), this->m_edges.cend(), coord1);
     if (it == this->m_edges.cend())
-        this->m_edges.push_back(coord0);
+        this->m_edges.push_back(coord1);
 }
 
 const std::vector<types::Coordinate>& SectorBorder::edges() const {
