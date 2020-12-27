@@ -27,8 +27,14 @@ namespace topskytower {
             enum class TagItemElement {
                 HandoffFrequency = 2001
             };
+            enum class TagItemFunction {
+                HandoffInitiated        = 3001,
+                HandoffPerform          = 3002,
+                HandoffControllerSelect = 3003,
 
             std::list<RadarScreen*> m_screens;
+
+            void handleHandoffPerform(RECT area, const std::string& callsign, bool release, bool tracked);
 
         public:
             /**

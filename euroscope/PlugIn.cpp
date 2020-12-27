@@ -26,6 +26,7 @@ PlugIn::PlugIn() :
                                  PLUGIN_COPYRIGHT),
         m_screens() {
     this->RegisterTagItemType("Handoff frequency", static_cast<int>(PlugIn::TagItemElement::HandoffFrequency));
+    this->RegisterTagItemFunction("Handoff initiate", static_cast<int>(PlugIn::TagItemFunction::HandoffInitiated));
 }
 
 PlugIn::~PlugIn() {
@@ -86,9 +87,82 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     }
 }
 
+void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool release, bool tracked) {
+    auto radarTarget = this->RadarTargetSelectASEL();
+
+    /* test all loaded screens */
+    for (const auto& screen : std::as_const(this->m_screens)) {
+        /* found the correct screen with the handoff */
+        if (true == screen->controllerManager().handoffRequired(callsign)) {
+            auto controllers = screen->controllerManager().handoffStations(callsign);
+
+            /* no handoff requested, but a release */
+            if (true == release) {
+                if (true == tracked)
+                    radarTarget.GetCorrelatedFlightPlan().EndTracking();
+                screen->controllerManager().handoffPerformed(callsign);
+            }
+            /* check if handoff or a release is needed */
+            else if (1 == controllers.size()) {
+                /* handoff to unicom */
+                if (true == tracked) {
+                    if (0 == controllers.front().size())
+                        radarTarget.GetCorrelatedFlightPlan().EndTracking();
+                    else
+                        radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(controllers.front().c_str());
+                }
+                screen->controllerManager().handoffPerformed(callsign);
+            }
+            else {
+                auto& frequency = screen->controllerManager().handoffFrequency(callsign);
+                this->OpenPopupList(area, "Handoff To", 2);
+
+                for (const auto& controller : std::as_const(controllers)) {
+                    this->AddPopupListElement(controller.c_str(), frequency.c_str(),
+                        static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChange));
+                }
+            }
+
+            break;
+        }
+    }
+}
+
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
-    (void)functionId;
-    (void)itemString;
     (void)pt;
-    (void)area;
+
+    auto radarTarget = this->RadarTargetSelectASEL();
+    if (false == radarTarget.IsValid())
+        return;
+    std::string callsign(radarTarget.GetCallsign());
+
+    /* check if we are tracking */
+    bool tracked = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe();
+
+    switch (static_cast<PlugIn::TagItemFunction>(functionId)) {
+    case PlugIn::TagItemFunction::HandoffInitiated:
+        this->OpenPopupList(area, "Handoff initiate", 1);
+        this->AddPopupListElement("Handoff", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
+        if (true == tracked)
+            this->AddPopupListElement("Release", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
+        break;
+    case PlugIn::TagItemFunction::HandoffPerform:
+        if (0 == std::strncmp(itemString, "Release", 7))
+            this->handleHandoffPerform(area, callsign, true, tracked);
+        else
+            this->handleHandoffPerform(area, callsign, false, tracked);
+        break;
+    case PlugIn::TagItemFunction::HandoffControllerSelect:
+        for (const auto& screen : std::as_const(this->m_screens)) {
+            /* found the correct screen with the handoff */
+            if (true == screen->controllerManager().handoffRequired(callsign)) {
+                if (true == tracked)
+                    radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
+                screen->controllerManager().handoffPerformed(callsign);
+            }
+        }
+        break;
+    default:
+        break;
+    }
 }
