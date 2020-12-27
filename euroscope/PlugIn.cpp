@@ -26,7 +26,9 @@ PlugIn::PlugIn() :
                                  PLUGIN_COPYRIGHT),
         m_screens() {
     this->RegisterTagItemType("Handoff frequency", static_cast<int>(PlugIn::TagItemElement::HandoffFrequency));
+
     this->RegisterTagItemFunction("Handoff initiate", static_cast<int>(PlugIn::TagItemFunction::HandoffInitiated));
+    this->RegisterTagItemFunction("Handoff sector change", static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChange));
 }
 
 PlugIn::~PlugIn() {
@@ -159,6 +161,30 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                 if (true == tracked)
                     radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
                 screen->controllerManager().handoffPerformed(callsign);
+                break;
+            }
+        }
+        break;
+    case PlugIn::TagItemFunction::HandoffSectorChange:
+        for (const auto& screen : std::as_const(this->m_screens)) {
+            if (true == screen->controllerManager().handoffRequired(callsign)) {
+                auto sectors = screen->controllerManager().handoffSectors();
+
+                this->OpenPopupList(area, "Handoff sectors", 2);
+                for (const auto& sector : std::as_const(sectors)) {
+                    this->AddPopupListElement(sector.identifier().c_str(), sector.primaryFrequency().c_str(),
+                                              static_cast<int>(PlugIn::TagItemFunction::HandoffSectorSelect));
+                }
+
+                break;
+            }
+        }
+        break;
+    case PlugIn::TagItemFunction::HandoffSectorSelect:
+        for (const auto& screen : std::as_const(this->m_screens)) {
+            if (true == screen->controllerManager().handoffRequired(callsign)) {
+                screen->controllerManager().handoffSectorSelect(callsign, itemString);
+                break;
             }
         }
         break;

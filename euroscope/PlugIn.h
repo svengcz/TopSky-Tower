@@ -31,6 +31,9 @@ namespace topskytower {
                 HandoffInitiated        = 3001,
                 HandoffPerform          = 3002,
                 HandoffControllerSelect = 3003,
+                HandoffSectorChange     = 3004,
+                HandoffSectorSelect     = 3005
+            };
 
             std::list<RadarScreen*> m_screens;
 
