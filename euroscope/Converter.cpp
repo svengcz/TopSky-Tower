@@ -28,7 +28,7 @@ types::Coordinate Converter::convert(const EuroScopePlugIn::CPosition& position)
 types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, const std::string& airport) {
     types::Flight retval(target.GetCallsign());
 
-    retval.setGroundSpeed(static_cast<float>(target.GetGS()) * types::knot);
+    retval.setGroundSpeed(static_cast<float>(target.GetPosition().GetReportedGS()) * types::knot);
     retval.setVerticalSpeed(static_cast<float>(target.GetVerticalSpeed()) * (types::feet / types::minute));
     types::Position position(Converter::convert(target.GetPosition().GetPosition()),
                              static_cast<float>(target.GetPosition().GetPressureAltitude()) * types::feet,
