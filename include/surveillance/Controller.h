@@ -54,6 +54,7 @@ namespace topskytower {
                                           types::Flight::Type type, bool lowerSectors);
             Node* findResponsible(const types::Position& position, types::Flight::Type type) const;
             Node* findOnlineResponsible(Node* node);
+            std::list<Node*> findSectorCandidates(Node* node) const;
             static Node* findLowestSector(Node* node, const types::Position& position);
             bool isInOwnSectors(const types::Position& position) const;
             void cleanupHandoffList(Node* node);
@@ -117,6 +118,17 @@ namespace topskytower {
              * @return The next sector controllers
              */
             std::list<std::string> handoffStations(const std::string& callsign) const;
+            /**
+             * @brief Returns all controller information of all sectors that can theoretically take over the flight
+             * @return The controller informations of all potential sectors
+             */
+            std::list<types::ControllerInfo> handoffSectors() const;
+            /**
+             * @brief Sets the handoff sector manually which avoids automatic overwrites
+             * @param[in] callsign The requested callsign
+             * @param[in] identifier The sector's identifier
+             */
+            void handoffSectorSelect(const std::string& callsign, const std::string& identifier);
         };
     }
 }

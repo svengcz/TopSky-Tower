@@ -608,12 +608,17 @@ void Controller::handoffPerformed(const std::string& callsign) {
 
 const std::string& Controller::handoffFrequency(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
+    if (this->m_handoffs.cend() == it)
+        return this->m_unicom.sector.controllerInfo().primaryFrequency();
+
     return it->second.nextSector->sector.controllerInfo().primaryFrequency();
 }
 
 std::list<std::string> Controller::handoffStations(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
     std::list<std::string> retval;
+    if (this->m_handoffs.cend() == it)
+        return retval;
 
     for (const auto& controller : std::as_const(it->second.nextSector->controllers)) {
         if (0 != controller.prefix().size()) {
@@ -630,4 +635,50 @@ std::list<std::string> Controller::handoffStations(const std::string& callsign) 
     }
 
     return retval;
+}
+
+std::list<Controller::Node*> Controller::findSectorCandidates(Controller::Node* node) const {
+    std::list<Controller::Node*> retval;
+
+    if (this->m_ownSector != node && 0 != node->controllers.size())
+        retval.push_back(node);
+
+    for (const auto& sibling : std::as_const(node->siblings))
+        retval.splice(retval.end(), this->findSectorCandidates(sibling));
+
+    for (const auto& child : std::as_const(node->children))
+        retval.splice(retval.end(), this->findSectorCandidates(child));
+
+    return retval;
+}
+
+std::list<types::ControllerInfo> Controller::handoffSectors() const {
+    std::list<types::ControllerInfo> retval;
+
+    auto nodes = this->findSectorCandidates(this->m_rootNode);
+
+    /* erase duplicates */
+    nodes.sort([](Node* node0, Node* node1) { return node0 < node1; });
+    auto last = std::unique(nodes.begin(), nodes.end());
+    nodes.erase(last, nodes.end());
+
+    /* sort based on type */
+    nodes.sort([](Node* node0, Node* node1) { return node0->sector.type() > node1->sector.type(); });
+
+    for (const auto& node : std::as_const(nodes))
+        retval.push_back(node->sector.controllerInfo());
+
+    return retval;
+}
+
+void Controller::handoffSectorSelect(const std::string& callsign, const std::string& identifier) {
+    auto it = this->m_handoffs.find(callsign);
+    if (this->m_handoffs.end() == it)
+        return;
+
+    auto node = Controller::findNodeBasedOnIdentifier(this->m_rootNode, identifier);
+    if (nullptr != node) {
+        it->second.manuallyChanged = true;
+        it->second.nextSector = node;
+    }
 }
