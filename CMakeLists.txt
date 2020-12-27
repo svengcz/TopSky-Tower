@@ -27,7 +27,7 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_INSTALL_PREFIX}/include
-    ${CMAKE_INSTALL_PREFIX}/include/eigen3
+    ${PROJECT_BINARY_DIR}/boost
 )
 LINK_DIRECTORIES(
     ${CMAKE_INSTALL_PREFIX}/lib
@@ -36,26 +36,13 @@ LINK_DIRECTORIES(
 INCLUDE(ExternalProject)
 # add third-party-dependencies
 ExternalProject_Add(
-    Eigen
-    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-    GIT_TAG 3.3.7
-    CMAKE_ARGS
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DEIGEN_TEST_CXX11=OFF
-        -DEIGEN_BUILD_BTL=OFF
-        -DBUILD_TESTING=OFF
-)
-ExternalProject_Add(
-    Nanoflann
-    GIT_REPOSITORY https://github.com/jlblancoc/nanoflann.git
-    GIT_TAG v1.3.1
-    CMAKE_ARGS
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DBUILD_EXAMPLES=OFF
-        -DBUILD_BENCHMARKS=OFF
-        -DBUILD_TESTS=OFF
+    Boost
+    URL https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2
+    URL_HASH SHA256=953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    SOURCE_DIR ${PROJECT_BINARY_DIR}/boost
 )
 ExternalProject_Add(
     Curl
