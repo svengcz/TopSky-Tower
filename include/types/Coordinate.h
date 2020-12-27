@@ -8,6 +8,12 @@
 
 #include <string>
 
+#pragma warning(push, 0)
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/register/point.hpp>
+#pragma warning(pop)
+
 #include <types/Quantity.hpp>
 
 namespace topskytower {
@@ -118,3 +124,15 @@ namespace topskytower {
         };
     }
 }
+
+namespace bg = boost::geometry;
+
+BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(
+    topskytower::types::Coordinate,
+    float,
+    bg::cs::geographic<bg::degree>,
+    topskytower::types::Coordinate::latitudeDegree,
+    topskytower::types::Coordinate::longitudeDegree,
+    topskytower::types::Coordinate::setLatitudeDegree,
+    topskytower::types::Coordinate::setLongitudeDegree
+)

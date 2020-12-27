@@ -9,9 +9,11 @@
 #include <algorithm>
 #include <cmath>
 
+#pragma warning(push, 0)
 #include <boost/geometry/geometry.hpp>
 #include <boost/geometry/algorithms/detail/course.hpp>
 #include <boost/geometry/geometries/register/point.hpp>
+#pragma warning(pop)
 
 #include <helper/Exception.h>
 #include <helper/Math.h>
@@ -20,18 +22,6 @@
 
 using namespace topskytower;
 using namespace topskytower::types;
-
-namespace bg = boost::geometry;
-
-BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(
-    Coordinate,
-    float,
-    bg::cs::geographic<bg::degree>,
-    Coordinate::latitudeDegree,
-    Coordinate::longitudeDegree,
-    Coordinate::setLatitudeDegree,
-    Coordinate::setLongitudeDegree
-)
 
 Coordinate::Coordinate() :
         m_longitude(0.0f),
