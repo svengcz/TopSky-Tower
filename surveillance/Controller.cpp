@@ -359,8 +359,11 @@ Controller::Node* Controller::findNodeBasedOnInformation(Controller::Node* node,
 
     /* check the controller's name which is likely to be unique */
     for (const auto& controller : std::as_const(node->controllers)) {
-        if (controller.controllerName() == info.controllerName())
-            return node;
+        if (controller.controllerName() == info.controllerName()) {
+            /* ensure that the stations are compatible and not something different (i.e. controller has TWR and ATIS) */
+            if (controller.prefix() == info.prefix() && controller.suffix() == info.suffix())
+                return node;
+        }
     }
 
     for (const auto& sibling : std::as_const(node->siblings)) {
@@ -378,21 +381,36 @@ Controller::Node* Controller::findNodeBasedOnInformation(Controller::Node* node,
     return nullptr;
 }
 
+void Controller::cleanupHandoffList(Controller::Node* node) {
+    if (0 == node->controllers.size()) {
+        for (auto it = this->m_handoffs.begin(); this->m_handoffs.end() != it;) {
+            if (it->second.nextSector == node)
+                it = this->m_handoffs.erase(it);
+            else
+                ++it;
+        }
+    }
+}
+
 void Controller::controllerUpdate(const types::ControllerInfo& info) {
     auto node = Controller::findNodeBasedOnInformation(this->m_rootNode, info);
     if (nullptr != node) {
         /* check if the info is already registered */
         for (auto it = node->controllers.begin(); node->controllers.end() != it; ++it) {
             /* found the controller -> check if the controller changed the identifier */
-            if (it->controllerName() == info.controllerName()) {
-                if (node->sector.controllerInfo().identifier() != info.identifier())
+            if (it->controllerName() == info.controllerName() && it->suffix() == info.suffix()) {
+                if (node->sector.controllerInfo().identifier() != info.identifier()) {
                     node->controllers.erase(it);
-                else
+                    this->cleanupHandoffList(node);
+                }
+                else {
                     *it = info;
+                }
                 return;
             }
         }
 
+        node->controllers.push_back(info);
     }
 }
 
@@ -404,6 +422,7 @@ void Controller::controllerOffline(const types::ControllerInfo& info) {
         for (auto it = node->controllers.begin(); node->controllers.end() != it; ++it) {
             if (it->controllerName() == info.controllerName()) {
                 node->controllers.erase(it);
+                this->cleanupHandoffList(node);
                 return;
             }
         }
@@ -439,16 +458,28 @@ Controller::Node* Controller::findSectorInList(const std::list<Controller::Node*
             if (nullptr == retval || node->sector.type() == bestType)
                 retval = node;
         }
+
+        /* check the siblings which are not reachable by parent, child tests */
+        for (const auto& sibling : std::as_const(node->siblings)) {
+            if (true == sibling->sector.isInsideSector(position)) {
+                if (nullptr == retval || sibling->sector.type() == bestType)
+                    retval = sibling;
+            }
+        }
     }
 
     return retval;
 }
 
-Controller::Node* Controller::findNextResponsible(const types::Position& position, types::Flight::Type type) const {
+Controller::Node* Controller::findResponsible(const types::Position& position, types::Flight::Type type) const {
     Controller::Node* next = nullptr;
 
     /* test the children */
     next = Controller::findSectorInList(this->m_ownSector->children, position, type, true);
+
+    /* test the node itself */
+    if (nullptr == next && true == this->m_ownSector->sector.isInsideSector(position))
+        return this->m_ownSector;
 
     /* test the siblings */
     if (nullptr == next)
@@ -461,7 +492,7 @@ Controller::Node* Controller::findNextResponsible(const types::Position& positio
     return next;
 }
 
-Controller::Node* Controller::findNextOnline(Controller::Node* node) {
+Controller::Node* Controller::findOnlineResponsible(Controller::Node* node) {
     /* avoid wrong calls */
     if (nullptr == node)
         return &this->m_unicom;
@@ -505,10 +536,17 @@ Controller::Node* Controller::findLowestSector(Controller::Node* node, const typ
 
 bool Controller::isInOwnSectors(const types::Position& position) const {
     auto node = Controller::findLowestSector(this->m_ownSector, position);
-    if (nullptr != node)
-        return 0 == node->controllers.size();
-    else
+    if (nullptr != node) {
+        /* controlled in own sector */
+        if (node == this->m_ownSector)
+            return true;
+        /* controlled by lower sector but it can be offline */
+        else
+            return 0 == node->controllers.size();
+    }
+    else {
         return false;
+    }
 }
 
 void Controller::update(const types::Flight& flight) {
@@ -516,25 +554,41 @@ void Controller::update(const types::Flight& flight) {
         return;
 
     /* check if the handoff is initiated or manually changed */
+    bool manuallyChanged = false, handoffDone = false;
     auto it = this->m_handoffs.find(flight.callsign());
-    if (this->m_handoffs.end() != it && (true == it->second.manuallyChanged || true == it->second.handoffPerformed))
-        return;
+    if (this->m_handoffs.end() != it && (true == it->second.manuallyChanged || true == it->second.handoffPerformed)) {
+        manuallyChanged = it->second.manuallyChanged;
+        handoffDone = it->second.handoffPerformed;
+    }
 
-    if (true == this->isInOwnSectors(flight.currentPosition())) {
+    if (false == manuallyChanged && false == handoffDone && true == this->isInOwnSectors(flight.currentPosition())) {
+        auto predicted = flight.predict(20_s, 20_kn);
+
         /* the aircraft remains in own sector */
-        auto predicted = flight.predict(30_s, 20_kn);
-        if (true == this->isInOwnSectors(predicted))
+        if (true == this->isInOwnSectors(predicted)) {
+            /* check if an old handoff exists */
+            it = this->m_handoffs.find(flight.callsign());
+            if (this->m_handoffs.end() != it)
+                this->m_handoffs.erase(it);
             return;
+        }
 
         /* get the next responsible node and the next online station */
-        auto nextNode = this->findNextResponsible(predicted, flight.type());
-        auto nextOnline = this->findNextOnline(nextNode);
+        auto nextNode = this->findResponsible(predicted, flight.type());
+        auto nextOnline = this->findOnlineResponsible(nextNode);
 
-        this->m_handoffs[flight.callsign()] = { false, false, flight, nextOnline };
+        /* no handoff to the controlled sector needed */
+        if (nextOnline != this->m_ownSector)
+            this->m_handoffs[flight.callsign()] = { false, false, flight, nextOnline };
     }
-    else {
-        /* check if we have to remove the handoff information */
-        if (this->m_handoffs.end() != it && true == it->second.handoffPerformed)
+    /* check if we have to remove the handoff information */
+    else if (this->m_handoffs.end() != it && true == it->second.handoffPerformed) {
+        /* find the current online controller */
+        auto currentNode = this->findResponsible(flight.currentPosition(), flight.type());
+        auto currentOnline = this->findOnlineResponsible(currentNode);
+
+        /* check if an other controller is responsible */
+        if (currentOnline != this->m_ownSector)
             this->m_handoffs.erase(it);
     }
 }
@@ -557,7 +611,23 @@ const std::string& Controller::handoffFrequency(const std::string& callsign) con
     return it->second.nextSector->sector.controllerInfo().primaryFrequency();
 }
 
-const std::string& Controller::handoffStation(const std::string& callsign) const {
+std::list<std::string> Controller::handoffStations(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
-    return it->second.nextSector->sector.controllerInfo().primaryFrequency();
+    std::list<std::string> retval;
+
+    for (const auto& controller : std::as_const(it->second.nextSector->controllers)) {
+        if (0 != controller.prefix().size()) {
+            std::string controllerCallsign(controller.prefix() + "_");
+            if (0 != controller.midfix().length())
+                controllerCallsign += controller.midfix() + "_";
+            controllerCallsign += controller.suffix();
+
+            retval.push_back(std::move(controllerCallsign));
+        }
+        else {
+            retval.push_back("");
+        }
+    }
+
+    return retval;
 }

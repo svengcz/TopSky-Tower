@@ -52,10 +52,11 @@ namespace topskytower {
             static Node* findNodeBasedOnInformation(Node* node, const types::ControllerInfo& info);
             static Node* findSectorInList(const std::list<Node*>& nodes, const types::Position& position,
                                           types::Flight::Type type, bool lowerSectors);
-            Node* findNextResponsible(const types::Position& position, types::Flight::Type type) const;
-            Node* findNextOnline(Node* node);
+            Node* findResponsible(const types::Position& position, types::Flight::Type type) const;
+            Node* findOnlineResponsible(Node* node);
             static Node* findLowestSector(Node* node, const types::Position& position);
             bool isInOwnSectors(const types::Position& position) const;
+            void cleanupHandoffList(Node* node);
 
             Node                              m_unicom;
             Node*                             m_rootNode;
@@ -111,11 +112,11 @@ namespace topskytower {
              */
             const std::string& handoffFrequency(const std::string& callsign) const;
             /**
-             * @brief Returns the next sector identifier of a specific callsign
+             * @brief Returns the next sector controllers of a specific callsign
              * @param[in] callsign The requested callsign
-             * @return The next sector identifier
+             * @return The next sector controllers
              */
-            const std::string& handoffStation(const std::string& callsign) const;
+            std::list<std::string> handoffStations(const std::string& callsign) const;
         };
     }
 }
