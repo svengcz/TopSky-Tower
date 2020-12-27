@@ -66,6 +66,16 @@ namespace topskytower {
              */
             Angle& longitude();
             /**
+             * @brief Returns the value of the longitude coordinate
+             * @return The longitude in degrees
+             */
+            float longitudeDegree() const;
+            /**
+             * @brief Sets the longitude in degrees
+             * @param[in] value The new longitude value in degrees
+             */
+            void setLongitudeDegree(float value);
+            /**
              * @brief Returns the latitudinal component
              * @return The constant reference to the latitudinal component
              */
@@ -75,6 +85,16 @@ namespace topskytower {
              * @return The reference to the latitudinal component
              */
             Angle& latitude();
+            /**
+             * @brief Returns the value of the latitude coordinate
+             * @return The latitude in degrees
+             */
+            float latitudeDegree() const;
+            /**
+             * @brief Sets the latitude in degrees
+             * @param[in] value The new latitude value in degrees
+             */
+            void setLatitudeDegree(float value);
             /**
              * @brief Calculates the coordinate from this coordinate and based on a heading and a distance
              * The function uses the haversine-formular and calculates the coordinate based on the great circle distance
