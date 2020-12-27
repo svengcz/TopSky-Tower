@@ -10,6 +10,7 @@
 #include "stdafx.h"
 
 #include <algorithm>
+#include <cctype>
 #include <iomanip>
 #include <sstream>
 
@@ -61,9 +62,11 @@ types::ControllerInfo Converter::convert(const EuroScopePlugIn::CController& con
         midfix = elements[1];
 
     /* transform callsign to upper cases */
-    std::transform(prefix.begin(), prefix.end(), prefix.begin(), std::toupper);
-    std::transform(midfix.begin(), midfix.end(), midfix.begin(), std::toupper);
-    std::transform(suffix.begin(), suffix.end(), suffix.begin(), std::toupper);
+#pragma warning(disable: 4244)
+    std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::toupper);
+    std::transform(midfix.begin(), midfix.end(), midfix.begin(), ::toupper);
+    std::transform(suffix.begin(), suffix.end(), suffix.begin(), ::toupper);
+#pragma warning(default: 4244)
 
     /* transform the frequency into a string */
     std::stringstream stream;
