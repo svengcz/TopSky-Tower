@@ -9,6 +9,10 @@
 #include <string>
 #include <vector>
 
+#pragma warning(push, 0)
+#include <boost/geometry/geometries/polygon.hpp>
+#pragma warning(pop)
+
 #include <types/Coordinate.h>
 #include <types/Position.h>
 #include <types/Quantity.hpp>
@@ -20,24 +24,13 @@ namespace topskytower {
          * @ingroup types
          */
         class SectorBorder {
-        public:
-            /**
-             * @brief Defines a line segment of the border
-             */
-            struct LineSegment {
-                types::Coordinate points[2];     /**< Start and end point of the segment */
-            };
-
         private:
             std::string                    m_owner;
             std::vector<std::string>       m_deputies;
             types::Length                  m_lowerAltitude;
             types::Length                  m_upperAltitude;
-            std::vector<types::Coordinate> m_edges;
-            std::vector<LineSegment>       m_segments;
+            bg::model::polygon<Coordinate> m_shape;
             types::Angle                   m_boundingBox[2][2];
-
-            static bool intersects(const LineSegment& segment0, const LineSegment& segment1);
 
         public:
             /**
@@ -98,17 +91,15 @@ namespace topskytower {
              */
             const types::Length& upperAltitude() const;
             /**
-             * @brief Inserts anew edge into the border
-             * @param[in] coord0 The first coordinate of the edge
-             * @param[in] coord1 The second coordinate of the edge
+             * @brief Sets new edges of the border
+             * @param[in] edges The edges of the border
              */
-            void addEdge(const types::Coordinate& coord0, const types::Coordinate& coord1);
+            void setEdges(const std::list<types::Coordinate>& edges);
             /**
              * @brief Returns the edges of the border
              * @return The edges that describe the border
              */
-            const std::vector<types::Coordinate>& edges() const;
-            const std::vector<LineSegment>& segments() const;
+            const bg::model::ring<types::Coordinate>& edges() const;
             /**
              * @brief Checks if a coordinate is inside the border and ignores the altitude restrictions
              * @param[in] coordinate The checked coordinate

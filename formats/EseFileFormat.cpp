@@ -16,12 +16,13 @@
 using namespace topskytower;
 using namespace topskytower::formats;
 
-static __inline bool __createEdges(const std::vector<std::string>& borderDef, const std::map<std::string, std::list<types::Coordinate>>& sectorlines,
+static __inline bool __createEdges(const std::vector<std::string>& borderDef,
+                                   const std::map<std::string, std::list<types::Coordinate>>& sectorlines,
                                    types::SectorBorder& border) {
+    std::list<types::Coordinate> borderEdges;
     bool resolved = true;
 
     /* resolve the borders */
-    std::vector<types::Coordinate> edges;
     for (std::size_t i = 1; i < borderDef.size(); ++i) {
         auto it = sectorlines.find(borderDef[i]);
         /* unable to resolve all sector lines */
@@ -37,9 +38,32 @@ static __inline bool __createEdges(const std::vector<std::string>& borderDef, co
             auto eit = it->second.cbegin();
             std::advance(eit, c + 1);
 
-            border.addEdge(*sit, *eit);
+            if (0 == borderEdges.size()) {
+                borderEdges.push_back(*sit);
+                borderEdges.push_back(*eit);
+            }
+            else {
+                auto coord0It = std::find(borderEdges.cbegin(), borderEdges.cend(), *sit);
+                auto coord1It = std::find(borderEdges.cbegin(), borderEdges.cend(), *eit);
+
+                /* avoid duplicated points */
+                if (borderEdges.cend() != coord0It && borderEdges.cend() == coord1It) {
+                    if (borderEdges.cbegin() == coord0It)
+                        borderEdges.insert(borderEdges.begin(), *eit);
+                    else
+                        borderEdges.push_back(*eit);
+                }
+                else if (borderEdges.cend() != coord1It && borderEdges.cend() == coord0It) {
+                    if (borderEdges.cbegin() == coord1It)
+                        borderEdges.insert(borderEdges.begin(), *sit);
+                    else
+                        borderEdges.push_back(*sit);
+                }
+            }
         }
     }
+
+    border.setEdges(borderEdges);
 
     return resolved;
 }
