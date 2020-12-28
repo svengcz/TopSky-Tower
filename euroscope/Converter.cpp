@@ -31,17 +31,13 @@ static void __analyzeScratchPad(const std::string& scratchPad, types::Flight& fl
     if (std::string::npos == scratchPad.find('_'))
         return;
 
-    auto split = helper::String::splitString(scratchPad, "_");
-
-    /* create the messages */
-    for (const auto& element : std::as_const(split)) {
-        if (element == "MISAP")
-            flight.setOnMissedApproach(true);
-        else if (element == "IRREG")
-            flight.setIrregularHandoff(true);
-        else if (element == "EST")
-            flight.setEstablishedOnILS(true);
-    }
+    /* check the different entries */
+    if (std::string::npos != scratchPad.find("MISAP_"))
+        flight.setOnMissedApproach(true);
+    if (std::string::npos != scratchPad.find("IRREG_"))
+        flight.setIrregularHandoff(true);
+    if (std::string::npos != scratchPad.find("EST_"))
+        flight.setEstablishedOnILS(true);
 }
 
 types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, const std::string& airport) {
