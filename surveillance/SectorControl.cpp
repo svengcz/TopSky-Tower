@@ -603,6 +603,12 @@ void SectorControl::update(const types::Flight& flight) {
     }
 }
 
+void SectorControl::removeFlight(const std::string& callsign) {
+    auto it = this->m_handoffs.find(callsign);
+    if (this->m_handoffs.end() != it)
+        this->m_handoffs.erase(it);
+}
+
 bool SectorControl::handoffRequired(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
     if (this->m_handoffs.cend() != it)

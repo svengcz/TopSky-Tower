@@ -100,6 +100,11 @@ namespace topskytower {
              */
             void update(const types::Flight& flight);
             /**
+             * @brief Removes a flight out of the sector control
+             * @param[in] callsign The deletable callsign
+             */
+            void removeFlight(const std::string& callsign);
+            /**
              * @brief Checks if an handoff is required for a specific callsign
              * @param[in] callsign The requested callsign
              * @return True if an handoff is required, else false
