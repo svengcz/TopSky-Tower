@@ -209,42 +209,99 @@ void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool r
         radarTarget.GetCorrelatedFlightPlan().EndTracking();
 }
 
-void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
-    (void)pt;
+void PlugIn::updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& radarTarget, const std::string& marker) {
+    std::string scratchPad(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetScratchPadString());
 
+    std::size_t pos = scratchPad.find(marker);
+    if (std::string::npos != pos)
+        scratchPad.erase(pos, marker.length());
+    else
+        scratchPad += marker;
+
+    radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchPad.c_str());
+}
+
+void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, int idx, const std::string& marker) {
+    if (8 < idx)
+        return;
+
+    std::string stripEntry(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(idx));
+
+    std::size_t pos = stripEntry.find(marker);
+    if (std::string::npos != pos)
+        stripEntry.erase(pos, marker.length());
+    else
+        stripEntry += marker;
+
+    radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, stripEntry.c_str());
+}
+
+void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
     auto radarTarget = this->RadarTargetSelectASEL();
     if (false == radarTarget.IsValid())
         return;
     std::string callsign(radarTarget.GetCallsign());
 
-    /* check if we are tracking */
+    /* check if we are tracking and search the flight */
     bool tracked = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe();
+    auto flight = this->findFlight(callsign);
+
+    /* check if an handoff is possible */
+    bool handoffRequired = false;
+    for (const auto& screen : std::as_const(this->m_screens)) {
+        if (true == screen->sectorControl().handoffRequired(callsign)) {
+            handoffRequired = true;
+            break;
+        }
+    }
 
     switch (static_cast<PlugIn::TagItemFunction>(functionId)) {
     case PlugIn::TagItemFunction::AircraftControlMenuBar:
-        this->OpenPopupList(area, "Aircraft menu", 1);
+        this->OpenPopupList(area, "Aircraft menu", 2);
 
         /* define the menu bar for the tracking functions */
         if (true == radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe()) {
-            this->AddPopupListElement("Transfer", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
+            this->AddPopupListElement("Transfer", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
+                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, false == handoffRequired, false);
+            this->AddPopupListElement("Man. Transfer", "", static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChangeEvent),
+                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, false == handoffRequired, false);
             this->AddPopupListElement("Release", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
         }
         else {
-            this->AddPopupListElement("Assume", "", static_cast<int>(PlugIn::TagItemFunction::AircraftControlSelect));
-            this->AddPopupListElement("Handoff", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
+            this->AddPopupListElement("Assume", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
+            this->AddPopupListElement("Handoff", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
+                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, false == handoffRequired, false);
         }
-        this->AddPopupListElement("-------", "", 0);
+        this->AddPopupListElement("-------------", "-", 0, false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true, false);
 
         /* define the menu bar for the manually alerts */
+        if (true == radarTarget.GetCorrelatedFlightPlan().IsValid()) {
+            this->AddPopupListElement("Mis/App", (true == flight.onMissedApproach() ? "X" : ""),
+                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
+            this->AddPopupListElement("Irreg", (true == flight.irregularHandoff() ? "X" : ""),
+                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
+            this->AddPopupListElement("Est", (true == flight.establishedOnILS() ? "X" : ""),
+                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
+            this->AddPopupListElement("Mark", (true == flight.markedByController() ? "X" : ""),
+                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
+        }
 
         break;
-    case PlugIn::TagItemFunction::AircraftControlSelect:
-        if (0 == std::strncmp(itemString, "Assume", 6))
-            radarTarget.GetCorrelatedFlightPlan().StartTracking();
+    case PlugIn::TagItemFunction::AircraftControlSignal:
+        if (0 == std::strncmp(itemString, "Mis/App", 7))
+            PlugIn::updateManuallyAlerts(radarTarget, "MISAP_");
+        else if (0 == std::strncmp(itemString, "Irreg", 5))
+            PlugIn::updateManuallyAlerts(radarTarget, "IRREG_");
+        else if (0 == std::strncmp(itemString, "Est", 3))
+            PlugIn::updateManuallyAlerts(radarTarget, "EST_");
+        else if (0 == std::strncmp(itemString, "Mark", 4))
+            PlugIn::updateFlightStrip(radarTarget, 7, "K");
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
         if (0 == std::strncmp(itemString, "Release", 7))
             this->handleHandoffPerform(area, callsign, true, tracked);
+        else if (0 == std::strncmp(itemString, "Assume", 6))
+            radarTarget.GetCorrelatedFlightPlan().StartTracking();
         else
             this->handleHandoffPerform(area, callsign, false, tracked);
         break;
@@ -255,6 +312,21 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                 if (true == tracked)
                     radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
                 screen->sectorControl().handoffPerformed(callsign);
+                break;
+            }
+        }
+        break;
+    case PlugIn::TagItemFunction::HandoffSectorChangeEvent:
+        for (const auto& screen : std::as_const(this->m_screens)) {
+            if (true == screen->sectorControl().handoffRequired(callsign)) {
+                RadarScreen::EuroscopeEvent eventEntry = {
+                    static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChange),
+                    callsign,
+                    "",
+                    pt,
+                    area
+                };
+                screen->registerEuroscopeEvent(std::move(eventEntry));
                 break;
             }
         }
