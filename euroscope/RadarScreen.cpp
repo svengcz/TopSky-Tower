@@ -24,7 +24,7 @@ RadarScreen::RadarScreen() :
         EuroScopePlugIn::CRadarScreen(),
         m_initialized(false),
         m_airport(),
-        m_controller(nullptr) { }
+        m_controller(new surveillance::Controller()) { }
 
 RadarScreen::~RadarScreen() { }
 
@@ -65,7 +65,11 @@ void RadarScreen::initialize() {
     /* received the correct sector filename identifier */
     if (nullptr != sctFilename && 0 != std::strlen(sctFilename)) {
         formats::EseFileFormat file(sctFilename);
+
+        if (nullptr != this->m_controller)
+            delete this->m_controller;
         this->m_controller = new surveillance::Controller(this->m_airport, file.sectors());
+
         this->m_initialized = true;
     }
 }

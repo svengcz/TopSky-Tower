@@ -66,6 +66,10 @@ namespace topskytower {
 
         public:
             /**
+             * @brief Initializes an empty controller manager
+             */
+            Controller();
+            /**
              * @brief Initializes the controller manager
              * @param[in] airport The ICAO code of the controlled airport
              * @param[in] sectors All sectors that need to be controlled

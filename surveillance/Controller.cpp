@@ -11,6 +11,12 @@ using namespace topskytower;
 using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
+Controller::Controller() :
+        m_unicom(types::Sector("UNICOM", "", "", "FSS", "122.800")),
+        m_rootNode(nullptr),
+        m_ownSector(nullptr),
+        m_handoffs() { }
+
 Controller::Controller(const std::string& airport, const std::list<types::Sector>& sectors) :
         m_unicom(types::Sector("UNICOM", "", "", "FSS", "122.800")),
         m_rootNode(nullptr),
@@ -351,6 +357,9 @@ Controller::Node* Controller::findNodeBasedOnIdentifier(Controller::Node* node, 
 }
 
 Controller::Node* Controller::findNodeBasedOnInformation(Controller::Node* node, const types::ControllerInfo& info) {
+    if (nullptr == node)
+        return nullptr;
+
     /* test the unique information */
     if (node->sector.controllerInfo().identifier() == info.identifier())
         return node;
