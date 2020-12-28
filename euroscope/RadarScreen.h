@@ -27,6 +27,15 @@ namespace topskytower {
          * @ingroup euroscope
          */
         class RadarScreen : public EuroScopePlugIn::CRadarScreen {
+        public:
+            struct EuroscopeEvent {
+                int         tagItemFunction;
+                std::string callsign;
+                std::string itemString;
+                POINT       point;
+                RECT        area;
+            };
+
         private:
             bool                          m_initialized;
             std::string                   m_airport;
@@ -34,6 +43,8 @@ namespace topskytower {
             surveillance::FlightRegistry* m_flights;
             std::mutex                    m_disconnectedFlightsLock;
             std::list<std::string>        m_disconnectedFlights;
+            std::mutex                    m_guiEuroscopeEventsLock;
+            std::list<EuroscopeEvent>     m_guiEuroscopeEvents;
 
             void initialize();
 
@@ -92,6 +103,11 @@ namespace topskytower {
              * @return The controller manager
              */
             const surveillance::SectorControl& sectorControl() const;
+            /**
+             * @brief Registers an Euroscope GUI event to trigger the function call during the next rendering step
+             * @param[in] entry The new GUI event
+             */
+            void registerEuroscopeEvent(EuroscopeEvent&& entry);
         };
     }
 }

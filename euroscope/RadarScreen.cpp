@@ -27,7 +27,9 @@ RadarScreen::RadarScreen() :
         m_controllers(new surveillance::SectorControl()),
         m_flights(new surveillance::FlightRegistry()),
         m_disconnectedFlightsLock(),
-        m_disconnectedFlights() { }
+        m_disconnectedFlights(),
+        m_guiEuroscopeEventsLock(),
+        m_guiEuroscopeEvents() { }
 
 RadarScreen::~RadarScreen() { }
 
@@ -106,6 +108,19 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     this->m_disconnectedFlights.clear();
     this->m_disconnectedFlightsLock.unlock();
 
+    /* execute one ES function event */
+    if (0 != this->m_guiEuroscopeEvents.size()) {
+        /* get the event and free the log to call the rest */
+        this->m_guiEuroscopeEventsLock.lock();
+        auto esEvent = this->m_guiEuroscopeEvents.front();
+        this->m_guiEuroscopeEvents.pop_front();
+        this->m_guiEuroscopeEventsLock.unlock();
+
+        /* start the function call */
+        this->StartTagFunction(esEvent.callsign.c_str(), PLUGIN_NAME, 0, esEvent.itemString.c_str(), PLUGIN_NAME,
+                               esEvent.tagItemFunction, esEvent.point, esEvent.area);
+    }
+
     auto plugin = static_cast<PlugIn*>(this->GetPlugIn());
     this->m_controllers->setOwnSector(plugin->ControllerMyself().GetPositionId());
 
@@ -129,4 +144,9 @@ surveillance::SectorControl& RadarScreen::sectorControl() {
 
 const surveillance::SectorControl& RadarScreen::sectorControl() const {
     return *this->m_controllers;
+}
+
+void RadarScreen::registerEuroscopeEvent(RadarScreen::EuroscopeEvent&& entry) {
+    std::lock_guard guard(this->m_guiEuroscopeEventsLock);
+    this->m_guiEuroscopeEvents.push_back(std::move(entry));
 }
