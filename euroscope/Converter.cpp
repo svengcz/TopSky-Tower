@@ -26,6 +26,24 @@ types::Coordinate Converter::convert(const EuroScopePlugIn::CPosition& position)
                              static_cast<float>(position.m_Latitude) * types::degree);
 }
 
+static void __analyzeScratchPad(const std::string& scratchPad, types::Flight& flight) {
+    /* check if the entries are set */
+    if (std::string::npos == scratchPad.find('_'))
+        return;
+
+    auto split = helper::String::splitString(scratchPad, "_");
+
+    /* create the messages */
+    for (const auto& element : std::as_const(split)) {
+        if (element == "MISAP")
+            flight.setOnMissedApproach(true);
+        else if (element == "IRREG")
+            flight.setIrregularHandoff(true);
+        else if (element == "EST")
+            flight.setEstablishedOnILS(true);
+    }
+}
+
 types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, const std::string& airport) {
     types::Flight retval(target.GetCallsign());
 
@@ -50,6 +68,15 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, co
         else if (airport == destination) {
             retval.setType(types::Flight::Type::Arrival);
         }
+
+        /* check if the flight is marked by a controller */
+        std::string_view annotation(flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(7));
+        if (std::string::npos != annotation.find('K'))
+            retval.setMarkedByController(true);
+
+        /* analize the scratch pad */
+        std::string scratch = flightPlan.GetControllerAssignedData().GetScratchPadString();
+        __analyzeScratchPad(scratch, retval);
     }
 
     return retval;
