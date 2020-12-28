@@ -60,66 +60,48 @@ bool PlugIn::OnCompileCommand(const char* cmdline) {
     return false;
 }
 
-bool PlugIn::visualizeManuallyAlerts(const EuroScopePlugIn::CFlightPlan& flightPlan, int idx, char itemString[16]) const {
-    /* invalid flightplan -> no valid messages */
-    if (false == flightPlan.IsValid())
-        return false;
-
-    /* check if the entries are set */
-    std::string scratch = flightPlan.GetControllerAssignedData().GetScratchPadString();
-    if (std::string::npos == scratch.find('_'))
-        return false;
-
-    auto split = helper::String::splitString(scratch, "_");
+bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]) const {
+    int localOffset = 0, localIdx = 0;
     bool inserted = false;
 
-    /* create the messages */
-    std::list<std::string> alerts;
-    for (const auto& element : std::as_const(split)) {
-        std::string message;
-
-        if (element == "MISAP")
-            message = "MIS/APP ";
-        else if (element == "IRREG")
-            message = "IRREG ";
-        else if (element == "EST")
-            message = "EST ";
-
-        if (0 != message.length() && alerts.end() == std::find(alerts.begin(), alerts.end(), message))
-            alerts.push_back(std::move(message));
+    if (true == flight.onMissedApproach()) {
+        localOffset += 9;
+        if (localIdx == idx) {
+            std::strcat(itemString, "MIS/APP ");
+            inserted = true;
+        }
     }
 
-    /* sort based on priorty */
-    alerts.sort([](const std::string& msg0, const std::string& msg1) {
-        if ('M' == msg0[0] || 'E' == msg1[0])
-            return true;
-        else if ('M' == msg1[0] || 'E' == msg0[0])
-            return false;
-        else
-            return false;
-    });
+    if (true == flight.irregularHandoff()) {
+        localOffset += 7;
 
-    int localOffset = 0, localIdx = 0;
-    for (auto it = alerts.cbegin(); alerts.cend() != it && localIdx <= idx;) {
-        localOffset += it->length();
-
-        /* next index needed */
         if (16 <= localOffset) {
             localIdx += localOffset / 16;
             localOffset = 0;
+            if (idx < localIdx)
+                return inserted;
         }
-        /* insert message */
-        else if (idx == localIdx) {
-            std::strcat(itemString, it->c_str());
+
+        if (localIdx == idx) {
+            std::strcat(itemString, "IRREG ");
             inserted = true;
         }
+    }
 
-        if (0 != localOffset)
-            ++it;
+    if (true == flight.establishedOnILS()) {
+        localOffset += 5;
 
-        /* skipped the target index */
-        if (localIdx > idx)
-            break;
+        if (16 <= localOffset) {
+            localIdx += localOffset / 16;
+            localOffset = 0;
+            if (idx < localIdx)
+                return inserted;
+        }
+
+        if (localIdx == idx) {
+            std::strcat(itemString, "EST ");
+            inserted = true;
+        }
     }
 
     return inserted;
@@ -142,6 +124,15 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     itemString[0] = '\0';
     *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
 
+    /* find the correct flight in the registries */
+    types::Flight flight;
+    for (const auto& screen : std::as_const(this->m_screens)) {
+        if (true == screen->flightRegistry().flightExists(callsign)) {
+            flight = screen->flightRegistry().flight(callsign);
+            break;
+        }
+    }
+
     switch (static_cast<PlugIn::TagItemElement>(itemCode)) {
     case PlugIn::TagItemElement::HandoffFrequency:
         /* test all loaded screens */
@@ -155,15 +146,15 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         }
         break;
     case PlugIn::TagItemElement::ManuallyAlerts0:
-        if (true == this->visualizeManuallyAlerts(radarTarget.GetCorrelatedFlightPlan(), 0, itemString))
+        if (true == this->visualizeManuallyAlerts(flight, 0, itemString))
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
         break;
     case PlugIn::TagItemElement::ManuallyAlerts1:
-        if (true == this->visualizeManuallyAlerts(radarTarget.GetCorrelatedFlightPlan(), 1, itemString))
+        if (true == this->visualizeManuallyAlerts(flight, 1, itemString))
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
         break;
     case PlugIn::TagItemElement::ManuallyAlerts2:
-        if (true == this->visualizeManuallyAlerts(radarTarget.GetCorrelatedFlightPlan(), 2, itemString))
+        if (true == this->visualizeManuallyAlerts(flight, 2, itemString))
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
         break;
     default:
