@@ -24,7 +24,10 @@ RadarScreen::RadarScreen() :
         EuroScopePlugIn::CRadarScreen(),
         m_initialized(false),
         m_airport(),
-        m_controllers(new surveillance::SectorControl()) { }
+        m_controllers(new surveillance::SectorControl()),
+        m_flights(new surveillance::FlightRegistry()),
+        m_disconnectedFlightsLock(),
+        m_disconnectedFlights() { }
 
 RadarScreen::~RadarScreen() { }
 
@@ -56,6 +59,11 @@ void RadarScreen::OnControllerDisconnect(EuroScopePlugIn::CController controller
     }
 }
 
+void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) {
+    std::lock_guard guard(this->m_disconnectedFlightsLock);
+    this->m_disconnectedFlights.push_back(flightPlan.GetCallsign());
+}
+
 void RadarScreen::initialize() {
     if (true == this->m_initialized)
         return;
@@ -69,6 +77,10 @@ void RadarScreen::initialize() {
         if (nullptr != this->m_controllers)
             delete this->m_controllers;
         this->m_controllers = new surveillance::SectorControl(this->m_airport, file.sectors());
+
+        if (nullptr != this->m_flights)
+            delete this->m_flights;
+        this->m_flights = new surveillance::FlightRegistry();
 
         this->m_initialized = true;
     }
@@ -85,6 +97,15 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     if (false == this->m_initialized)
         return;
 
+    /* remove disconnected flights */
+    this->m_disconnectedFlightsLock.lock();
+    for (const auto& callsign : std::as_const(this->m_disconnectedFlights)) {
+        this->m_flights->removeFlight(callsign);
+        this->m_controllers->removeFlight(callsign);
+    }
+    this->m_disconnectedFlights.clear();
+    this->m_disconnectedFlightsLock.unlock();
+
     auto plugin = static_cast<PlugIn*>(this->GetPlugIn());
     this->m_controllers->setOwnSector(plugin->ControllerMyself().GetPositionId());
 
@@ -93,7 +114,13 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
         types::Flight flight = Converter::convert(rt, this->m_airport);
 
         this->m_controllers->update(flight);
+
+        this->m_flights->updateFlight(std::move(flight));
     }
+}
+
+const surveillance::FlightRegistry& RadarScreen::flightRegistry() const {
+    return *this->m_flights;
 }
 
 surveillance::SectorControl& RadarScreen::sectorControl() {
