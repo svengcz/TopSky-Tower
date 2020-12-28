@@ -59,7 +59,7 @@ bool PlugIn::OnCompileCommand(const char* cmdline) {
     return false;
 }
 
-bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]) const {
+bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]) {
     int localOffset = 0, localIdx = 0;
     bool inserted = false;
 
@@ -145,15 +145,15 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         }
         break;
     case PlugIn::TagItemElement::ManuallyAlerts0:
-        if (true == this->visualizeManuallyAlerts(flight, 0, itemString))
+        if (true == PlugIn::visualizeManuallyAlerts(flight, 0, itemString))
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
         break;
     case PlugIn::TagItemElement::ManuallyAlerts1:
-        if (true == this->visualizeManuallyAlerts(flight, 1, itemString))
+        if (true == PlugIn::visualizeManuallyAlerts(flight, 1, itemString))
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
         break;
     case PlugIn::TagItemElement::ManuallyAlerts2:
-        if (true == this->visualizeManuallyAlerts(flight, 2, itemString))
+        if (true == PlugIn::visualizeManuallyAlerts(flight, 2, itemString))
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
         break;
     default:
