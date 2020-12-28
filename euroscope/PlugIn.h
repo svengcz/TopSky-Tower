@@ -25,7 +25,10 @@ namespace topskytower {
         class PlugIn : public EuroScopePlugIn::CPlugIn {
         private:
             enum class TagItemElement {
-                HandoffFrequency = 2001
+                HandoffFrequency = 2001,
+                ManuallyAlerts0  = 2002,
+                ManuallyAlerts1  = 2003,
+                ManuallyAlerts2  = 2004
             };
             enum class TagItemFunction {
                 HandoffInitiated        = 3001,
@@ -38,6 +41,7 @@ namespace topskytower {
             std::list<RadarScreen*> m_screens;
 
             void handleHandoffPerform(RECT area, const std::string& callsign, bool release, bool tracked);
+            bool visualizeManuallyAlerts(const EuroScopePlugIn::CFlightPlan& flightPlan, int idx, char itemString[16]) const;
 
         public:
             /**
