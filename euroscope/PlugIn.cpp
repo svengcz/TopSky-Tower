@@ -17,6 +17,7 @@
 
 #include "PlugIn.h"
 
+using namespace topskytower;
 using namespace topskytower::euroscope;
 
 PlugIn::PlugIn() :
@@ -106,6 +107,16 @@ bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char 
     return inserted;
 }
 
+types::Flight PlugIn::findFlight(const std::string& callsign) const {
+    /* find the correct flight in the registries */
+    for (const auto& screen : std::as_const(this->m_screens)) {
+        if (true == screen->flightRegistry().flightExists(callsign))
+            return screen->flightRegistry().flight(callsign);
+    }
+
+    return types::Flight();
+}
+
 void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlugIn::CRadarTarget radarTarget,
                           int itemCode, int tagData, char itemString[16], int* colorCode, COLORREF* rgb,
                           double* fontSize) {
@@ -123,14 +134,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     itemString[0] = '\0';
     *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
 
-    /* find the correct flight in the registries */
-    types::Flight flight;
-    for (const auto& screen : std::as_const(this->m_screens)) {
-        if (true == screen->flightRegistry().flightExists(callsign)) {
-            flight = screen->flightRegistry().flight(callsign);
-            break;
-        }
-    }
+    auto flight = this->findFlight(callsign);
 
     switch (static_cast<PlugIn::TagItemElement>(itemCode)) {
     case PlugIn::TagItemElement::HandoffFrequency:

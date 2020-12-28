@@ -43,6 +43,7 @@ namespace topskytower {
 
             void handleHandoffPerform(RECT area, const std::string& callsign, bool release, bool tracked);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
+            types::Flight findFlight(const std::string& callsign) const;
 
         public:
             /**
