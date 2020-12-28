@@ -31,7 +31,8 @@ namespace topskytower {
                 ManuallyAlerts2  = 2004
             };
             enum class TagItemFunction {
-                HandoffInitiated        = 3001,
+                AircraftControlMenuBar  = 3000,
+                AircraftControlSelect   = 3001,
                 HandoffPerform          = 3002,
                 HandoffControllerSelect = 3003,
                 HandoffSectorChange     = 3004,

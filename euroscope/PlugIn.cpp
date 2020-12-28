@@ -31,7 +31,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("Manually alerts 1", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts1));
     this->RegisterTagItemType("Manually alerts 2", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts2));
 
-    this->RegisterTagItemFunction("Handoff initiate", static_cast<int>(PlugIn::TagItemFunction::HandoffInitiated));
+    this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("Handoff sector change", static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChange));
 }
 
@@ -224,11 +224,26 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     bool tracked = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe();
 
     switch (static_cast<PlugIn::TagItemFunction>(functionId)) {
-    case PlugIn::TagItemFunction::HandoffInitiated:
-        this->OpenPopupList(area, "Handoff initiate", 1);
-        this->AddPopupListElement("Handoff", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
-        if (true == tracked)
+    case PlugIn::TagItemFunction::AircraftControlMenuBar:
+        this->OpenPopupList(area, "Aircraft menu", 1);
+
+        /* define the menu bar for the tracking functions */
+        if (true == radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe()) {
+            this->AddPopupListElement("Transfer", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
             this->AddPopupListElement("Release", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
+        }
+        else {
+            this->AddPopupListElement("Assume", "", static_cast<int>(PlugIn::TagItemFunction::AircraftControlSelect));
+            this->AddPopupListElement("Handoff", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
+        }
+        this->AddPopupListElement("-------", "", 0);
+
+        /* define the menu bar for the manually alerts */
+
+        break;
+    case PlugIn::TagItemFunction::AircraftControlSelect:
+        if (0 == std::strncmp(itemString, "Assume", 6))
+            radarTarget.GetCorrelatedFlightPlan().StartTracking();
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
         if (0 == std::strncmp(itemString, "Release", 7))
