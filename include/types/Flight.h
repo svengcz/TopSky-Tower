@@ -31,6 +31,10 @@ namespace topskytower {
             Position        m_currentPosition;
             Velocity        m_groundSpeed;
             Velocity        m_verticalSpeed;
+            bool            m_markedByController;
+            bool            m_onMissedApproach;
+            bool            m_irregularFlight;
+            bool            m_establishedOnILS;
 
         public:
             /**
@@ -69,6 +73,26 @@ namespace topskytower {
              */
             const Velocity& verticalSpeed() const;
             /**
+             * @brief Returns if the flight is marked by a controller
+             * @return True if it is marked, else false
+             */
+            bool markedByController() const;
+            /**
+             * @brief Returns if the flight is on a missed approach procedure
+             * @return True if it is on a missed approach procedure, else false
+             */
+            bool onMissedApproach() const;
+            /**
+             * @brief Returns if the flight is a non-standard handoff
+             * @return True if it is a non-standard handoff, else false
+             */
+            bool irregularHandoff() const;
+            /**
+             * @brief Returns if the flight is established on the ILS
+             * @return True if it is established on the ILS
+             */
+            bool establishedOnILS() const;
+            /**
              * @brief Sets the flight type
              * @param[in] type The type
              */
@@ -88,6 +112,26 @@ namespace topskytower {
              * @param[in] verticalSpeed The vertical speed
              */
             void setVerticalSpeed(const Velocity& verticalSpeed);
+            /**
+             * @brief Sets if the flight is marked by a controller or not
+             * @param[in] value True if it is marked, else false
+             */
+            void setMarkedByController(bool value);
+            /**
+             * @brief Sets if the flight is on a missed approach procedure
+             * @param[in] value True if it is on a missed approach procedure, else false
+             */
+            void setOnMissedApproach(bool value);
+            /**
+             * @brief Sets if the flight is a non-standard handoff
+             * @param[in] value True if it is a non-standard handoff, else false
+             */
+            void setIrregularHandoff(bool value);
+            /**
+             * @brief Sets if the flight is established on the ILS
+             * @param[in] value True if it is established on the ILS, else false
+             */
+            void setEstablishedOnILS(bool value);
             /**
              * @brief Predicts the next position based on the kinematics and a constant-velocity model
              * @param[in] duration The time step of the prediction

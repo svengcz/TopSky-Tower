@@ -14,14 +14,22 @@ Flight::Flight() :
         m_type(Flight::Type::Unknown),
         m_currentPosition(),
         m_groundSpeed(),
-        m_verticalSpeed() { }
+        m_verticalSpeed(),
+        m_markedByController(false),
+        m_onMissedApproach(false),
+        m_irregularFlight(false),
+        m_establishedOnILS(false) { }
 
 Flight::Flight(const std::string& callsign) :
         m_callsign(callsign),
         m_type(Flight::Type::Unknown),
         m_currentPosition(),
         m_groundSpeed(),
-        m_verticalSpeed() { }
+        m_verticalSpeed(),
+        m_markedByController(false),
+        m_onMissedApproach(false),
+        m_irregularFlight(false),
+        m_establishedOnILS(false) { }
 
 Flight::Type Flight::type() const {
     return this->m_type;
@@ -43,6 +51,22 @@ const Velocity& Flight::verticalSpeed() const {
     return this->m_verticalSpeed;
 }
 
+bool Flight::markedByController() const {
+    return this->m_markedByController;
+}
+
+bool Flight::onMissedApproach() const {
+    return this->m_onMissedApproach;
+}
+
+bool Flight::irregularHandoff() const {
+    return this->m_irregularFlight;
+}
+
+bool Flight::establishedOnILS() const {
+    return this->m_establishedOnILS;
+}
+
 void Flight::setType(Flight::Type type) {
     this->m_type = type;
 }
@@ -57,6 +81,22 @@ void Flight::setGroundSpeed(const Velocity& groundSpeed) {
 
 void Flight::setVerticalSpeed(const Velocity& verticalSpeed) {
     this->m_verticalSpeed = verticalSpeed;
+}
+
+void Flight::setMarkedByController(bool value) {
+    this->m_markedByController = value;
+}
+
+void Flight::setOnMissedApproach(bool value) {
+    this->m_onMissedApproach = value;
+}
+
+void Flight::setIrregularHandoff(bool value) {
+    this->m_irregularFlight = value;
+}
+
+void Flight::setEstablishedOnILS(bool value) {
+    this->m_establishedOnILS = value;
 }
 
 Position Flight::predict(const Time& duration, const Velocity& minGroundSpeed) const {
