@@ -63,7 +63,7 @@ namespace topskytower {
             void OnControllerPositionUpdate(EuroScopePlugIn::CController controller) override;
             /**
              * @brief Called as soon as a controller station is offline
-             * @param[in] controller The diconnected controller station
+             * @param[in] controller The disconnected controller station
              */
             void OnControllerDisconnect(EuroScopePlugIn::CController controller) override;
             /**
