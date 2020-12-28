@@ -120,7 +120,7 @@ namespace topskytower {
              * @param[in] callsign The requested callsign
              * @return The next frequency
              */
-            const std::string& handoffFrequency(const std::string& callsign) const;
+            const types::ControllerInfo& handoffSector(const std::string& callsign) const;
             /**
              * @brief Returns the next sector controllers of a specific callsign
              * @param[in] callsign The requested callsign

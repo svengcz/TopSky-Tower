@@ -622,12 +622,12 @@ void SectorControl::handoffPerformed(const std::string& callsign) {
         it->second.handoffPerformed = true;
 }
 
-const std::string& SectorControl::handoffFrequency(const std::string& callsign) const {
+const types::ControllerInfo& SectorControl::handoffSector(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
     if (this->m_handoffs.cend() == it)
-        return this->m_unicom.sector.controllerInfo().primaryFrequency();
+        return this->m_unicom.sector.controllerInfo();
 
-    return it->second.nextSector->sector.controllerInfo().primaryFrequency();
+    return it->second.nextSector->sector.controllerInfo();
 }
 
 std::list<std::string> SectorControl::handoffStations(const std::string& callsign) const {

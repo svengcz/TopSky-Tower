@@ -142,7 +142,10 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         for (const auto& screen : std::as_const(this->m_screens)) {
             /* found the correct screen with the handoff */
             if (true == screen->sectorControl().handoffRequired(callsign)) {
-                std::strcpy(itemString, screen->sectorControl().handoffFrequency(callsign).c_str());
+                auto& info = screen->sectorControl().handoffSector(callsign);
+                std::string msg = info.identifier() + " " + info.primaryFrequency();
+
+                std::strncpy(itemString, msg.c_str(), 16 < msg.length() ? 16 : msg.length());
                 *colorCode = EuroScopePlugIn::TAG_COLOR_NOTIFIED;
                 break;
             }
@@ -192,11 +195,11 @@ void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool r
                 screen->sectorControl().handoffPerformed(callsign);
             }
             else {
-                auto& frequency = screen->sectorControl().handoffFrequency(callsign);
+                auto& info = screen->sectorControl().handoffSector(callsign);
                 this->OpenPopupList(area, "Handoff To", 2);
 
                 for (const auto& controller : std::as_const(controllers)) {
-                    this->AddPopupListElement(controller.c_str(), frequency.c_str(),
+                    this->AddPopupListElement(controller.c_str(), info.primaryFrequency().c_str(),
                         static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChange));
                 }
             }
