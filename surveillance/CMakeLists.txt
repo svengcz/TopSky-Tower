@@ -6,10 +6,10 @@
 #   Creates the surveillance library
 
 SET(HEADER_FILES
-    ${CMAKE_SOURCE_DIR}/include/surveillance/Controller.h
+    ${CMAKE_SOURCE_DIR}/include/surveillance/SectorControl.h
 )
 SET(SOURCE_FILES
-    Controller.cpp
+    SectorControl.cpp
 )
 
 # define the helper library

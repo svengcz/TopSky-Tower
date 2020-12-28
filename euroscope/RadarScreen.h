@@ -16,7 +16,7 @@
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
 
-#include <surveillance/Controller.h>
+#include <surveillance/SectorControl.h>
 
 namespace topskytower {
     namespace euroscope {
@@ -26,9 +26,9 @@ namespace topskytower {
          */
         class RadarScreen : public EuroScopePlugIn::CRadarScreen {
         private:
-            bool                      m_initialized;
-            std::string               m_airport;
-            surveillance::Controller* m_controller;
+            bool                         m_initialized;
+            std::string                  m_airport;
+            surveillance::SectorControl* m_controllers;
 
             void initialize();
 
@@ -71,12 +71,12 @@ namespace topskytower {
              * @brief Returns the changable controller manager
              * @return The controller manager
              */
-            surveillance::Controller& controllerManager();
+            surveillance::SectorControl& sectorControl();
             /**
              * @brief Returns the constant controller manager
              * @return The controller manager
              */
-            const surveillance::Controller& controllerManager() const;
+            const surveillance::SectorControl& sectorControl() const;
         };
     }
 }

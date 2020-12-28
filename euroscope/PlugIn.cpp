@@ -147,8 +147,8 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         /* test all loaded screens */
         for (const auto& screen : std::as_const(this->m_screens)) {
             /* found the correct screen with the handoff */
-            if (true == screen->controllerManager().handoffRequired(callsign)) {
-                std::strcpy(itemString, screen->controllerManager().handoffFrequency(callsign).c_str());
+            if (true == screen->sectorControl().handoffRequired(callsign)) {
+                std::strcpy(itemString, screen->sectorControl().handoffFrequency(callsign).c_str());
                 *colorCode = EuroScopePlugIn::TAG_COLOR_NOTIFIED;
                 break;
             }
@@ -177,14 +177,14 @@ void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool r
     /* test all loaded screens */
     for (const auto& screen : std::as_const(this->m_screens)) {
         /* found the correct screen with the handoff */
-        if (true == screen->controllerManager().handoffRequired(callsign)) {
-            auto controllers = screen->controllerManager().handoffStations(callsign);
+        if (true == screen->sectorControl().handoffRequired(callsign)) {
+            auto controllers = screen->sectorControl().handoffStations(callsign);
 
             /* no handoff requested, but a release */
             if (true == release) {
                 if (true == tracked)
                     radarTarget.GetCorrelatedFlightPlan().EndTracking();
-                screen->controllerManager().handoffPerformed(callsign);
+                screen->sectorControl().handoffPerformed(callsign);
             }
             /* check if handoff or a release is needed */
             else if (1 == controllers.size()) {
@@ -195,10 +195,10 @@ void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool r
                     else
                         radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(controllers.front().c_str());
                 }
-                screen->controllerManager().handoffPerformed(callsign);
+                screen->sectorControl().handoffPerformed(callsign);
             }
             else {
-                auto& frequency = screen->controllerManager().handoffFrequency(callsign);
+                auto& frequency = screen->sectorControl().handoffFrequency(callsign);
                 this->OpenPopupList(area, "Handoff To", 2);
 
                 for (const auto& controller : std::as_const(controllers)) {
@@ -254,18 +254,18 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::HandoffControllerSelect:
         for (const auto& screen : std::as_const(this->m_screens)) {
             /* found the correct screen with the handoff */
-            if (true == screen->controllerManager().handoffRequired(callsign)) {
+            if (true == screen->sectorControl().handoffRequired(callsign)) {
                 if (true == tracked)
                     radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
-                screen->controllerManager().handoffPerformed(callsign);
+                screen->sectorControl().handoffPerformed(callsign);
                 break;
             }
         }
         break;
     case PlugIn::TagItemFunction::HandoffSectorChange:
         for (const auto& screen : std::as_const(this->m_screens)) {
-            if (true == screen->controllerManager().handoffRequired(callsign)) {
-                auto sectors = screen->controllerManager().handoffSectors();
+            if (true == screen->sectorControl().handoffRequired(callsign)) {
+                auto sectors = screen->sectorControl().handoffSectors();
 
                 this->OpenPopupList(area, "Handoff sectors", 2);
                 for (const auto& sector : std::as_const(sectors)) {
@@ -279,8 +279,8 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::HandoffSectorSelect:
         for (const auto& screen : std::as_const(this->m_screens)) {
-            if (true == screen->controllerManager().handoffRequired(callsign)) {
-                screen->controllerManager().handoffSectorSelect(callsign, itemString);
+            if (true == screen->sectorControl().handoffRequired(callsign)) {
+                screen->sectorControl().handoffSectorSelect(callsign, itemString);
                 break;
             }
         }

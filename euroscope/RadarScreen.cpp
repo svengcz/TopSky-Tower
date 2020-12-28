@@ -24,7 +24,7 @@ RadarScreen::RadarScreen() :
         EuroScopePlugIn::CRadarScreen(),
         m_initialized(false),
         m_airport(),
-        m_controller(new surveillance::Controller()) { }
+        m_controllers(new surveillance::SectorControl()) { }
 
 RadarScreen::~RadarScreen() { }
 
@@ -41,18 +41,18 @@ void RadarScreen::OnAsrContentToBeClosed() {
 }
 
 void RadarScreen::OnControllerPositionUpdate(EuroScopePlugIn::CController controller) {
-    if (nullptr != this->m_controller && true == controller.IsValid() && true == controller.IsController()) {
+    if (nullptr != this->m_controllers && true == controller.IsValid() && true == controller.IsController()) {
         std::string_view view(controller.GetPositionId());
         if ("" != view && "XX" != view)
-            this->m_controller->controllerUpdate(Converter::convert(controller));
+            this->m_controllers->controllerUpdate(Converter::convert(controller));
     }
 }
 
 void RadarScreen::OnControllerDisconnect(EuroScopePlugIn::CController controller) {
-    if (nullptr != this->m_controller && true == controller.IsValid() && true == controller.IsController()) {
+    if (nullptr != this->m_controllers && true == controller.IsValid() && true == controller.IsController()) {
         std::string_view view(controller.GetPositionId());
         if ("" != view && "XX" != view)
-            this->m_controller->controllerOffline(Converter::convert(controller));
+            this->m_controllers->controllerOffline(Converter::convert(controller));
     }
 }
 
@@ -66,9 +66,9 @@ void RadarScreen::initialize() {
     if (nullptr != sctFilename && 0 != std::strlen(sctFilename)) {
         formats::EseFileFormat file(sctFilename);
 
-        if (nullptr != this->m_controller)
-            delete this->m_controller;
-        this->m_controller = new surveillance::Controller(this->m_airport, file.sectors());
+        if (nullptr != this->m_controllers)
+            delete this->m_controllers;
+        this->m_controllers = new surveillance::SectorControl(this->m_airport, file.sectors());
 
         this->m_initialized = true;
     }
@@ -86,20 +86,20 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
         return;
 
     auto plugin = static_cast<PlugIn*>(this->GetPlugIn());
-    this->m_controller->setOwnSector(plugin->ControllerMyself().GetPositionId());
+    this->m_controllers->setOwnSector(plugin->ControllerMyself().GetPositionId());
 
     /* update the internal information of the radar targets */
     for (auto rt = plugin->RadarTargetSelectFirst(); true == rt.IsValid(); rt = plugin->RadarTargetSelectNext(rt)) {
         types::Flight flight = Converter::convert(rt, this->m_airport);
 
-        this->m_controller->update(flight);
+        this->m_controllers->update(flight);
     }
 }
 
-surveillance::Controller& RadarScreen::controllerManager() {
-    return *this->m_controller;
+surveillance::SectorControl& RadarScreen::sectorControl() {
+    return *this->m_controllers;
 }
 
-const surveillance::Controller& RadarScreen::controllerManager() const {
-    return *this->m_controller;
+const surveillance::SectorControl& RadarScreen::sectorControl() const {
+    return *this->m_controllers;
 }

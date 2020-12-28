@@ -1,6 +1,6 @@
 /*
- * @brief Defines a controller management system
- * @file surveillance/Controller.h
+ * @brief Defines a sector control system
+ * @file surveillance/SectorControl.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 
@@ -15,10 +15,10 @@
 namespace topskytower {
     namespace surveillance {
         /**
-         * @brief Describes a controller management system
+         * @brief Describes a sector control system
          * @ingroup surveillance
          */
-        class Controller {
+        class SectorControl {
         private:
             struct Node {
                 std::list<Node*>                 parents;
@@ -68,17 +68,17 @@ namespace topskytower {
             /**
              * @brief Initializes an empty controller manager
              */
-            Controller();
+            SectorControl();
             /**
              * @brief Initializes the controller manager
              * @param[in] airport The ICAO code of the controlled airport
              * @param[in] sectors All sectors that need to be controlled
              */
-            Controller(const std::string& airport, const std::list<types::Sector>& sectors);
+            SectorControl(const std::string& airport, const std::list<types::Sector>& sectors);
             /**
              * Destroys all internal structures
              */
-            ~Controller();
+            ~SectorControl();
 
             /**
              * @brief Updates the online state of a sector based on the information
