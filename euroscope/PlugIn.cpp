@@ -198,9 +198,12 @@ void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool r
                 }
             }
 
-            break;
+            return;
         }
     }
+
+    if (true == release && true == tracked)
+        radarTarget.GetCorrelatedFlightPlan().EndTracking();
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
