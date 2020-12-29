@@ -32,18 +32,20 @@ namespace topskytower {
                 FlightMarker     = 2005
             };
             enum class TagItemFunction {
-                AircraftControlMenuBar   = 3000,
-                AircraftControlSignal    = 3001,
-                HandoffPerform           = 3002,
-                HandoffControllerSelect  = 3003,
-                HandoffSectorChangeEvent = 3004,
-                HandoffSectorChange      = 3005,
-                HandoffSectorSelect      = 3006
+                AircraftControlMenuBar       = 3000,
+                AircraftControlSignal        = 3001,
+                HandoffPerform               = 3002,
+                HandoffControllerSelectEvent = 3003,
+                HandoffControllerSelect      = 3004,
+                HandoffSectorChangeEvent     = 3005,
+                HandoffSectorChange          = 3006,
+                HandoffSectorSelect          = 3007,
+                SectorControllerChange       = 3008
             };
 
             std::list<RadarScreen*> m_screens;
 
-            void handleHandoffPerform(RECT area, const std::string& callsign, bool tracked);
+            void handleHandoffPerform(POINT point, RECT area, const std::string& callsign, bool tracked);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
             static void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);

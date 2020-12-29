@@ -166,7 +166,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     }
 }
 
-void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool tracked) {
+void PlugIn::handleHandoffPerform(POINT point, RECT area, const std::string& callsign, bool tracked) {
     auto radarTarget = this->RadarTargetSelectASEL();
 
     /* test all loaded screens */
@@ -187,13 +187,14 @@ void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool t
                 screen->sectorControl().handoffPerformed(callsign);
             }
             else {
-                auto& info = screen->sectorControl().handoffSector(callsign);
-                this->OpenPopupList(area, "Handoff To", 2);
-
-                for (const auto& controller : std::as_const(controllers)) {
-                    this->AddPopupListElement(controller.c_str(), info.primaryFrequency().c_str(),
-                        static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChange));
-                }
+                RadarScreen::EuroscopeEvent eventEntry = {
+                    static_cast<int>(PlugIn::TagItemFunction::HandoffControllerSelectEvent),
+                    callsign,
+                    "",
+                    point,
+                    area
+                };
+                screen->registerEuroscopeEvent(std::move(eventEntry));
             }
 
             return;
@@ -295,7 +296,23 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         else if (0 == std::strncmp(itemString, "Assume", 6))
             radarTarget.GetCorrelatedFlightPlan().StartTracking();
         else
-            this->handleHandoffPerform(area, callsign, tracked);
+            this->handleHandoffPerform(pt, area, callsign, tracked);
+        break;
+    case PlugIn::TagItemFunction::HandoffControllerSelectEvent:
+        for (const auto& screen : std::as_const(this->m_screens)) {
+            if (true == screen->sectorControl().handoffRequired(callsign)) {
+                auto controllers = screen->sectorControl().handoffStations(callsign);
+                auto& info = screen->sectorControl().handoffSector(callsign);
+                this->OpenPopupList(area, "Handoff To", 2);
+
+                for (const auto& controller : std::as_const(controllers)) {
+                    this->AddPopupListElement(controller.c_str(), info.primaryFrequency().c_str(),
+                        static_cast<int>(PlugIn::TagItemFunction::HandoffControllerSelect));
+                }
+
+                break;
+            }
+        }
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelect:
         for (const auto& screen : std::as_const(this->m_screens)) {
