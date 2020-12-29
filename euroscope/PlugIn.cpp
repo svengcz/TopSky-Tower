@@ -136,7 +136,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
                 auto& info = screen->sectorControl().handoffSector(callsign);
                 std::string msg = info.identifier() + " " + info.primaryFrequency();
 
-                std::strncpy(itemString, msg.c_str(), 16 < msg.length() ? 16 : msg.length());
+                std::strncpy(itemString, msg.c_str(), 16 < msg.length() ? 16 : msg.length() + 1);
                 *colorCode = EuroScopePlugIn::TAG_COLOR_NOTIFIED;
                 break;
             }
