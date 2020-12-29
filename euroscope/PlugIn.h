@@ -32,15 +32,17 @@ namespace topskytower {
                 FlightMarker     = 2005
             };
             enum class TagItemFunction {
-                AircraftControlMenuBar       = 3000,
-                AircraftControlSignal        = 3001,
-                HandoffPerform               = 3002,
-                HandoffControllerSelectEvent = 3003,
-                HandoffControllerSelect      = 3004,
-                HandoffSectorChangeEvent     = 3005,
-                HandoffSectorChange          = 3006,
-                HandoffSectorSelect          = 3007,
-                SectorControllerChange       = 3008
+                AircraftControlMenuBar              = 3000,
+                AircraftControlSignal               = 3001,
+                HandoffPerform                      = 3002,
+                HandoffControllerSelectEvent        = 3003,
+                HandoffControllerSelect             = 3004,
+                HandoffSectorChangeEvent            = 3005,
+                HandoffSectorChange                 = 3006,
+                HandoffSectorSelect                 = 3007,
+                SectorControllerHandover            = 3008,
+                SectorControllerHandoverSelectEvent = 3009,
+                SectorControllerHandoverSelect      = 3010
             };
 
             std::list<RadarScreen*> m_screens;

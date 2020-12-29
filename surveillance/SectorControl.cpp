@@ -698,3 +698,21 @@ void SectorControl::handoffSectorSelect(const std::string& callsign, const std::
         it->second.nextSector = node;
     }
 }
+
+bool SectorControl::sectorHandoverPossible() const {
+    if (nullptr != this->m_rootNode && nullptr != this->m_ownSector)
+        return 0 != this->m_ownSector->controllers.size();
+    else
+        return false;
+}
+
+std::list<types::ControllerInfo> SectorControl::sectorHandoverCandidates() const {
+    std::list<types::ControllerInfo> retval;
+
+    if (nullptr != this->m_rootNode && nullptr != this->m_ownSector) {
+        for (const auto& controller : std::as_const(this->m_ownSector->controllers))
+            retval.push_back(controller);
+    }
+
+    return retval;
+}

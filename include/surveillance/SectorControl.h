@@ -138,6 +138,16 @@ namespace topskytower {
              * @param[in] identifier The sector's identifier
              */
             void handoffSectorSelect(const std::string& callsign, const std::string& identifier);
+            /**
+             * @brief Checks if an handover of the sector is possible
+             * @return True if the handover is possible, else false
+             */
+            bool sectorHandoverPossible() const;
+            /**
+             * @brief Returns all sector handover candidates
+             * @return All handover candidates
+             */
+            std::list<types::ControllerInfo> sectorHandoverCandidates() const;
         };
     }
 }

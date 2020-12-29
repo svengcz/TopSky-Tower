@@ -240,8 +240,10 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     auto& flight = surveillance::FlightRegistry::instance().flight(callsign);
 
     /* check if an handoff is possible */
-    bool handoffRequired = false;
+    bool handoffRequired = false, sectorHandoverPossible = false;
     for (const auto& screen : std::as_const(this->m_screens)) {
+        if (true == screen->sectorControl().sectorHandoverPossible())
+            sectorHandoverPossible = true;
         if (true == screen->sectorControl().handoffRequired(callsign)) {
             handoffRequired = true;
             break;
@@ -259,6 +261,9 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             this->AddPopupListElement("Man. Transfer", "", static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChangeEvent),
                                       false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, false == handoffRequired, false);
             this->AddPopupListElement("Release", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
+            this->AddPopupListElement("CTR change", "", static_cast<int>(PlugIn::TagItemFunction::SectorControllerHandover),
+                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
+                                      false == sectorHandoverPossible || false == tracked, false);
         }
         else {
             this->AddPopupListElement("Assume", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
@@ -307,7 +312,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
                 for (const auto& controller : std::as_const(controllers)) {
                     this->AddPopupListElement(controller.c_str(), info.primaryFrequency().c_str(),
-                        static_cast<int>(PlugIn::TagItemFunction::HandoffControllerSelect));
+                                              static_cast<int>(PlugIn::TagItemFunction::HandoffControllerSelect));
                 }
 
                 break;
@@ -362,6 +367,51 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                 break;
             }
         }
+        break;
+    case PlugIn::TagItemFunction::SectorControllerHandover:
+        for (const auto& screen : std::as_const(this->m_screens)) {
+            if (true == screen->sectorControl().sectorHandoverPossible()) {
+                auto candidates = screen->sectorControl().sectorHandoverCandidates();
+
+                /* we have only one candidate */
+                if (1 == candidates.size()) {
+                    std::string ctrCallsign = candidates.front().prefix() + "_";
+                    if (0 != candidates.front().midfix().length())
+                        ctrCallsign += candidates.front().midfix() + "_";
+                    ctrCallsign += candidates.front().suffix();
+
+                    radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(ctrCallsign.c_str());
+                }
+                else if (0 != candidates.size()) {
+
+                }
+
+                break;
+            }
+        }
+        break;
+    case PlugIn::TagItemFunction::SectorControllerHandoverSelectEvent:
+        for (const auto& screen : std::as_const(this->m_screens)) {
+            if (true == screen->sectorControl().sectorHandoverPossible()) {
+                auto candidates = screen->sectorControl().sectorHandoverCandidates();
+
+                this->OpenPopupList(area, "CTR Select", 1);
+                for (const auto& candidate : std::as_const(candidates)) {
+                    std::string ctrCallsign = candidate.prefix() + "_";
+                    if (0 != candidate.midfix().length())
+                        ctrCallsign += candidate.midfix() + "_";
+                    ctrCallsign += candidate.suffix();
+
+                    this->AddPopupListElement(ctrCallsign.c_str(), "",
+                                              static_cast<int>(PlugIn::TagItemFunction::SectorControllerHandoverSelect));
+                }
+
+                break;
+            }
+        }
+        break;
+    case PlugIn::TagItemFunction::SectorControllerHandoverSelect:
+        radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
         break;
     default:
         break;
