@@ -166,7 +166,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     }
 }
 
-void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool release, bool tracked) {
+void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool tracked) {
     auto radarTarget = this->RadarTargetSelectASEL();
 
     /* test all loaded screens */
@@ -175,14 +175,8 @@ void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool r
         if (true == screen->sectorControl().handoffRequired(callsign)) {
             auto controllers = screen->sectorControl().handoffStations(callsign);
 
-            /* no handoff requested, but a release */
-            if (true == release) {
-                if (true == tracked)
-                    radarTarget.GetCorrelatedFlightPlan().EndTracking();
-                screen->sectorControl().handoffPerformed(callsign);
-            }
             /* check if handoff or a release is needed */
-            else if (1 == controllers.size()) {
+            if (1 == controllers.size()) {
                 /* handoff to unicom */
                 if (true == tracked) {
                     if (0 == controllers.front().size())
@@ -205,9 +199,6 @@ void PlugIn::handleHandoffPerform(RECT area, const std::string& callsign, bool r
             return;
         }
     }
-
-    if (true == release && true == tracked)
-        radarTarget.GetCorrelatedFlightPlan().EndTracking();
 }
 
 void PlugIn::updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& radarTarget, const std::string& marker) {
@@ -300,11 +291,11 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
         if (0 == std::strncmp(itemString, "Release", 7))
-            this->handleHandoffPerform(area, callsign, true, tracked);
+            radarTarget.GetCorrelatedFlightPlan().EndTracking();
         else if (0 == std::strncmp(itemString, "Assume", 6))
             radarTarget.GetCorrelatedFlightPlan().StartTracking();
         else
-            this->handleHandoffPerform(area, callsign, false, tracked);
+            this->handleHandoffPerform(area, callsign, tracked);
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelect:
         for (const auto& screen : std::as_const(this->m_screens)) {

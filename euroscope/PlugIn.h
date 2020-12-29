@@ -43,7 +43,7 @@ namespace topskytower {
 
             std::list<RadarScreen*> m_screens;
 
-            void handleHandoffPerform(RECT area, const std::string& callsign, bool release, bool tracked);
+            void handleHandoffPerform(RECT area, const std::string& callsign, bool tracked);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
             static void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);
