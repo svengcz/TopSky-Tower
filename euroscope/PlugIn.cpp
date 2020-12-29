@@ -49,7 +49,7 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
     (void)canBeCreated;
     (void)displayName;
 
-    this->m_screens.push_back(new RadarScreen());
+    this->m_screens.push_back(new RadarScreen(0 == this->m_screens.size()));
     return this->m_screens.back();
 }
 
@@ -107,16 +107,6 @@ bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char 
     return inserted;
 }
 
-types::Flight PlugIn::findFlight(const std::string& callsign) const {
-    /* find the correct flight in the registries */
-    for (const auto& screen : std::as_const(this->m_screens)) {
-        if (true == screen->flightRegistry().flightExists(callsign))
-            return screen->flightRegistry().flight(callsign);
-    }
-
-    return types::Flight();
-}
-
 void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlugIn::CRadarTarget radarTarget,
                           int itemCode, int tagData, char itemString[16], int* colorCode, COLORREF* rgb,
                           double* fontSize) {
@@ -134,7 +124,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     itemString[0] = '\0';
     *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
 
-    auto flight = this->findFlight(callsign);
+    const auto& flight = surveillance::FlightRegistry::instance().flight(callsign);
 
     switch (static_cast<PlugIn::TagItemElement>(itemCode)) {
     case PlugIn::TagItemElement::HandoffFrequency:
@@ -247,7 +237,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
     /* check if we are tracking and search the flight */
     bool tracked = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe();
-    auto flight = this->findFlight(callsign);
+    auto& flight = surveillance::FlightRegistry::instance().flight(callsign);
 
     /* check if an handoff is possible */
     bool handoffRequired = false;

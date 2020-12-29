@@ -37,10 +37,10 @@ namespace topskytower {
             };
 
         private:
+            bool                          m_updateFlightRegistry;
             bool                          m_initialized;
             std::string                   m_airport;
             surveillance::SectorControl*  m_controllers;
-            surveillance::FlightRegistry* m_flights;
             std::mutex                    m_disconnectedFlightsLock;
             std::list<std::string>        m_disconnectedFlights;
             std::mutex                    m_guiEuroscopeEventsLock;
@@ -53,6 +53,11 @@ namespace topskytower {
              * @brief Creates a new RADAR screen
              */
             RadarScreen();
+            /**
+             * @brief Creates a new RADAR screen
+             * @param[in] updateFlightRegistry Defines if this screen is used to update the flight registry
+             */
+            RadarScreen(bool updateFlightRegistry);
             /**
              * @brief Destroys all internal structures
              */
@@ -88,11 +93,6 @@ namespace topskytower {
              * @param[in] phase The rendering phase
              */
             void OnRefresh(HDC hdc, int phase) override;
-            /**
-             * @brief Returns the constant flight registry
-             * @return The flight registry
-             */
-            const surveillance::FlightRegistry& flightRegistry() const;
             /**
              * @brief Returns the changable controller manager
              * @return The controller manager

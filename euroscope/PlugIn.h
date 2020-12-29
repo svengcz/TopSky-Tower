@@ -44,7 +44,6 @@ namespace topskytower {
 
             void handleHandoffPerform(RECT area, const std::string& callsign, bool release, bool tracked);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
-            types::Flight findFlight(const std::string& callsign) const;
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
             static void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);
 

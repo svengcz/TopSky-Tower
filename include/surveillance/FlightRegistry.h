@@ -20,17 +20,23 @@ namespace topskytower {
         private:
             std::map<std::string, types::Flight> m_flights;
 
-        public:
             /**
              * @brief Creates an empty flight registry
              */
             FlightRegistry();
 
+        public:
+            FlightRegistry(const FlightRegistry& other) = delete;
+            FlightRegistry(FlightRegistry&& other) = delete;
+
+            FlightRegistry& operator=(const FlightRegistry& other) = delete;
+            FlightRegistry& operator=(FlightRegistry&& other) = delete;
+
             /**
              * @brief Updates or adds a flight
              * @param[in] flight The updated flight
              */
-            void updateFlight(types::Flight&& flight);
+            void updateFlight(const types::Flight& flight);
             /**
              * @brief Removes a flight out of the registry
              * @param[in] callsign The flight's callsign
@@ -48,6 +54,11 @@ namespace topskytower {
              * @return The constant reference to the flight
              */
             const types::Flight& flight(const std::string& callsign) const;
+            /**
+             * @brief Returns the global instance of the registry
+             * @return The global instance
+             */
+            static FlightRegistry& instance();
         };
     }
 }

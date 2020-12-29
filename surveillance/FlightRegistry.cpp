@@ -12,9 +12,9 @@ using namespace topskytower::surveillance;
 
 FlightRegistry::FlightRegistry() : m_flights() { }
 
-void FlightRegistry::updateFlight(types::Flight&& flight) {
+void FlightRegistry::updateFlight(const types::Flight& flight) {
     std::string callsign(flight.callsign());
-    this->m_flights[callsign] = std::move(flight);
+    this->m_flights[callsign] = flight;
 }
 
 void FlightRegistry::removeFlight(const std::string& callsign) {
@@ -35,4 +35,9 @@ const types::Flight& FlightRegistry::flight(const std::string& callsign) const {
         return it->second;
     else
         return fallback;
+}
+
+FlightRegistry& FlightRegistry::instance() {
+    static FlightRegistry __instance;
+    return __instance;
 }
