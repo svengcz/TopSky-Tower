@@ -20,9 +20,6 @@ namespace topskytower {
         private:
             std::map<std::string, types::Flight> m_flights;
 
-            /**
-             * @brief Creates an empty flight registry
-             */
             FlightRegistry();
 
         public:
