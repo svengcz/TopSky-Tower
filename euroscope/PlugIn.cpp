@@ -31,6 +31,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("Manually alerts 0", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts0));
     this->RegisterTagItemType("Manually alerts 1", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts1));
     this->RegisterTagItemType("Manually alerts 2", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts2));
+    this->RegisterTagItemType("Flight marker", static_cast<int>(PlugIn::TagItemElement::FlightMarker));
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
 }
@@ -111,9 +112,9 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
                           int itemCode, int tagData, char itemString[16], int* colorCode, COLORREF* rgb,
                           double* fontSize) {
     (void)flightPlan;
-    (void)fontSize;
     (void)tagData;
     (void)rgb;
+    (void)fontSize;
 
     /* do not handle invalid radar targets */
     if (false == radarTarget.IsValid())
@@ -152,6 +153,13 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     case PlugIn::TagItemElement::ManuallyAlerts2:
         if (true == PlugIn::visualizeManuallyAlerts(flight, 2, itemString))
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
+        break;
+    case PlugIn::TagItemElement::FlightMarker:
+        if (true == flight.markedByController()) {
+            std::string msg("\u2022 ");
+            std::memcpy(itemString, msg.c_str(), msg.length() + 1);
+            *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
+        }
         break;
     default:
         break;

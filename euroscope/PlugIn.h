@@ -28,7 +28,8 @@ namespace topskytower {
                 HandoffFrequency = 2001,
                 ManuallyAlerts0  = 2002,
                 ManuallyAlerts1  = 2003,
-                ManuallyAlerts2  = 2004
+                ManuallyAlerts2  = 2004,
+                FlightMarker     = 2005
             };
             enum class TagItemFunction {
                 AircraftControlMenuBar   = 3000,
