@@ -44,7 +44,8 @@ HoppiesLogonWindow::HoppiesLogonWindow(RadarScreen* parent) :
     this->centeredPosition();
 
     /* add an edit text for the station */
-    Gdiplus::RectF dimension = Gdiplus::RectF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y + 15.0f, this->m_contentArea.Width - 4.0f, 23.0f);
+    Gdiplus::RectF dimension = Gdiplus::RectF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y + 15.0f,
+                                              this->m_contentArea.Width - 4.0f, 23.0f);
     this->m_elements.push_back(new EditText(this->m_parent, "Station", dimension));
     static_cast<EditText*>(this->m_elements.back())->setContent(this->m_parent->airportIcao());
 
