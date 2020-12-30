@@ -17,6 +17,7 @@ EditText::EditText(RadarScreen* parent, const std::string& headline, const Gdipl
         UiElement(parent, dimension),
         m_headline(headline),
         m_content(),
+        m_editable(false),
         m_passwordField(false),
         m_headlineVisualization(),
         m_contentVisualization(),
@@ -38,6 +39,10 @@ void EditText::setContent(const std::string& content) {
 
 const std::string& EditText::content() const {
     return this->m_content;
+}
+
+void EditText::setEditable(bool editable) {
+    this->m_editable = editable;
 }
 
 void EditText::setPosition(const Gdiplus::PointF& position) {
@@ -62,7 +67,7 @@ void EditText::uiCallback(const std::string& string) {
 
 bool EditText::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     /* ignore non-left button clicks */
-    if (UiManager::MouseButton::Left != button)
+    if (UiManager::MouseButton::Left != button || false == this->m_editable)
         return false;
 
     /* check if we are clicked */

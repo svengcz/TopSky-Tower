@@ -25,6 +25,7 @@ namespace topskytower {
         private:
             std::string    m_headline;
             std::string    m_content;
+            bool           m_editable;
             bool           m_passwordField;
             Text           m_headlineVisualization;
             Text           m_contentVisualization;
@@ -51,6 +52,11 @@ namespace topskytower {
              * @param[in] content The new content
              */
             void setContent(const std::string& content);
+            /**
+             * @brief Defines if the edit text is editable
+             * @param[in] editable Marks if the edit text is editable or not
+             */
+            void setEditable(bool editable);
             /**
              * @brief Returns the content of the edit field
              * @return The content of the edit field
