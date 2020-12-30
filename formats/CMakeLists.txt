@@ -6,9 +6,11 @@
 #   Creates the formats library
 
 SET(HEADER_FILES
+    ${CMAKE_SOURCE_DIR}/include/formats/AirportFileFormat.h
     ${CMAKE_SOURCE_DIR}/include/formats/EseFileFormat.h
 )
 SET(SOURCE_FILES
+    AirportFileFormat.cpp
     EseFileFormat.cpp
     IniFileFormat.cpp
     IniFileFormat.h
