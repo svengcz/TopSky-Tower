@@ -34,12 +34,8 @@ namespace topskytower {
                 Group           = 1,
                 Settings        = 2,
                 Reload          = 3,
-                Windows         = 11,
-                Notams          = 12,
-                RunwayInbounds  = 13,
-                RunwayOutbounds = 14,
-                Systems         = 21,
-                PDC             = 22
+                Systems         = 31,
+                PDC             = 32
             };
 
             struct Element {

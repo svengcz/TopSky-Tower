@@ -106,7 +106,6 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
 
     switch (Toolbar::findClickedElement(this->m_toplevel, pt)) {
     case Toolbar::ClickId::Settings:
-    case Toolbar::ClickId::Windows:
     case Toolbar::ClickId::Systems:
         resetUi = false;
         break;
@@ -232,10 +231,6 @@ void Toolbar::initialize() {
     Toolbar::createElement("SETTINGS", Toolbar::ClickId::Settings, this->m_toplevel);
     this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
     Toolbar::createElement("RELOAD", Toolbar::ClickId::Reload, this->m_toplevel->elements.back().child);
-
-    /* set the windows menu */
-    Toolbar::createElement("WINDOWS", Toolbar::ClickId::Windows, this->m_toplevel);
-    this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
 
     /* set the systems meny */
     Toolbar::createElement("SYSTEMS", Toolbar::ClickId::Systems, this->m_toplevel);
