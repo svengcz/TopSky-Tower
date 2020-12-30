@@ -1,8 +1,6 @@
 /*
  * Author:
  *   Sven Czarnian <devel@svcz.de>
- * License:
- *   LGPLv3
  * Brief:
  *   Implements the base UI element
  */
