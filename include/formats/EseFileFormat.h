@@ -41,12 +41,12 @@ namespace topskytower {
              * @brief Returns the sectors of the ESE file
              * @return The parsed sectors
              */
-            const std::list<types::Sector> sectors() const;
+            const std::list<types::Sector>& sectors() const;
             /**
              * @brief Returns all parsed sector borders
              * @return The sector borders
              */
-            const std::list<types::SectorBorder> sectorBorders() const;
+            const std::list<types::SectorBorder>& sectorBorders() const;
         };
     }
 }

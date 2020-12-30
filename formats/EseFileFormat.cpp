@@ -199,10 +199,10 @@ EseFileFormat::EseFileFormat(const std::string& sectorName) :
     }
 }
 
-const std::list<types::Sector> EseFileFormat::sectors() const {
+const std::list<types::Sector>& EseFileFormat::sectors() const {
     return this->m_sectors;
 }
 
-const std::list<types::SectorBorder> EseFileFormat::sectorBorders() const {
+const std::list<types::SectorBorder>& EseFileFormat::sectorBorders() const {
     return this->m_sectorBorders;
 }
