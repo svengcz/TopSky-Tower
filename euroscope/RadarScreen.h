@@ -144,6 +144,11 @@ namespace topskytower {
              * @return The airport's ICAO
              */
             const std::string& airportIcao() const;
+            /**
+             * @brief Returns the user-interface manager
+             * @return Reference to the manager
+             */
+            UiManager& uiManager();
         };
     }
 }

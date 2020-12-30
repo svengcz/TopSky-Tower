@@ -210,3 +210,7 @@ void RadarScreen::registerEuroscopeEvent(RadarScreen::EuroscopeEvent&& entry) {
 const std::string& RadarScreen::airportIcao() const {
     return this->m_airport;
 }
+
+UiManager& RadarScreen::uiManager() {
+    return this->m_userInterface;
+}
