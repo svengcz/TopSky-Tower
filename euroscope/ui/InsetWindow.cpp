@@ -52,6 +52,10 @@ InsetWindow::~InsetWindow() {
     this->m_elements.clear();
 }
 
+const std::string& InsetWindow::title() const {
+    return this->m_title;
+}
+
 void InsetWindow::setContentSize(const Gdiplus::SizeF size) {
     /* update the dimension */
     this->m_contentArea.Width = size.Width;

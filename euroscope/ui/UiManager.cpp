@@ -18,6 +18,7 @@ UiManager::UiManager(RadarScreen* parent) :
         m_parent(parent),
         m_toolbar(nullptr),
         m_hoppies(nullptr),
+        m_customWindows(),
         m_renderQueue() { }
 
 UiManager::~UiManager() {
@@ -69,10 +70,17 @@ bool UiManager::click(const std::string_view& objectName, const Gdiplus::PointF&
     if (nullptr == this->m_parent)
         return false;
 
-    if ("Toolbar" == objectName)
+    if ("Toolbar" == objectName) {
         return this->m_toolbar->click(pt, button);
-    else if ("PDC" == objectName)
+    }
+    else if ("PDC" == objectName) {
         return this->click(this->m_hoppies, pt, button);
+    }
+    else {
+        auto it = this->m_customWindows.find(std::string(objectName));
+        if (this->m_customWindows.end() != it)
+            return this->click(it->second, pt, button);
+    }
 
     return false;
 }
@@ -88,10 +96,35 @@ bool UiManager::move(const std::string_view& objectName, const Gdiplus::PointF& 
     if (nullptr == this->m_parent)
         return false;
 
-    if ("PDC" == objectName)
+    if ("PDC" == objectName) {
         return this->move(this->m_hoppies, pt, released);
+    }
+    else {
+        auto it = this->m_customWindows.find(std::string(objectName));
+        if (this->m_customWindows.end() != it)
+            return this->move(it->second, pt, released);
+    }
 
     return false;
+}
+
+void UiManager::addCustomWindow(InsetWindow* window) {
+    auto customIt = this->m_customWindows.find(window->title());
+    if (this->m_customWindows.end() != customIt)
+        this->removeCustomWindow(window);
+
+    this->m_renderQueue.push_back(window);
+    this->m_customWindows[window->title()] = window;
+}
+
+void UiManager::removeCustomWindow(InsetWindow* window) {
+    auto renderIt = std::find(this->m_renderQueue.begin(), this->m_renderQueue.end(), window);
+    if (this->m_renderQueue.end() != renderIt)
+        this->m_renderQueue.erase(renderIt);
+
+    auto customIt = this->m_customWindows.find(window->title());
+    if (this->m_customWindows.end() != customIt)
+        this->m_customWindows.erase(customIt);
 }
 
 void UiManager::resetClickStates() {

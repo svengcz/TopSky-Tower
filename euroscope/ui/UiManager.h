@@ -6,8 +6,9 @@
 
 #pragma once
 
-#include <string_view>
 #include <list>
+#include <map>
+#include <string_view>
 
 #include <gdiplus.h>
 
@@ -44,10 +45,11 @@ namespace topskytower {
             };
 
         private:
-            RadarScreen*            m_parent;
-            Toolbar*                m_toolbar;
-            HoppiesLogonWindow*     m_hoppies;
-            std::list<InsetWindow*> m_renderQueue;
+            RadarScreen*                        m_parent;
+            Toolbar*                            m_toolbar;
+            HoppiesLogonWindow*                 m_hoppies;
+            std::map<std::string, InsetWindow*> m_customWindows;
+            std::list<InsetWindow*>             m_renderQueue;
 
             void updateRenderQueue(InsetWindow* element);
             bool click(InsetWindow* element, const Gdiplus::PointF& pt, MouseButton button);
@@ -85,6 +87,16 @@ namespace topskytower {
              * @return True if the move was handled, else false
              */
             bool move(const std::string_view& objectName, const Gdiplus::PointF& pt, bool released);
+            /**
+             * @brief Adds a custom window into the manager
+             * @param[in] window The custom window
+             */
+            void addCustomWindow(InsetWindow* window);
+            /**
+             * @brief Removes a custom window into the manager
+             * @param[in] window The custom window
+             */
+            void removeCustomWindow(InsetWindow* window);
             /**
              * @brief Resets all internal states if no UI-handled element was clicked or moved
              */

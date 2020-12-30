@@ -67,6 +67,11 @@ namespace topskytower {
             virtual ~InsetWindow();
 
             /**
+             * @brief Returns the window's title
+             * @return The title
+             */
+            const std::string& title() const;
+            /**
              * @brief Marks the window as active or not
              * @param[in] active True if the window needs to be shown, else false
              */

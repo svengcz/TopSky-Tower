@@ -64,6 +64,8 @@ SET(SOURCE_FILES_UI_ELEMENTS
     ui/elements/EditText.h
     ui/elements/Text.cpp
     ui/elements/Text.h
+    ui/elements/TextViewer.cpp
+    ui/elements/TextViewer.h
     ui/elements/UiElement.cpp
     ui/elements/UiElement.h
 )
