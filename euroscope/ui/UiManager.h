@@ -39,8 +39,8 @@ namespace topskytower {
              * @brief Defines the different window IDs
              */
             enum class WindowId {
-                Undefined = 0,       /**< An undefined window ID */
-                PdcLogon = 1         /**< The PDC logon window is requested */
+                Undefined = 0, /**< An undefined window ID */
+                PdcLogon = 1   /**< The PDC logon window is requested */
             };
 
         private:
