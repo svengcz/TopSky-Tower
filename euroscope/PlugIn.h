@@ -14,6 +14,9 @@
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
 
+#include <types/AirportConfiguration.h>
+#include <types/SystemConfiguration.h>
+
 #include "RadarScreen.h"
 
 namespace topskytower {
@@ -45,8 +48,11 @@ namespace topskytower {
                 SectorControllerHandoverSelect      = 3010
             };
 
-            std::list<RadarScreen*> m_screens;
+            std::string                m_settingsPath;
+            types::SystemConfiguration m_systemConfig;
+            std::list<RadarScreen*>    m_screens;
 
+            void parseSystemConfig();
             void handleHandoffPerform(POINT point, RECT area, const std::string& callsign, bool tracked);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
@@ -62,6 +68,11 @@ namespace topskytower {
              */
             ~PlugIn();
 
+            /**
+             * @brief Returns the path of the setting files
+             * @return The path to the setting files
+             */
+            const std::string& settingsPath() const;
             /**
              * @brief Called as soon as a new RADAR screen needs to be created
              * @param[in] displayName The display's name

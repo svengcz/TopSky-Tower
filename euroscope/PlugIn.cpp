@@ -11,11 +11,16 @@
 #include "stdafx.h"
 
 #include <cassert>
+#include <fstream>
+#include <Windows.h>
 
 #include <helper/String.h>
+#include <surveillance/PdcControl.h>
 #include <version.h>
 
 #include "PlugIn.h"
+
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 using namespace topskytower;
 using namespace topskytower::euroscope;
@@ -26,7 +31,16 @@ PlugIn::PlugIn() :
                                  PLUGIN_VERSION_BUILD,
                                  PLUGIN_DEVELOPER,
                                  PLUGIN_COPYRIGHT),
+        m_settingsPath(),
+        m_systemConfig(),
         m_screens() {
+    char path[MAX_PATH] = { 0 };
+    GetModuleFileNameA((HINSTANCE)&__ImageBase, path, _countof(path));
+    PathRemoveFileSpecA(path);
+    this->m_settingsPath = path;
+
+    this->parseSystemConfig();
+
     this->RegisterTagItemType("Handoff frequency", static_cast<int>(PlugIn::TagItemElement::HandoffFrequency));
     this->RegisterTagItemType("Manually alerts 0", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts0));
     this->RegisterTagItemType("Manually alerts 1", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts1));
@@ -40,6 +54,27 @@ PlugIn::~PlugIn() {
     for (auto& screen : this->m_screens)
         delete screen;
     this->m_screens.clear();
+}
+
+const std::string& PlugIn::settingsPath() const {
+    return this->m_settingsPath;
+}
+
+void PlugIn::parseSystemConfig() {
+    this->m_systemConfig.valid = false;
+
+    std::ifstream stream(this->m_settingsPath + "\\TopSkyTowerHoppies.txt");
+    for (std::string line; std::getline(stream, line);) {
+        if (0 != line.size()) {
+            this->m_systemConfig.valid = true;
+            this->m_systemConfig.hoppiesCode = line;
+            break;
+        }
+    }
+
+    surveillance::PdcControl::instance().configure(this->m_systemConfig);
+    for (auto& screen : this->m_screens)
+        screen->configure();
 }
 
 EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayName, bool needsRadarContent, bool geoReferenced,
