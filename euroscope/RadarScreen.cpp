@@ -13,6 +13,7 @@
 
 #include <formats/AirportFileFormat.h>
 #include <formats/EseFileFormat.h>
+#include <surveillance/PdcControl.h>
 
 #include "Converter.h"
 #include "PlugIn.h"
@@ -57,11 +58,15 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
         if (nullptr != value) {
             this->m_airport = value;
             this->configure();
+
+            surveillance::PdcControl::instance().addAirport(this->m_airport);
         }
     }
 }
 
 void RadarScreen::OnAsrContentToBeClosed() {
+    if (0 != this->m_airport.length())
+        surveillance::PdcControl::instance().removeAirport(this->m_airport);
     delete this;
 }
 
