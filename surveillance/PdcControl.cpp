@@ -252,7 +252,7 @@ void PdcControl::receiveMessages() {
 
         /* check if the answer is valid */
         if (0 != std::strncmp("ok", __receivedData.c_str(), 2) || __receivedData.size() <= 3)
-            return;
+            continue;
         __receivedData.erase(0, 3);
 
         /* parse the poll answer */
