@@ -159,7 +159,6 @@ namespace topskytower {
                 bool answerRequested() const;
             };
 
-            types::SystemConfiguration          m_systemConfig;
             std::mutex                          m_airportsLock;
             std::list<std::string>              m_airports;
             std::int32_t                        m_cpdlcCounter;
@@ -188,11 +187,6 @@ namespace topskytower {
             PdcControl& operator=(PdcControl&& other) = delete;
 
             /**
-             * @brief Defines the system configuration
-             * @param[in] config The system configuration
-             */
-            void configure(const types::SystemConfiguration& config);
-            /**
              * @brief Adds an airport to the PDC communication
              * @param[in] icao The ICAO of the new airport
              */
@@ -202,6 +196,12 @@ namespace topskytower {
              * @param[in] icao The ICAO of the removable airport
              */
             void removeAirport(const std::string& icao);
+            /**
+             * @brief Checks if an airport is active in Hoppies
+             * @param[in] icao The ICAO of the airport
+             * @return True if the airport is online, else false
+             */
+            bool airportOnline(const std::string& icao) const;
             /**
              * @brief Returns the PDC control singleton
              * @return The PDC control system

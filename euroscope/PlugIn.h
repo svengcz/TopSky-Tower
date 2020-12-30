@@ -26,14 +26,7 @@ namespace topskytower {
          * @ingroup euroscope
          */
         class PlugIn : public EuroScopePlugIn::CPlugIn {
-        private:
-            enum class TagItemElement {
-                HandoffFrequency = 2001,
-                ManuallyAlerts0  = 2002,
-                ManuallyAlerts1  = 2003,
-                ManuallyAlerts2  = 2004,
-                FlightMarker     = 2005
-            };
+        public:
             enum class TagItemFunction {
                 AircraftControlMenuBar              = 3000,
                 AircraftControlSignal               = 3001,
@@ -45,11 +38,25 @@ namespace topskytower {
                 HandoffSectorSelect                 = 3007,
                 SectorControllerHandover            = 3008,
                 SectorControllerHandoverSelectEvent = 3009,
-                SectorControllerHandoverSelect      = 3010
+                SectorControllerHandoverSelect      = 3010,
+                UiElementIds                        = 4000,
+                UiEditTextRequest                   = 4001,
+                UiEditTextResponse                  = 4002
             };
 
-            std::string                m_settingsPath;
-            std::list<RadarScreen*>    m_screens;
+        private:
+            enum class TagItemElement {
+                HandoffFrequency = 2001,
+                ManuallyAlerts0  = 2002,
+                ManuallyAlerts1  = 2003,
+                ManuallyAlerts2  = 2004,
+                FlightMarker     = 2005,
+                PdcIndicator     = 2006
+            };
+
+            std::string                             m_settingsPath;
+            std::list<RadarScreen*>                 m_screens;
+            std::function<void(const std::string&)> m_uiCallback;
 
             void parseSystemConfig();
             void handleHandoffPerform(POINT point, RECT area, const std::string& callsign, bool tracked);
@@ -110,6 +117,18 @@ namespace topskytower {
              * @param[in] area The clicked area
              */
             void OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) override;
+            /**
+             * @brief Registers a callback for an UI element
+             * @tparam T The element which registers the callback
+             * @tparam F The callback function
+             * @param[in] instance The instance which registers the callback
+             * @param[in] cbFunction The callback function
+             */
+            template <typename T, typename F>
+            void registerUiCallback(T* instance, F cbFunction) {
+                std::function<void(const std::string&)> func = std::bind(cbFunction, instance, std::placeholders::_1);
+                this->m_uiCallback = func;
+            }
         };
     }
 }

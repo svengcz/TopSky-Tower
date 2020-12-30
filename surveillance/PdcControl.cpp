@@ -98,10 +98,7 @@ PdcControl::PdcControl() :
 
 PdcControl::~PdcControl() {
     this->m_stopHoppiesThread = true;
-}
-
-void PdcControl::configure(const types::SystemConfiguration& config) {
-    this->m_systemConfig = config;
+    this->m_hoppiesThread.join();
 }
 
 static std::size_t receiveCurl(void* ptr, std::size_t size, std::size_t nmemb, void* stream) {
@@ -449,6 +446,10 @@ void PdcControl::removeAirport(const std::string& icao) {
     auto it = std::find(this->m_airports.begin(), this->m_airports.end(), icao);
     if (this->m_airports.end() != it)
         this->m_airports.erase(it);
+}
+
+bool PdcControl::airportOnline(const std::string& icao) const {
+    return this->m_airports.cend() != std::find(this->m_airports.cbegin(), this->m_airports.cend(), icao);
 }
 
 PdcControl& PdcControl::instance() {

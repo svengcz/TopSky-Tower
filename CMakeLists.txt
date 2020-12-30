@@ -27,6 +27,7 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_INSTALL_PREFIX}/include
+    ${CMAKE_INSTALL_PREFIX}/include/eigen3
     ${PROJECT_BINARY_DIR}/boost
 )
 LINK_DIRECTORIES(
@@ -35,6 +36,17 @@ LINK_DIRECTORIES(
 
 INCLUDE(ExternalProject)
 # add third-party-dependencies
+ExternalProject_Add(
+    Eigen
+    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+    GIT_TAG 3.3.7
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DEIGEN_TEST_CXX11=OFF
+        -DEIGEN_BUILD_BTL=OFF
+        -DBUILD_TESTING=OFF
+)
 ExternalProject_Add(
     Boost
     URL https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2

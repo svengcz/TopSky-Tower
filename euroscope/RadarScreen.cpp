@@ -27,6 +27,7 @@ RadarScreen::RadarScreen() :
         m_updateFlightRegistry(false),
         m_initialized(false),
         m_airport(),
+        m_userInterface(this),
         m_controllers(nullptr),
         m_disconnectedFlightsLock(),
         m_disconnectedFlights(),
@@ -38,6 +39,7 @@ RadarScreen::RadarScreen(bool updateFlightRegistry) :
         m_updateFlightRegistry(updateFlightRegistry),
         m_initialized(false),
         m_airport(),
+        m_userInterface(this),
         m_controllers(new surveillance::SectorControl()),
         m_disconnectedFlightsLock(),
         m_disconnectedFlights(),
@@ -61,6 +63,34 @@ void RadarScreen::OnAsrContentToBeClosed() {
     if (0 != this->m_airport.length())
         surveillance::PdcControl::instance().removeAirport(this->m_airport);
     delete this;
+}
+
+void RadarScreen::OnClickScreenObject(int objectType, const char* objectId, POINT pt, RECT area, int button) {
+    (void)area;
+
+    /* forward to UI manager */
+    if (RadarScreen::ClickId::UserWindow == static_cast<RadarScreen::ClickId>(objectType)) {
+        /* get the click point */
+        Gdiplus::PointF point(static_cast<Gdiplus::REAL>(pt.x), static_cast<Gdiplus::REAL>(pt.y));
+
+        this->m_userInterface.click(objectId, point, static_cast<UiManager::MouseButton>(button));
+    }
+
+    /* reset UI elements, if needed */
+    if (RadarScreen::ClickId::UserWindow != static_cast<RadarScreen::ClickId>(objectType))
+        this->m_userInterface.resetClickStates();
+}
+
+void RadarScreen::OnMoveScreenObject(int objectType, const char* objectId, POINT pt, RECT area, bool released) {
+    (void)area;
+
+    /* forward to UI manager */
+    if (RadarScreen::ClickId::UserWindow == static_cast<RadarScreen::ClickId>(objectType)) {
+        /* get the click point */
+        Gdiplus::PointF point(static_cast<Gdiplus::REAL>(pt.x), static_cast<Gdiplus::REAL>(pt.y));
+
+        this->m_userInterface.move(objectId, point, released);
+    }
 }
 
 void RadarScreen::OnControllerPositionUpdate(EuroScopePlugIn::CController controller) {
@@ -109,6 +139,12 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
 
     if (EuroScopePlugIn::REFRESH_PHASE_BEFORE_TAGS != phase)
         return;
+
+    Gdiplus::Graphics graphics(hdc);
+    graphics.SetPageUnit(Gdiplus::UnitPixel);
+    graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+    /* visualize everything of the UI manager */
+    this->m_userInterface.visualize(&graphics);
 
     /* check if we need to initialize the system */
     this->initialize();

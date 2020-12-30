@@ -49,6 +49,12 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("UI_ForegroundColor" == entry[0]) {
             SettingsFileFormat::parseColor(entry[1], config.uiForegroundColor);
         }
+        else if ("UI_FontFamily" == entry[0]) {
+            config.fontFamily = entry[1];
+        }
+        else if ("UI_FontSize" == entry[0]) {
+            config.fontSize = static_cast<float>(std::atof(entry[1].c_str()));
+        }
         else {
             config.valid = false;
             return;

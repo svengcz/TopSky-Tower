@@ -33,7 +33,8 @@ PlugIn::PlugIn() :
                                  PLUGIN_DEVELOPER,
                                  PLUGIN_COPYRIGHT),
         m_settingsPath(),
-        m_screens() {
+        m_screens(),
+        m_uiCallback() {
     char path[MAX_PATH] = { 0 };
     GetModuleFileNameA((HINSTANCE)&__ImageBase, path, _countof(path));
     PathRemoveFileSpecA(path);
@@ -46,6 +47,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("Manually alerts 1", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts1));
     this->RegisterTagItemType("Manually alerts 2", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts2));
     this->RegisterTagItemType("Flight marker", static_cast<int>(PlugIn::TagItemElement::FlightMarker));
+    this->RegisterTagItemType("PDC indicator", static_cast<int>(PlugIn::TagItemElement::PdcIndicator));
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
 }
@@ -248,6 +250,25 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, int i
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
+    if (PlugIn::TagItemFunction::UiElementIds < static_cast<PlugIn::TagItemFunction>(functionId)) {
+        switch (static_cast<PlugIn::TagItemFunction>(functionId)) {
+        case PlugIn::TagItemFunction::UiEditTextRequest:
+            if (nullptr != this->m_uiCallback)
+                this->OpenPopupEdit(area, static_cast<int>(PlugIn::TagItemFunction::UiEditTextResponse), itemString);
+            break;
+        case PlugIn::TagItemFunction::UiEditTextResponse:
+            if (nullptr != this->m_uiCallback) {
+                this->m_uiCallback(itemString);
+                this->m_uiCallback = nullptr;
+            }
+            break;
+        default:
+            break;
+        }
+
+        return;
+    }
+
     auto radarTarget = this->RadarTargetSelectASEL();
     if (false == radarTarget.IsValid())
         return;

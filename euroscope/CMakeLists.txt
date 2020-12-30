@@ -47,6 +47,26 @@ SET(SOURCE_FILES
     RadarScreen.cpp
     RadarScreen.h
 )
+SET(SOURCE_FILES_UI
+    ui/HoppiesLogonWindow.cpp
+    ui/HoppiesLogonWindow.h
+    ui/InsetWindow.cpp
+    ui/InsetWindow.h
+    ui/Toolbar.cpp
+    ui/Toolbar.h
+    ui/UiManager.cpp
+    ui/UiManager.h
+)
+SET(SOURCE_FILES_UI_ELEMENTS
+    ui/elements/Button.cpp
+    ui/elements/Button.h
+    ui/elements/EditText.cpp
+    ui/elements/EditText.h
+    ui/elements/Text.cpp
+    ui/elements/Text.h
+    ui/elements/UiElement.cpp
+    ui/elements/UiElement.h
+)
 SET(SOURCE_FILES_RES
     stdafx.cpp
     stdafx.h
@@ -78,4 +98,6 @@ IF(MSVC)
 ENDIF()
 
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
+SOURCE_GROUP("Source Files\\ui" FILES ${SOURCE_FILES_UI})
+SOURCE_GROUP("Source Files\\ui\\elements" FILES ${SOURCE_FILES_UI_ELEMENTS})
 SOURCE_GROUP("Source Files\\res" FILES ${SOURCE_FILES_RES})
