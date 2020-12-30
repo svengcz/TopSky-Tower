@@ -40,7 +40,7 @@ PlugIn::PlugIn() :
     PathRemoveFileSpecA(path);
     this->m_settingsPath = path;
 
-    this->parseSystemConfig();
+    surveillance::ConfigurationRegistry::instance().configure(this->m_settingsPath);
 
     this->RegisterTagItemType("Handoff frequency", static_cast<int>(PlugIn::TagItemElement::HandoffFrequency));
     this->RegisterTagItemType("Manually alerts 0", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts0));
@@ -58,8 +58,8 @@ PlugIn::~PlugIn() {
     this->m_screens.clear();
 }
 
-void PlugIn::parseSystemConfig() {
-    surveillance::ConfigurationRegistry::instance().configure(this->m_settingsPath);
+const std::string& PlugIn::settingsPath() const {
+    return this->m_settingsPath;
 }
 
 EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayName, bool needsRadarContent, bool geoReferenced,

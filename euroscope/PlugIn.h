@@ -58,7 +58,6 @@ namespace topskytower {
             std::list<RadarScreen*>                 m_screens;
             std::function<void(const std::string&)> m_uiCallback;
 
-            void parseSystemConfig();
             void handleHandoffPerform(POINT point, RECT area, const std::string& callsign, bool tracked);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
@@ -117,6 +116,11 @@ namespace topskytower {
              * @param[in] area The clicked area
              */
             void OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) override;
+            /**
+             * @brief Returns the path of the settings files
+             * @return The path to the settings files
+             */
+            const std::string& settingsPath() const;
             /**
              * @brief Registers a callback for an UI element
              * @tparam T The element which registers the callback

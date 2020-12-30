@@ -9,10 +9,14 @@
 
 #include "stdafx.h"
 
+#include <surveillance/ConfigurationRegistry.h>
+
+#include "../PlugIn.h"
 #include "../RadarScreen.h"
 #include "Toolbar.h"
 #include "UiManager.h"
 
+using namespace topskytower;
 using namespace topskytower::euroscope;
 
 Toolbar::Level::Level() :
@@ -107,7 +111,7 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         resetUi = false;
         break;
     case Toolbar::ClickId::Reload:
-        this->m_parent->GetPlugIn()->OnCompileCommand(".TOPSKYTOWER RELOAD");
+        surveillance::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath());
         break;
     case Toolbar::ClickId::PDC:
         this->m_manager->activateUi(UiManager::WindowId::PdcLogon);
@@ -177,7 +181,7 @@ void Toolbar::drawLevel(Gdiplus::Graphics* graphics, std::shared_ptr<Toolbar::Le
     this->m_parent->AddScreenObject(static_cast<int>(RadarScreen::ClickId::UserWindow), "Toolbar", rect, false, "");
 
     /* draw the elements */
-    Gdiplus::PointF position(static_cast<float>(startX) + 10.0f, static_cast<float>(startY) + 2.0f);
+    Gdiplus::PointF position(static_cast<float>(startX) + 10.0f, static_cast<float>(startY) + (false == horizontal ? 2.0f : 3.0f));
     for (auto& element : level->elements) {
         element.visualization.setPosition(position);
         element.visualization.visualize();
