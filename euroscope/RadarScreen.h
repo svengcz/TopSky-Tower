@@ -19,7 +19,6 @@
 
 #include <surveillance/FlightRegistry.h>
 #include <surveillance/SectorControl.h>
-#include <types/AirportConfiguration.h>
 
 namespace topskytower {
     namespace euroscope {
@@ -38,7 +37,6 @@ namespace topskytower {
             };
 
         private:
-            types::AirportConfiguration   m_airportConfig;
             bool                          m_updateFlightRegistry;
             bool                          m_initialized;
             std::string                   m_airport;
@@ -65,10 +63,6 @@ namespace topskytower {
              */
             ~RadarScreen();
 
-            /**
-             * @brief Configures the screen based on the controlled airport
-             */
-            void configure();
             /**
              * @brief Called as soon as an ASR file is loaded
              * @param[in] loaded True if the file is loaded
@@ -114,6 +108,11 @@ namespace topskytower {
              * @param[in] entry The new GUI event
              */
             void registerEuroscopeEvent(EuroscopeEvent&& entry);
+            /**
+             * @brief Returns the airport's ICAO
+             * @return The airport's ICAO
+             */
+            const std::string& airportIcao() const;
         };
     }
 }

@@ -13,6 +13,7 @@
 #include <curl/curl.h>
 
 #include <helper/String.h>
+#include <surveillance/ConfigurationRegistry.h>
 #include <surveillance/FlightRegistry.h>
 #include <surveillance/PdcControl.h>
 
@@ -91,7 +92,6 @@ PdcControl::PdcControl() :
         m_hoppiesThread(&PdcControl::run, this),
         m_comChannelsLock(),
         m_comChannels() {
-    /* TODO get Hoppies ID from configuration */
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     this->m_cpdlcCounter = std::rand() % 10000 + 1789;
 }
@@ -119,7 +119,7 @@ static __inline std::uint8_t __toHex(std::uint8_t x) {
 void PdcControl::sendMessage(std::string& message) {
     __receivedData.clear();
 
-    helper::String::stringReplace(message, "%LOGON%", this->m_systemConfig.hoppiesCode);
+    helper::String::stringReplace(message, "%LOGON%", surveillance::ConfigurationRegistry::instance().systemConfiguration().hoppiesCode);
     /* replace invalid characters by URI markers */
     std::ostringstream os;
     for (std::string::const_iterator it = message.begin(); it != message.end(); ++it) {
@@ -404,8 +404,10 @@ bool PdcControl::sendMessage(const PdcControl::MessagePtr& message) {
 
 void PdcControl::run() {
     while (false == this->m_stopHoppiesThread) {
+        const auto& hoppies = surveillance::ConfigurationRegistry::instance().systemConfiguration().hoppiesCode;
+
         /* unable to communicate with Hoppies */
-        if (0 == this->m_systemConfig.hoppiesCode.length()) {
+        if (0 == hoppies.length()) {
             std::this_thread::sleep_for(1s);
             continue;
         }

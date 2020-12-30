@@ -49,7 +49,6 @@ namespace topskytower {
             };
 
             std::string                m_settingsPath;
-            types::SystemConfiguration m_systemConfig;
             std::list<RadarScreen*>    m_screens;
 
             void parseSystemConfig();
@@ -68,11 +67,6 @@ namespace topskytower {
              */
             ~PlugIn();
 
-            /**
-             * @brief Returns the path of the setting files
-             * @return The path to the setting files
-             */
-            const std::string& settingsPath() const;
             /**
              * @brief Called as soon as a new RADAR screen needs to be created
              * @param[in] displayName The display's name

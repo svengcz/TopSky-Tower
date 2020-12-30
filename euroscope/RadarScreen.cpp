@@ -35,7 +35,6 @@ RadarScreen::RadarScreen() :
 
 RadarScreen::RadarScreen(bool updateFlightRegistry) :
         EuroScopePlugIn::CRadarScreen(),
-        m_airportConfig(),
         m_updateFlightRegistry(updateFlightRegistry),
         m_initialized(false),
         m_airport(),
@@ -47,17 +46,11 @@ RadarScreen::RadarScreen(bool updateFlightRegistry) :
 
 RadarScreen::~RadarScreen() { }
 
-void RadarScreen::configure() {
-    formats::AirportFileFormat file(static_cast<PlugIn*>(this->GetPlugIn())->settingsPath() + "\\TopSkyTowerAirports.txt");
-    this->m_airportConfig = file.configuration(this->m_airport);
-}
-
 void RadarScreen::OnAsrContentLoaded(bool loaded) {
     if (true == loaded) {
         auto value = this->GetDataFromAsr("Airport");
         if (nullptr != value) {
             this->m_airport = value;
-            this->configure();
 
             surveillance::PdcControl::instance().addAirport(this->m_airport);
         }
@@ -176,4 +169,8 @@ const surveillance::SectorControl& RadarScreen::sectorControl() const {
 void RadarScreen::registerEuroscopeEvent(RadarScreen::EuroscopeEvent&& entry) {
     std::lock_guard guard(this->m_guiEuroscopeEventsLock);
     this->m_guiEuroscopeEvents.push_back(std::move(entry));
+}
+
+const std::string& RadarScreen::airportIcao() const {
+    return this->m_airport;
 }

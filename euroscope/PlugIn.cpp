@@ -14,8 +14,8 @@
 #include <fstream>
 #include <Windows.h>
 
-#include <formats/SettingsFileFormat.h>
 #include <helper/String.h>
+#include <surveillance/ConfigurationRegistry.h>
 #include <surveillance/PdcControl.h>
 #include <version.h>
 
@@ -33,7 +33,6 @@ PlugIn::PlugIn() :
                                  PLUGIN_DEVELOPER,
                                  PLUGIN_COPYRIGHT),
         m_settingsPath(),
-        m_systemConfig(),
         m_screens() {
     char path[MAX_PATH] = { 0 };
     GetModuleFileNameA((HINSTANCE)&__ImageBase, path, _countof(path));
@@ -57,25 +56,8 @@ PlugIn::~PlugIn() {
     this->m_screens.clear();
 }
 
-const std::string& PlugIn::settingsPath() const {
-    return this->m_settingsPath;
-}
-
 void PlugIn::parseSystemConfig() {
-    formats::SettingsFileFormat settings(this->m_settingsPath + "\\TopSkyTowerSettings.txt");
-    settings.parse(this->m_systemConfig);
-
-    std::ifstream stream(this->m_settingsPath + "\\TopSkyTowerHoppies.txt");
-    for (std::string line; std::getline(stream, line);) {
-        if (0 != line.size()) {
-            this->m_systemConfig.hoppiesCode = line;
-            break;
-        }
-    }
-
-    surveillance::PdcControl::instance().configure(this->m_systemConfig);
-    for (auto& screen : this->m_screens)
-        screen->configure();
+    surveillance::ConfigurationRegistry::instance().configure(this->m_settingsPath);
 }
 
 EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayName, bool needsRadarContent, bool geoReferenced,
