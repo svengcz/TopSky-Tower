@@ -14,6 +14,7 @@
 #include <fstream>
 #include <Windows.h>
 
+#include <formats/SettingsFileFormat.h>
 #include <helper/String.h>
 #include <surveillance/PdcControl.h>
 #include <version.h>
@@ -61,12 +62,12 @@ const std::string& PlugIn::settingsPath() const {
 }
 
 void PlugIn::parseSystemConfig() {
-    this->m_systemConfig.valid = false;
+    formats::SettingsFileFormat settings(this->m_settingsPath + "\\TopSkyTowerSettings.txt");
+    settings.parse(this->m_systemConfig);
 
     std::ifstream stream(this->m_settingsPath + "\\TopSkyTowerHoppies.txt");
     for (std::string line; std::getline(stream, line);) {
         if (0 != line.size()) {
-            this->m_systemConfig.valid = true;
             this->m_systemConfig.hoppiesCode = line;
             break;
         }
