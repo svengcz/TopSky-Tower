@@ -89,12 +89,6 @@ namespace topskytower {
              */
             void OnAirportRunwayActivityChanged() override;
             /**
-             * @brief Called as soon as the controller sent a commandline command
-             * @param[in] cmdline The command
-             * @return True if the command was handled, else false
-             */
-            bool OnCompileCommand(const char* cmdline) override;
-            /**
              * @brief Called as soon as a tag entry needs to be updated
              * @param[in] flightPlan The requested flight plan
              * @param[in] radarTarget The corresponding RADAR target
