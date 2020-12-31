@@ -17,7 +17,7 @@ EditText::EditText(RadarScreen* parent, const std::string& headline, const Gdipl
         UiElement(parent, dimension),
         m_headline(headline),
         m_content(),
-        m_editable(false),
+        m_editable(true),
         m_passwordField(false),
         m_headlineVisualization(),
         m_contentVisualization(),
