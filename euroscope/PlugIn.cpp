@@ -21,6 +21,7 @@
 #include <surveillance/PdcControl.h>
 #include <version.h>
 
+#include "ui/PdcMessageViewerWindow.h"
 #include "PlugIn.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
@@ -54,6 +55,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("PDC indicator", static_cast<int>(PlugIn::TagItemElement::PdcIndicator));
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
+    this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
 }
 
 PlugIn::~PlugIn() {
@@ -182,6 +184,18 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
         }
         break;
+    case PlugIn::TagItemElement::PdcIndicator:
+    {
+        std::string msg("\u2022 ");
+        std::memcpy(itemString, msg.c_str(), msg.length() + 1);
+
+        if (true == surveillance::PdcControl::instance().messagesAvailable(flight.callsign()))
+            *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
+        else
+            *colorCode = EuroScopePlugIn::TAG_COLOR_NON_CONCERNED;
+
+        break;
+    }
     default:
         break;
     }
@@ -248,6 +262,20 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, int i
         stripEntry += marker;
 
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, stripEntry.c_str());
+}
+
+RadarScreen* PlugIn::findLastActiveScreen() {
+    std::chrono::system_clock::time_point newest;
+    RadarScreen* retval = nullptr;
+
+    for (auto& screen : this->m_screens) {
+        if (screen->lastRenderingTime() >= newest) {
+            newest = screen->lastRenderingTime();
+            retval = screen;
+        }
+    }
+
+    return retval;
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
@@ -453,6 +481,21 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::SectorControllerHandoverSelect:
         radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
         break;
+    case PlugIn::TagItemFunction::PdcMenu:
+        this->OpenPopupList(area, "PDC", 1);
+        this->AddPopupListElement("Read", "", static_cast<int>(PlugIn::TagItemFunction::PdcReadMessage), false,
+                                  2, false == surveillance::PdcControl::instance().messagesAvailable(flight.callsign()), false);
+        break;
+    case PlugIn::TagItemFunction::PdcReadMessage:
+    {
+        auto message = surveillance::PdcControl::instance().nextMessage(flight.callsign());
+        auto screen = this->findLastActiveScreen();
+
+        auto viewer = new PdcMessageViewerWindow(screen, message);
+        viewer->setActive(true);
+
+        break;
+    }
     default:
         break;
     }

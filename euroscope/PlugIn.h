@@ -42,6 +42,8 @@ namespace topskytower {
                 SectorControllerHandover            = 3008, /**< A handover of the own sector is ongoing */
                 SectorControllerHandoverSelectEvent = 3009, /**< A handover of the own sector is ongoing */
                 SectorControllerHandoverSelect      = 3010, /**< A handover of the own sector is ongoing */
+                PdcMenu                             = 3011, /**< Open the PDC menu */
+                PdcReadMessage                      = 3012, /**< Read the next PDC message */
                 UiElementIds                        = 4000, /**< Elements of the UI entries */
                 UiEditTextRequest                   = 4001, /**< Request an edit-field */
                 UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */
@@ -65,6 +67,7 @@ namespace topskytower {
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
             static void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);
+            RadarScreen* findLastActiveScreen();
 
         public:
             /**
