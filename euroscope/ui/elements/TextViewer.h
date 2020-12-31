@@ -53,11 +53,6 @@ namespace topskytower {
              */
             bool prepareVisualization(Gdiplus::Graphics* graphics);
             /**
-             * @brief Returns the rectangle of the text visualization
-             * @return The text visualization rectangle
-             */
-            const Gdiplus::RectF& textRectangle() const;
-            /**
              * @brief Visualizes the toolbar with all active sub-menus
              * @param[in] graphics The graphics container
              * @return True if the element was visualized, else false

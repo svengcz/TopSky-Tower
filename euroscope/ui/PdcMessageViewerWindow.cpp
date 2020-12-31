@@ -67,7 +67,7 @@ void PdcMessageViewerWindow::centeredPosition() {
     InsetWindow::setPosition(Gdiplus::PointF(static_cast<float>(width) * 0.5f - 100.0f, static_cast<float>(height) * 0.5f - 50.0f));
 
     if (0 != this->m_elements.size())
-        this->m_elements.front()->setPosition(Gdiplus::PointF(this->m_contentArea.X + 3.0f, this->m_contentArea.Y + 4.0f));
+        this->m_elements.front()->setPosition(Gdiplus::PointF(this->m_contentArea.X, this->m_contentArea.Y));
 }
 
 bool PdcMessageViewerWindow::visualize(Gdiplus::Graphics* graphics) {
@@ -76,7 +76,7 @@ bool PdcMessageViewerWindow::visualize(Gdiplus::Graphics* graphics) {
 
         viewer->prepareVisualization(graphics);
 
-        Gdiplus::SizeF size(viewer->textRectangle().Width + 6.0f, viewer->textRectangle().Height + 8.0f);
+        Gdiplus::SizeF size(viewer->area().Width, viewer->area().Height);
         this->setContentSize(size);
 
         this->m_firstRendering = false;

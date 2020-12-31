@@ -8,9 +8,11 @@
 #include "stdafx.h"
 
 #include <helper/String.h>
+#include <surveillance/ConfigurationRegistry.h>
 
 #include "TextViewer.h"
 
+using namespace topskytower;
 using namespace topskytower::euroscope;
 
 TextViewer::TextViewer(RadarScreen* parent, const std::string& text, const Gdiplus::RectF& dimension) :
@@ -26,21 +28,25 @@ bool TextViewer::click(const Gdiplus::PointF& pt, UiManager::MouseButton button)
     return this->isInRectangle(pt, this->m_area);
 }
 
-const Gdiplus::RectF& TextViewer::textRectangle() const {
-    return this->m_visualization.rectangle();
-}
-
 bool TextViewer::prepareVisualization(Gdiplus::Graphics* graphics) {
     this->m_visualization.setGraphics(graphics);
     this->m_visualization.setText(this->m_text);
+
+    this->m_area.Width = this->m_visualization.rectangle().Width + 8.0f;
+    this->m_area.Height = this->m_visualization.rectangle().Height + 8.0f;
+
     return true;
 }
 
 bool TextViewer::visualize(Gdiplus::Graphics* graphics) {
     this->prepareVisualization(graphics);
 
-    this->m_visualization.setPosition(Gdiplus::PointF(this->m_area.X, this->m_area.Y));
+    this->m_visualization.setPosition(Gdiplus::PointF(this->m_area.X + 4.0f, this->m_area.Y + 4.0f));
     this->m_visualization.visualize();
+
+    auto color = surveillance::ConfigurationRegistry::instance().systemConfiguration().uiForegroundColor;
+    Gdiplus::Pen pen(Gdiplus::Color(255, color[0], color[1], color[2]), 1.0f);
+    graphics->DrawRectangle(&pen, this->m_area);
 
     return true;
 }
