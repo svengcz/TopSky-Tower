@@ -27,21 +27,24 @@ namespace topskytower {
          */
         class PlugIn : public EuroScopePlugIn::CPlugIn {
         public:
+            /**
+             * @brief Defines the different internal and external tag functions
+             */
             enum class TagItemFunction {
-                AircraftControlMenuBar              = 3000,
-                AircraftControlSignal               = 3001,
-                HandoffPerform                      = 3002,
-                HandoffControllerSelectEvent        = 3003,
-                HandoffControllerSelect             = 3004,
-                HandoffSectorChangeEvent            = 3005,
-                HandoffSectorChange                 = 3006,
-                HandoffSectorSelect                 = 3007,
-                SectorControllerHandover            = 3008,
-                SectorControllerHandoverSelectEvent = 3009,
-                SectorControllerHandoverSelect      = 3010,
-                UiElementIds                        = 4000,
-                UiEditTextRequest                   = 4001,
-                UiEditTextResponse                  = 4002
+                AircraftControlMenuBar              = 3000, /**< The generic aircraft menu */
+                AircraftControlSignal               = 3001, /**< One marker or flag of the flight is set */
+                HandoffPerform                      = 3002, /**< Perform the handoff to the next controller */
+                HandoffControllerSelectEvent        = 3003, /**< Select the next controller event */
+                HandoffControllerSelect             = 3004, /**< Select the next controller */
+                HandoffSectorChangeEvent            = 3005, /**< Select the next sector of a flight event */
+                HandoffSectorChange                 = 3006, /**< Select the next sector of a flight */
+                HandoffSectorSelect                 = 3007, /**< Overwrite the current selected sector */
+                SectorControllerHandover            = 3008, /**< A handover of the own sector is ongoing */
+                SectorControllerHandoverSelectEvent = 3009, /**< A handover of the own sector is ongoing */
+                SectorControllerHandoverSelect      = 3010, /**< A handover of the own sector is ongoing */
+                UiElementIds                        = 4000, /**< Elements of the UI entries */
+                UiEditTextRequest                   = 4001, /**< Request an edit-field */
+                UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */
             };
 
         private:

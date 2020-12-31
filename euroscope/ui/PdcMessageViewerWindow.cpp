@@ -38,7 +38,7 @@ static __inline std::string __title(const surveillance::PdcControl::MessagePtr& 
 PdcMessageViewerWindow::PdcMessageViewerWindow(RadarScreen* parent, const surveillance::PdcControl::MessagePtr& message) :
         InsetWindow(__title(message), parent, Gdiplus::RectF(0, 40, 400, 300), false),
         m_firstRendering(true) {
-    /* add an edit text for the station */
+    /* add the message viewer */
     this->m_elements.push_back(new TextViewer(this->m_parent, message->message, this->m_contentArea));
 }
 
