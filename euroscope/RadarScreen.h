@@ -49,15 +49,16 @@ namespace topskytower {
             };
 
         private:
-            bool                         m_updateFlightRegistry;
-            bool                         m_initialized;
-            std::string                  m_airport;
-            UiManager                    m_userInterface;
-            surveillance::SectorControl* m_controllers;
-            std::mutex                   m_disconnectedFlightsLock;
-            std::list<std::string>       m_disconnectedFlights;
-            std::mutex                   m_guiEuroscopeEventsLock;
-            std::list<EuroscopeEvent>    m_guiEuroscopeEvents;
+            bool                                  m_updateFlightRegistry;
+            bool                                  m_initialized;
+            std::string                           m_airport;
+            UiManager                             m_userInterface;
+            surveillance::SectorControl*          m_controllers;
+            std::mutex                            m_disconnectedFlightsLock;
+            std::list<std::string>                m_disconnectedFlights;
+            std::mutex                            m_guiEuroscopeEventsLock;
+            std::list<EuroscopeEvent>             m_guiEuroscopeEvents;
+            std::chrono::system_clock::time_point m_lastRenderingTime;
 
             void initialize();
 
@@ -149,6 +150,11 @@ namespace topskytower {
              * @return Reference to the manager
              */
             UiManager& uiManager();
+            /**
+             * @brief Returns the timestamp of the last rendering
+             * @return The last rendering time
+             */
+            const std::chrono::system_clock::time_point& lastRenderingTime() const;
         };
     }
 }

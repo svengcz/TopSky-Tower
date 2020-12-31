@@ -32,7 +32,8 @@ RadarScreen::RadarScreen() :
         m_disconnectedFlightsLock(),
         m_disconnectedFlights(),
         m_guiEuroscopeEventsLock(),
-        m_guiEuroscopeEvents() { }
+        m_guiEuroscopeEvents(),
+        m_lastRenderingTime() { }
 
 RadarScreen::RadarScreen(bool updateFlightRegistry) :
         EuroScopePlugIn::CRadarScreen(),
@@ -44,7 +45,8 @@ RadarScreen::RadarScreen(bool updateFlightRegistry) :
         m_disconnectedFlightsLock(),
         m_disconnectedFlights(),
         m_guiEuroscopeEventsLock(),
-        m_guiEuroscopeEvents() { }
+        m_guiEuroscopeEvents(),
+        m_lastRenderingTime() { }
 
 RadarScreen::~RadarScreen() { }
 
@@ -192,6 +194,8 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
 
         this->m_controllers->update(flight);
     }
+
+    this->m_lastRenderingTime = std::chrono::system_clock::now();
 }
 
 surveillance::SectorControl& RadarScreen::sectorControl() {
@@ -213,4 +217,8 @@ const std::string& RadarScreen::airportIcao() const {
 
 UiManager& RadarScreen::uiManager() {
     return this->m_userInterface;
+}
+
+const std::chrono::system_clock::time_point& RadarScreen::lastRenderingTime() const {
+    return this->m_lastRenderingTime;
 }
