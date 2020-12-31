@@ -26,7 +26,7 @@ namespace topskytower {
 
         public:
             /**
-             * @brief Creates a new logon window
+             * @brief Creates a new PDC message viewer
              * @param[in] parent The corresponding RADAR screen
              * @param[in[ message The PDC message
              */
