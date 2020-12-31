@@ -452,6 +452,27 @@ bool PdcControl::airportOnline(const std::string& icao) const {
     return this->m_airports.cend() != std::find(this->m_airports.cbegin(), this->m_airports.cend(), icao);
 }
 
+bool PdcControl::messagesAvailable(const std::string& callsign) const {
+    auto it = this->m_comChannels.find(callsign);
+    if (this->m_comChannels.cend() != it)
+        return 0 != it->second.inbounds.size();
+
+    return false;
+}
+
+PdcControl::MessagePtr PdcControl::nextMessage(const std::string& callsign) {
+    std::lock_guard guard(this->m_comChannelsLock);
+
+    auto it = this->m_comChannels.find(callsign);
+    if (this->m_comChannels.end() != it) {
+        PdcControl::MessagePtr message;
+        it->second.read(message);
+        return message;
+    }
+
+    return PdcControl::MessagePtr();
+}
+
 PdcControl& PdcControl::instance() {
     static PdcControl __instance;
     return __instance;

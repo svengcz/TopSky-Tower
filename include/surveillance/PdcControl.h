@@ -205,6 +205,18 @@ namespace topskytower {
              */
             bool airportOnline(const std::string& icao) const;
             /**
+             * @brief Checks if new messages are available
+             * @param[in] callsign The flights callsign
+             * @return True if new messages are available, else false
+             */
+            bool messagesAvailable(const std::string& callsign) const;
+            /**
+             * @brief Returns the next message in the queue
+             * @param[in] callsign The flights callsign
+             * @return The first message in the queue
+             */
+            MessagePtr nextMessage(const std::string& callsign);
+            /**
              * @brief Returns the PDC control singleton
              * @return The PDC control system
              */
