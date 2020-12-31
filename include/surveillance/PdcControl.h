@@ -123,6 +123,8 @@ namespace topskytower {
              * @brief Defines a PDC-based clearance message
              */
             struct ClearanceMessage : CpdlcMessage {
+                std::string destination;           /**< Defines the destination airport */
+                std::string sid;                   /**< Defines the standard instrument departure */
                 std::string frequency;             /**< Defines the next frequency */
                 std::string targetStartupTime;     /**< Defines the target start-up time (TSAT) */
                 std::string calculatedTakeOffTime; /**< Defines the calculated take-off time (CTOT) */
