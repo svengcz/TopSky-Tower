@@ -34,6 +34,12 @@ namespace topskytower {
              */
             static types::Coordinate convert(const EuroScopePlugIn::CPosition& position);
             /**
+             * @brief Converts an ES flight plan into a TopSky-Tower flight structure
+             * @param[in] plan The flight plan
+             * @return The converted flight plan
+             */
+            static types::FlightPlan convert(const EuroScopePlugIn::CFlightPlan& plan);
+            /**
              * @brief Converts an ES radar target into a TopSky-Tower flight structure
              * @param[in] target The radar target
              * @param[in] airport The controlled airport to estimate departures and arrivals

@@ -40,6 +40,30 @@ static void __analyzeScratchPad(const std::string& scratchPad, types::Flight& fl
         flight.setEstablishedOnILS(true);
 }
 
+types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
+    types::FlightPlan retval;
+
+    switch (plan.GetFlightPlanData().GetPlanType()[0]) {
+    case 'V':
+        retval.setType(types::FlightPlan::Type::VFR);
+        break;
+    case 'I':
+        retval.setType(types::FlightPlan::Type::IFR);
+        break;
+    default:
+        break;
+    }
+
+    retval.setOrigin(plan.GetFlightPlanData().GetOrigin());
+    retval.setDepartureRoute(plan.GetFlightPlanData().GetSidName());
+    retval.setDestination(plan.GetFlightPlanData().GetDestination());
+    retval.setDepartureRoute(plan.GetFlightPlanData().GetStarName());
+    retval.setClearanceLimit(plan.GetControllerAssignedData().GetClearedAltitude() * types::feet);
+    retval.setClearedFlag(plan.GetClearenceFlag());
+
+    return retval;
+}
+
 types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, const std::string& airport) {
     types::Flight retval(target.GetCallsign());
 
@@ -70,9 +94,12 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, co
         if (std::string::npos != annotation.find('K'))
             retval.setMarkedByController(true);
 
-        /* analize the scratch pad */
+        /* analyze the scratch pad */
         std::string scratch = flightPlan.GetControllerAssignedData().GetScratchPadString();
         __analyzeScratchPad(scratch, retval);
+
+        /* create the flight plan */
+        retval.setFlightPlan(Converter::convert(flightPlan));
     }
 
     return retval;
