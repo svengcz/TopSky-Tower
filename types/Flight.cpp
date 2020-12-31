@@ -10,6 +10,7 @@
 using namespace topskytower::types;
 
 Flight::Flight() :
+        m_flightPlan(),
         m_callsign(),
         m_type(Flight::Type::Unknown),
         m_currentPosition(),
@@ -21,6 +22,7 @@ Flight::Flight() :
         m_establishedOnILS(false) { }
 
 Flight::Flight(const std::string& callsign) :
+        m_flightPlan(),
         m_callsign(callsign),
         m_type(Flight::Type::Unknown),
         m_currentPosition(),
@@ -67,6 +69,10 @@ bool Flight::establishedOnILS() const {
     return this->m_establishedOnILS;
 }
 
+const FlightPlan& Flight::flightPlan() const {
+    return this->m_flightPlan;
+}
+
 void Flight::setType(Flight::Type type) {
     this->m_type = type;
 }
@@ -97,6 +103,10 @@ void Flight::setIrregularHandoff(bool value) {
 
 void Flight::setEstablishedOnILS(bool value) {
     this->m_establishedOnILS = value;
+}
+
+void Flight::setFlightPlan(const FlightPlan& plan) {
+    this->m_flightPlan = plan;
 }
 
 Position Flight::predict(const Time& duration, const Velocity& minGroundSpeed) const {

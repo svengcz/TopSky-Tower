@@ -1,11 +1,12 @@
 /*
  * @brief Defines a flight structure
- * @file types/Position.h
+ * @file types/Flight.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 
 #pragma once
 
+#include <types/FlightPlan.h>
 #include <types/Position.h>
 
 namespace topskytower {
@@ -26,6 +27,7 @@ namespace topskytower {
             };
 
         private:
+            FlightPlan      m_flightPlan;
             std::string     m_callsign;
             Type            m_type;
             Position        m_currentPosition;
@@ -93,6 +95,11 @@ namespace topskytower {
              */
             bool establishedOnILS() const;
             /**
+             * @brief Returns the flight plan
+             * @return The flight plan
+             */
+            const FlightPlan& flightPlan() const;
+            /**
              * @brief Sets the flight type
              * @param[in] type The type
              */
@@ -132,6 +139,11 @@ namespace topskytower {
              * @param[in] value True if it is established on the ILS, else false
              */
             void setEstablishedOnILS(bool value);
+            /**
+             * @brief Sets the flight plan
+             * @param[in] plan The flight plan
+             */
+            void setFlightPlan(const FlightPlan& plan);
             /**
              * @brief Predicts the next position based on the kinematics and a constant-velocity model
              * @param[in] duration The time step of the prediction
