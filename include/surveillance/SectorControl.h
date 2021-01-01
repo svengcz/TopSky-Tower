@@ -63,6 +63,7 @@ namespace topskytower {
             Node*                             m_rootNode;
             Node*                             m_ownSector;
             std::map<std::string, FlightData> m_handoffs;
+            std::map<std::string, Node*>      m_sectorsOfFlights;
 
         public:
             /**
@@ -116,6 +117,12 @@ namespace topskytower {
              */
             bool handoffRequired(const std::string& callsign) const;
             /**
+             * @brief Checks if the aircraft is in the area sector and a handoff is possible
+             * @param[in] callsign The requested callsign
+             * @return Trie if an handoff is possible, else false
+             */
+            bool handoffPossible(const std::string& callsign) const;
+            /**
              * @brief Marks that the handoff is performed for a specific callsign
              * @param[in] callsign The requested callsign
              */
@@ -153,6 +160,12 @@ namespace topskytower {
              * @return All handover candidates
              */
             std::list<types::ControllerInfo> sectorHandoverCandidates() const;
+            /**
+             * @brief Checks if a flight is in one of the handled sectors
+             * @param[in] flight The requested flight
+             * @return True if it is in the sector tree, else false
+             */
+            bool isInSector(const types::Flight& flight) const;
         };
     }
 }

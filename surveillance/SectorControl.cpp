@@ -5,6 +5,7 @@
  *   Implements the sector control system
  */
 
+#include <surveillance/FlightRegistry.h>
 #include <surveillance/SectorControl.h>
 
 using namespace topskytower;
@@ -15,13 +16,15 @@ SectorControl::SectorControl() :
         m_unicom(types::Sector("UNICOM", "", "", "FSS", "122.800")),
         m_rootNode(nullptr),
         m_ownSector(nullptr),
-        m_handoffs() { }
+        m_handoffs(),
+        m_sectorsOfFlights() { }
 
 SectorControl::SectorControl(const std::string& airport, const std::list<types::Sector>& sectors) :
         m_unicom(types::Sector("UNICOM", "", "", "FSS", "122.800")),
         m_rootNode(nullptr),
         m_ownSector(nullptr),
-        m_handoffs() {
+        m_handoffs(),
+        m_sectorsOfFlights() {
     std::list<types::Sector> airportSectors;
 
     /* find the tower sectors of the airport */
@@ -578,6 +581,11 @@ void SectorControl::update(const types::Flight& flight) {
         handoffDone = it->second.handoffPerformed;
     }
 
+    /* get current sector of the flight */
+    this->m_sectorsOfFlights[flight.callsign()] = this->findLowestSector(this->m_rootNode, flight.currentPosition());
+    if (nullptr == this->m_sectorsOfFlights[flight.callsign()])
+        this->m_sectorsOfFlights.erase(flight.callsign());
+
     if (false == manuallyChanged && false == handoffDone && true == this->isInOwnSectors(flight.currentPosition())) {
         auto predicted = flight.predict(20_s, 20_kn);
 
@@ -614,6 +622,10 @@ void SectorControl::removeFlight(const std::string& callsign) {
     auto it = this->m_handoffs.find(callsign);
     if (this->m_handoffs.end() != it)
         this->m_handoffs.erase(it);
+
+    auto sit = this->m_sectorsOfFlights.find(callsign);
+    if (this->m_sectorsOfFlights.end() != sit)
+        this->m_sectorsOfFlights.erase(sit);
 }
 
 bool SectorControl::handoffRequired(const std::string& callsign) const {
@@ -621,6 +633,14 @@ bool SectorControl::handoffRequired(const std::string& callsign) const {
     if (this->m_handoffs.cend() != it)
         return false == it->second.handoffPerformed;
     return false;
+}
+
+bool SectorControl::handoffPossible(const std::string& callsign) const {
+    if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
+        return false;
+
+    auto& flight = surveillance::FlightRegistry::instance().flight(callsign);
+    return this->isInOwnSectors(flight.currentPosition());
 }
 
 void SectorControl::handoffPerformed(const std::string& callsign) {
@@ -696,8 +716,10 @@ std::list<types::ControllerInfo> SectorControl::handoffSectors() const {
 
 void SectorControl::handoffSectorSelect(const std::string& callsign, const std::string& identifier) {
     auto it = this->m_handoffs.find(callsign);
-    if (this->m_handoffs.end() == it)
-        return;
+    if (this->m_handoffs.end() == it) {
+        this->m_handoffs[callsign] = { false, false, surveillance::FlightRegistry::instance().flight(callsign), nullptr };
+        it = this->m_handoffs.find(callsign);
+    }
 
     auto node = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, identifier);
     if (nullptr != node) {
@@ -722,4 +744,12 @@ std::list<types::ControllerInfo> SectorControl::sectorHandoverCandidates() const
     }
 
     return retval;
+}
+
+bool SectorControl::isInSector(const types::Flight& flight) const {
+    auto it = this->m_sectorsOfFlights.find(flight.callsign());
+    if (this->m_sectorsOfFlights.cend() != it && nullptr != it->second)
+        return true;
+    else
+        return false;
 }
