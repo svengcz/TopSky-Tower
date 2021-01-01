@@ -127,7 +127,7 @@ bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate) const {
     if (this->m_boundingBox[1][0] > coordinate.latitude() || this->m_boundingBox[1][1] < coordinate.latitude())
         return false;
 
-    return bg::within(coordinate, this->m_shape);
+    return bg::covered_by(coordinate, this->m_shape);
 }
 
 bool SectorBorder::isInsideBorder(const types::Position& position) const {
