@@ -44,6 +44,8 @@ namespace topskytower {
                 SectorControllerHandoverSelect      = 3010, /**< A handover of the own sector is ongoing */
                 PdcMenu                             = 3011, /**< Open the PDC menu */
                 PdcReadMessage                      = 3012, /**< Read the next PDC message */
+                PdcSendStandby                      = 3013, /**< Send a stand-by message */
+                PdcSendClearance                    = 3014, /**< Sends the departure clearance message */
                 UiElementIds                        = 4000, /**< Elements of the UI entries */
                 UiEditTextRequest                   = 4001, /**< Request an edit-field */
                 UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */

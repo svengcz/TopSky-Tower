@@ -52,6 +52,8 @@ SET(SOURCE_FILES_UI
     ui/HoppiesLogonWindow.h
     ui/InsetWindow.cpp
     ui/InsetWindow.h
+    ui/PdcDepartureClearanceWindow.cpp
+    ui/PdcDepartureClearanceWindow.h
     ui/PdcMessageViewerWindow.cpp
     ui/PdcMessageViewerWindow.h
     ui/Toolbar.cpp

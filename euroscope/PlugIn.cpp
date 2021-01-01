@@ -21,6 +21,7 @@
 #include <surveillance/PdcControl.h>
 #include <version.h>
 
+#include "ui/PdcDepartureClearanceWindow.h"
 #include "ui/PdcMessageViewerWindow.h"
 #include "PlugIn.h"
 
@@ -487,6 +488,36 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         auto screen = this->findLastActiveScreen();
 
         auto viewer = new PdcMessageViewerWindow(screen, message);
+        viewer->setActive(true);
+
+        break;
+    }
+    case PlugIn::TagItemFunction::PdcSendStandby:
+        surveillance::PdcControl::instance().sendStandbyMessage(flight);
+        break;
+    case PlugIn::TagItemFunction::PdcSendClearance:
+    {
+        auto screen = this->findLastActiveScreen();
+
+        surveillance::PdcControl::ClearanceMessagePtr message(new surveillance::PdcControl::ClearanceMessage());
+        message->sender = flight.flightPlan().origin();
+        message->receiver = flight.callsign();
+        message->destination = flight.flightPlan().destination();
+        message->sid = flight.flightPlan().departureRoute();
+        message->runway = radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().GetDepartureRwy();
+        message->frequency = screen->sectorControl().ownSector().primaryFrequency();
+        message->squawk = std::to_string(flight.flightPlan().assignedSquawk());
+
+        if (this->GetTransitionAltitude() <= flight.flightPlan().clearanceLimit().convert(types::feet)) {
+            auto limit = static_cast<int>(flight.flightPlan().clearanceLimit().convert(types::feet));
+            limit /= 100;
+            message->clearanceLimit = "FL" + std::to_string(limit);
+        }
+        else {
+            message->clearanceLimit = std::to_string(static_cast<int>(flight.flightPlan().clearanceLimit().convert(types::feet)));
+        }
+
+        auto viewer = new PdcDepartureClearanceWindow(screen, message);
         viewer->setActive(true);
 
         break;
