@@ -345,7 +345,6 @@ bool PdcControl::prepareCpdlc(std::string& url, const PdcControl::MessagePtr& me
     url += "/";
     url += cpdlcMsg->message;
 
-    std::lock_guard(this->m_comChannelsLock);
     this->m_comChannels[cpdlcMsg->receiver].expectedAnswer = cpdlcMsg->answerType;
     this->m_comChannels[cpdlcMsg->receiver].expectedAnswerId = messageId;
 
