@@ -21,11 +21,11 @@ namespace topskytower {
         class SectorControl {
         private:
             struct Node {
-                std::list<Node*>                 parents;
+                std::list<std::shared_ptr<Node>> parents;
                 types::Sector                    sector;
                 std::list<types::ControllerInfo> controllers;
-                std::list<Node*>                 siblings;
-                std::list<Node*>                 children;
+                std::list<std::shared_ptr<Node>> siblings;
+                std::list<std::shared_ptr<Node>> children;
 
                 Node(const types::Sector& sector) :
                         parents(),
@@ -36,34 +36,39 @@ namespace topskytower {
             };
 
             struct FlightData {
-                bool          manuallyChanged;
-                bool          handoffPerformed;
-                types::Flight flight;
-                Node*         nextSector;
+                bool                                 manuallyChanged;
+                bool                                 handoffPerformed;
+                types::Flight                        flight;
+                std::shared_ptr<SectorControl::Node> nextSector;
             };
 
-            static void insertNode(std::list<Node*>& nodes, const types::Sector& sector);
-            static void destroyNode(Node* node);
-            static std::list<Node*> findRelevantSectors(std::list<std::string>& deputies, const std::list<types::Sector>& sectors);
-            static void linkSiblings(std::list<Node*>& nodes);
-            static Node* createGraph(const std::list<Node*>& nodes);
+            static void insertNode(std::list<std::shared_ptr<Node>>& nodes, const types::Sector& sector);
+            static void destroyNode(std::shared_ptr<Node>& node);
+            static std::list<std::shared_ptr<Node>> findRelevantSectors(std::list<std::string>& deputies,
+                                                                        const std::list<types::Sector>& sectors);
+            static void linkSiblings(std::list<std::shared_ptr<Node>>& nodes);
+            static std::shared_ptr<Node> createGraph(const std::list<std::shared_ptr<Node>>& nodes);
             void finalizeGraph(const std::list<types::Sector>& sectors);
-            static Node* findNodeBasedOnIdentifier(Node* node, const std::string_view& identifier);
-            static Node* findNodeBasedOnInformation(Node* node, const types::ControllerInfo& info);
-            static Node* findSectorInList(const std::list<Node*>& nodes, const types::Position& position,
-                                          types::Flight::Type type, bool lowerSectors);
-            Node* findResponsible(const types::Position& position, types::Flight::Type type) const;
-            Node* findOnlineResponsible(Node* node);
-            std::list<Node*> findSectorCandidates(Node* node) const;
-            static Node* findLowestSector(Node* node, const types::Position& position);
+            static std::shared_ptr<Node> findNodeBasedOnIdentifier(const std::shared_ptr<Node>& node,
+                                                                   const std::string_view& identifier);
+            static std::shared_ptr<Node> findNodeBasedOnInformation(const std::shared_ptr<Node>& node,
+                                                                    const types::ControllerInfo& info);
+            static std::shared_ptr<Node> findSectorInList(const std::list<std::shared_ptr<Node>>& nodes,
+                                                          const types::Position& position,
+                                                          types::Flight::Type type, bool lowerSectors);
+            std::shared_ptr<Node> findResponsible(const types::Position& position, types::Flight::Type type) const;
+            std::shared_ptr<Node> findOnlineResponsible(std::shared_ptr<Node>& node);
+            std::list<std::shared_ptr<Node>> findSectorCandidates(const std::shared_ptr<Node>& node) const;
+            static std::shared_ptr<SectorControl::Node> findLowestSector(const std::shared_ptr<Node>& node,
+                                                                         const types::Position& position);
             bool isInOwnSectors(const types::Position& position) const;
-            void cleanupHandoffList(Node* node);
+            void cleanupHandoffList(std::shared_ptr<Node>& node);
 
-            Node                              m_unicom;
-            Node*                             m_rootNode;
-            Node*                             m_ownSector;
-            std::map<std::string, FlightData> m_handoffs;
-            std::map<std::string, Node*>      m_sectorsOfFlights;
+            std::shared_ptr<Node>                                       m_unicom;
+            std::shared_ptr<Node>                                       m_rootNode;
+            std::shared_ptr<Node>                                       m_ownSector;
+            std::map<std::string, FlightData>                           m_handoffs;
+            std::map<std::string, std::shared_ptr<SectorControl::Node>> m_sectorsOfFlights;
 
         public:
             /**
