@@ -730,7 +730,7 @@ void SectorControl::handoffSectorSelect(const std::string& callsign, const std::
 
 bool SectorControl::sectorHandoverPossible() const {
     if (nullptr != this->m_rootNode && nullptr != this->m_ownSector)
-        return 0 != this->m_ownSector->controllers.size();
+        return 1 < this->m_ownSector->controllers.size();
     else
         return false;
 }
