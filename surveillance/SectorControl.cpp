@@ -481,6 +481,13 @@ SectorControl::Node* SectorControl::findSectorInList(const std::list<SectorContr
     return retval;
 }
 
+const types::ControllerInfo& SectorControl::ownSector() const {
+    if (nullptr == this->m_ownSector)
+        return this->m_unicom.sector.controllerInfo();
+    else
+        return this->m_ownSector->sector.controllerInfo();
+}
+
 SectorControl::Node* SectorControl::findResponsible(const types::Position& position, types::Flight::Type type) const {
     SectorControl::Node* next = nullptr;
 

@@ -95,6 +95,11 @@ namespace topskytower {
              */
             void setOwnSector(const std::string_view& identifier);
             /**
+             * @brief Returns the own sector
+             * @return The own sector
+             */
+            const types::ControllerInfo& ownSector() const;
+            /**
              * @brief Analysis the flight and checks if an handoff is needed
              * @param[in] flight The checked flight
              */
