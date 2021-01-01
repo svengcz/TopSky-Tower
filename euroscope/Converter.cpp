@@ -57,9 +57,12 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     retval.setOrigin(plan.GetFlightPlanData().GetOrigin());
     retval.setDepartureRoute(plan.GetFlightPlanData().GetSidName());
     retval.setDestination(plan.GetFlightPlanData().GetDestination());
-    retval.setDepartureRoute(plan.GetFlightPlanData().GetStarName());
-    retval.setClearanceLimit(plan.GetControllerAssignedData().GetClearedAltitude() * types::feet);
+    retval.setArrivalRoute(plan.GetFlightPlanData().GetStarName());
+    retval.setClearanceLimit(static_cast<float>(plan.GetControllerAssignedData().GetClearedAltitude()) * types::feet);
     retval.setClearedFlag(plan.GetClearenceFlag());
+
+    if (nullptr != plan.GetControllerAssignedData().GetSquawk())
+        retval.setAssignedSquawk(static_cast<std::uint16_t>(std::atoi(plan.GetControllerAssignedData().GetSquawk())));
 
     return retval;
 }
