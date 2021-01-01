@@ -85,7 +85,8 @@ bool PdcMessageViewerWindow::visualize(Gdiplus::Graphics* graphics) {
         Gdiplus::SizeF size(max(titleRectangle.Width + 20.0f, viewer->area().Width), viewer->area().Height);
         this->setContentSize(size);
 
-        viewer->setArea(Gdiplus::RectF(Gdiplus::PointF(viewer->area().X, viewer->area().Y), size));
+        Gdiplus::RectF newArea(Gdiplus::PointF(viewer->area().X, viewer->area().Y), size);
+        viewer->setArea(newArea);
 
         this->centeredPosition();
 
