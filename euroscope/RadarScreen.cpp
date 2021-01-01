@@ -53,17 +53,12 @@ RadarScreen::~RadarScreen() { }
 void RadarScreen::OnAsrContentLoaded(bool loaded) {
     if (true == loaded) {
         auto value = this->GetDataFromAsr("Airport");
-        if (nullptr != value) {
+        if (nullptr != value)
             this->m_airport = value;
-
-            surveillance::PdcControl::instance().addAirport(this->m_airport);
-        }
     }
 }
 
 void RadarScreen::OnAsrContentToBeClosed() {
-    if (0 != this->m_airport.length())
-        surveillance::PdcControl::instance().removeAirport(this->m_airport);
     delete this;
 }
 
