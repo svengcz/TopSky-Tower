@@ -48,7 +48,10 @@ RadarScreen::RadarScreen(bool updateFlightRegistry) :
         m_guiEuroscopeEvents(),
         m_lastRenderingTime() { }
 
-RadarScreen::~RadarScreen() { }
+RadarScreen::~RadarScreen() {
+    if (nullptr != this->m_controllers)
+        delete this->m_controllers;
+}
 
 void RadarScreen::OnAsrContentLoaded(bool loaded) {
     if (true == loaded) {
