@@ -77,8 +77,16 @@ bool PdcMessageViewerWindow::visualize(Gdiplus::Graphics* graphics) {
 
         viewer->prepareVisualization(graphics);
 
-        Gdiplus::SizeF size(viewer->area().Width, viewer->area().Height);
+        this->m_titleVisualization.setGraphics(graphics);
+        this->m_titleVisualization.setText(this->title());
+        this->m_titleVisualization.visualize();
+        const auto& titleRectangle = this->m_titleVisualization.rectangle();
+
+        Gdiplus::SizeF size(max(titleRectangle.Width + 20.0f, viewer->area().Width), viewer->area().Height);
         this->setContentSize(size);
+
+        viewer->setArea(Gdiplus::RectF(Gdiplus::PointF(viewer->area().X, viewer->area().Y), size));
+
         this->centeredPosition();
 
         this->m_firstRendering = false;

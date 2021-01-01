@@ -28,7 +28,6 @@ namespace topskytower {
             bool            m_resizable;
             bool            m_resizeActive;
             std::string     m_title;
-            Text            m_titleVisualization;
             Gdiplus::RectF  m_headlineRectangle;
             Gdiplus::RectF  m_crossRectangle;
             Gdiplus::RectF  m_resizeRectangle;
@@ -37,9 +36,10 @@ namespace topskytower {
             void move(const Gdiplus::PointF& direction) override;
 
         protected:
-            Gdiplus::SizeF        m_minimumSize; /**< The minimum size of the element */
-            Gdiplus::RectF        m_contentArea; /**< The area that can be used by the content */
-            std::list<UiElement*> m_elements;    /**< All elements of the window */
+            Text                  m_titleVisualization; /**< The visualization of the window's title */
+            Gdiplus::SizeF        m_minimumSize;        /**< The minimum size of the element */
+            Gdiplus::RectF        m_contentArea;        /**< The area that can be used by the content */
+            std::list<UiElement*> m_elements;           /**< All elements of the window */
 
             /**
              * @brief Creates a new window

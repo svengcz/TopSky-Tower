@@ -39,7 +39,8 @@ bool TextViewer::prepareVisualization(Gdiplus::Graphics* graphics) {
 }
 
 bool TextViewer::visualize(Gdiplus::Graphics* graphics) {
-    this->prepareVisualization(graphics);
+    this->m_visualization.setGraphics(graphics);
+    this->m_visualization.setText(this->m_text);
 
     this->m_visualization.setPosition(Gdiplus::PointF(this->m_area.X + 4.0f, this->m_area.Y + 4.0f));
     this->m_visualization.visualize();
