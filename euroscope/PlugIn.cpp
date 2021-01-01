@@ -189,7 +189,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         std::string msg("\u2022 ");
         std::memcpy(itemString, msg.c_str(), msg.length() + 1);
 
-        if (true == surveillance::PdcControl::instance().messagesAvailable(flight.callsign()))
+        if (true == surveillance::PdcControl::instance().messagesAvailable(flight))
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
         else
             *colorCode = EuroScopePlugIn::TAG_COLOR_NON_CONCERNED;
