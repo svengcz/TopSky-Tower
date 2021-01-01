@@ -30,6 +30,7 @@ namespace topskytower {
             std::string   m_departureRoute;
             std::string   m_destination;
             std::string   m_arrivalRoute;
+            std::uint16_t m_assignedSquawk;
             types::Length m_clearanceLimit;
             bool          m_cleared;
 
@@ -53,6 +54,8 @@ namespace topskytower {
             const types::Length& clearanceLimit() const;
             void setClearedFlag(bool flag);
             bool clearedFlag() const;
+            void setAssignedSquawk(std::uint16_t squawk);
+            std::uint16_t assignedSquawk() const;
         };
     }
 }

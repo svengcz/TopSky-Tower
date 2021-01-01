@@ -15,6 +15,7 @@ FlightPlan::FlightPlan() :
         m_departureRoute(),
         m_destination(),
         m_arrivalRoute(),
+        m_assignedSquawk(0),
         m_clearanceLimit(),
         m_cleared(false) { }
 
@@ -72,4 +73,12 @@ void FlightPlan::setClearedFlag(bool flag) {
 
 bool FlightPlan::clearedFlag() const {
     return this->m_cleared;
+}
+
+void FlightPlan::setAssignedSquawk(std::uint16_t squawk) {
+    this->m_assignedSquawk = squawk;
+}
+
+std::uint16_t FlightPlan::assignedSquawk() const {
+    return this->m_assignedSquawk;
 }
