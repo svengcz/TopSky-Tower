@@ -125,20 +125,26 @@ namespace topskytower {
             struct ClearanceMessage : CpdlcMessage {
                 std::string destination;           /**< Defines the destination airport */
                 std::string sid;                   /**< Defines the standard instrument departure */
+                std::string runway;                /**< Defines the departure runway */
                 std::string frequency;             /**< Defines the next frequency */
                 std::string targetStartupTime;     /**< Defines the target start-up time (TSAT) */
                 std::string calculatedTakeOffTime; /**< Defines the calculated take-off time (CTOT) */
                 std::string clearanceLimit;        /**< Defines the climb clearance limit */
+                std::string squawk;                /**< Defines the assigned squawk */
 
                 /**
                  * @brief Creates an empty PDC-clearance message
                  */
                 ClearanceMessage() :
                         CpdlcMessage(),
+                        destination(),
+                        sid(),
+                        runway(),
                         frequency(),
                         targetStartupTime(),
                         calculatedTakeOffTime(),
-                        clearanceLimit() {
+                        clearanceLimit(),
+                        squawk() {
                     this->answerType = CpdlcMessage::AnswerDefinition::WilcoUnable;
                 }
             };
@@ -176,6 +182,7 @@ namespace topskytower {
             void handleMessage(Message& message);
             bool prepareCpdlc(std::string& url, const MessagePtr& message);
             bool prepareTelex(std::string& url, const MessagePtr& message);
+            static CpdlcMessagePtr prepareClearance(const ClearanceMessagePtr& message);
             bool sendMessage(const MessagePtr& message);
             void run();
 
@@ -206,16 +213,26 @@ namespace topskytower {
             bool airportOnline(const std::string& icao) const;
             /**
              * @brief Checks if new messages are available
-             * @param[in] callsign The flights callsign
+             * @param[in] flight The flight structure
              * @return True if new messages are available, else false
              */
-            bool messagesAvailable(const std::string& callsign) const;
+            bool messagesAvailable(const types::Flight& flight) const;
             /**
              * @brief Returns the next message in the queue
-             * @param[in] callsign The flights callsign
+             * @param[in] flight The flight structure
              * @return The first message in the queue
              */
-            MessagePtr nextMessage(const std::string& callsign);
+            MessagePtr nextMessage(const types::Flight& flight);
+            /**
+             * @brief Sends a stand-by message
+             * @param[in] flight The flight that needs to stand-by
+             */
+            void sendStandbyMessage(const types::Flight& flight);
+            /**
+             * @brief Sends the clearance message
+             * @param[in] message The clearance message
+             */
+            void sendClearanceMessage(const ClearanceMessagePtr& message);
             /**
              * @brief Returns the PDC control singleton
              * @return The PDC control system

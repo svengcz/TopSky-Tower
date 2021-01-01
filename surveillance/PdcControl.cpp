@@ -452,18 +452,24 @@ bool PdcControl::airportOnline(const std::string& icao) const {
     return this->m_airports.cend() != std::find(this->m_airports.cbegin(), this->m_airports.cend(), icao);
 }
 
-bool PdcControl::messagesAvailable(const std::string& callsign) const {
-    auto it = this->m_comChannels.find(callsign);
+bool PdcControl::messagesAvailable(const types::Flight& flight) const {
+    if (types::FlightPlan::Type::IFR != flight.flightPlan().type())
+        return false;
+
+    auto it = this->m_comChannels.find(flight.callsign());
     if (this->m_comChannels.cend() != it)
         return 0 != it->second.inbounds.size();
 
     return false;
 }
 
-PdcControl::MessagePtr PdcControl::nextMessage(const std::string& callsign) {
+PdcControl::MessagePtr PdcControl::nextMessage(const types::Flight& flight) {
+    if (types::FlightPlan::Type::IFR != flight.flightPlan().type())
+        return PdcControl::MessagePtr();
+
     std::lock_guard guard(this->m_comChannelsLock);
 
-    auto it = this->m_comChannels.find(callsign);
+    auto it = this->m_comChannels.find(flight.callsign());
     if (this->m_comChannels.end() != it) {
         PdcControl::MessagePtr message;
         it->second.read(message);
@@ -471,6 +477,62 @@ PdcControl::MessagePtr PdcControl::nextMessage(const std::string& callsign) {
     }
 
     return PdcControl::MessagePtr();
+}
+
+void PdcControl::sendStandbyMessage(const types::Flight& flight) {
+    if (types::FlightPlan::Type::IFR != flight.flightPlan().type())
+        return;
+
+    /* create the message */
+    PdcControl::CpdlcMessage outbound;
+    outbound.sender = flight.flightPlan().origin();
+    outbound.receiver = flight.callsign();
+    outbound.answerType = PdcControl::CpdlcMessage::AnswerDefinition::NotRequired;
+    outbound.message = "REQUEST RECEIVED @REQUEST BEING PROCESSED @STANDBY";
+
+    std::lock_guard guard(this->m_comChannelsLock);
+
+    /* enqueue the message for the next cycle */
+    this->m_comChannels[flight.callsign()].enqueue(std::make_shared<PdcControl::CpdlcMessage>(outbound), false);
+}
+
+PdcControl::CpdlcMessagePtr PdcControl::prepareClearance(const PdcControl::ClearanceMessagePtr& message) {
+    PdcControl::CpdlcMessagePtr retval(new PdcControl::CpdlcMessage());
+
+    retval->failedTransmit = 0;
+    retval->type = message->type;
+    retval->sender = message->sender;
+    retval->receiver = message->receiver;
+    retval->incomeMessageId = message->incomeMessageId;
+    retval->repliedToMessageId = message->repliedToMessageId;
+    retval->answerType = message->answerType;
+
+    /* create the message */
+    std::string customMessage = message->message;
+
+    retval->message = "CLR TO @" + message->destination + "@ RWY @" + message->runway + "@";
+    retval->message += " DEP @" + message->sid + "@ INIT CLB @" + message->clearanceLimit;
+    retval->message += "@ SQUAWK @" + message->squawk;
+    retval->message += "@ ";
+    if (3 <= message->targetStartupTime.length())
+        retval->message += "TSAT @" + message->targetStartupTime + "@ ";
+    if (3 <= message->calculatedTakeOffTime.length())
+        retval->message += "CTOT @" + message->calculatedTakeOffTime + "@ ";
+    retval->message += "WHEN READY CALL @" + message->frequency;
+    retval->message += "@ IF UNABLE CALL VOICE ";
+    if (0 != customMessage.length())
+        retval->message += customMessage;
+
+    return retval;
+}
+
+void PdcControl::sendClearanceMessage(const PdcControl::ClearanceMessagePtr& message) {
+    auto cpdlc = PdcControl::prepareClearance(message);
+
+    std::lock_guard guard(this->m_comChannelsLock);
+
+    /* enqueue the message for the next cycle */
+    this->m_comChannels[cpdlc->receiver].enqueue(cpdlc, false);
 }
 
 PdcControl& PdcControl::instance() {

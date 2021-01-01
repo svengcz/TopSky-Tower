@@ -484,11 +484,14 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::PdcMenu:
         this->OpenPopupList(area, "PDC", 1);
         this->AddPopupListElement("Read", "", static_cast<int>(PlugIn::TagItemFunction::PdcReadMessage), false,
-                                  2, false == surveillance::PdcControl::instance().messagesAvailable(flight.callsign()), false);
+                                  2, false == surveillance::PdcControl::instance().messagesAvailable(flight), false);
+        this->AddPopupListElement("Send stand-by", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendStandby));
+        this->AddPopupListElement("Send clearance", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendClearance),
+                                  false, 2, true == flight.flightPlan().clearedFlag(), false);
         break;
     case PlugIn::TagItemFunction::PdcReadMessage:
     {
-        auto message = surveillance::PdcControl::instance().nextMessage(flight.callsign());
+        auto message = surveillance::PdcControl::instance().nextMessage(flight);
         auto screen = this->findLastActiveScreen();
 
         auto viewer = new PdcMessageViewerWindow(screen, message);
