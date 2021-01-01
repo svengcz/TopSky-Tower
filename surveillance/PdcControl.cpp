@@ -380,6 +380,7 @@ bool PdcControl::sendMessage(const PdcControl::MessagePtr& message) {
     /* create the message */
     auto url = __datalink;
     url += "&to=" + message->receiver + "&type=" + __translateMessageType(message->type);
+    helper::String::stringReplace(url, "%SENDER%", message->sender);
 
     /* finalize the URL */
     bool retval = false;
