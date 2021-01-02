@@ -8,6 +8,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include <types/Flight.h>
 #include <types/Sector.h>
