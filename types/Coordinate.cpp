@@ -9,11 +9,7 @@
 #include <algorithm>
 #include <cmath>
 
-#pragma warning(push, 0)
-#include <boost/geometry/geometry.hpp>
-#include <boost/geometry/algorithms/detail/course.hpp>
-#include <boost/geometry/geometries/register/point.hpp>
-#pragma warning(pop)
+#include <GeographicLib/Geodesic.hpp>
 
 #include <helper/Exception.h>
 #include <helper/Math.h>
@@ -108,33 +104,26 @@ void Coordinate::setLatitudeDegree(float value) {
 }
 
 Coordinate Coordinate::projection(const Angle& heading, const Length& distance) const {
-    auto proj = bg::formula::vincenty_direct<float>::apply(this->m_longitude.convert(types::radian),
-                                                           this->m_latitude.convert(types::radian),
-                                                           distance.convert(types::metre),
-                                                           heading.convert(types::radian),
-                                                           bg::srs::spheroid<float>());
-    return std::move(Coordinate(proj.lon2 * types::radian, proj.lat2 * types::radian));
+    float lat, lon;
+    GeographicLib::Geodesic::WGS84().Direct(this->latitudeDegree(), this->longitudeDegree(), heading.convert(types::degree),
+                                            distance.convert(types::metre), lat, lon);
+    return std::move(Coordinate(lon * types::degree, lat * types::degree));
 }
 
 Length Coordinate::distanceTo(const Coordinate& other) const {
-    return bg::distance(*this, other) * 6371.0f * types::kilometre;
+    float distance;
+    GeographicLib::Geodesic::WGS84().Inverse(this->latitudeDegree(), this->longitudeDegree(),
+                                             other.latitudeDegree(), other.longitudeDegree(),
+                                             distance);
+    return distance * types::metre;
 }
 
 Angle Coordinate::bearingTo(const Coordinate& other) const {
-    float lon1 = this->m_longitude.convert(types::radian);
-    float lon2 = other.m_longitude.convert(types::radian);
-    float lat1 = this->m_latitude.convert(types::radian);
-    float lat2 = other.m_latitude.convert(types::radian);
+    float azimuth0, azimuth1;
+    GeographicLib::Geodesic::WGS84().Inverse(this->latitudeDegree(), this->longitudeDegree(),
+                                             other.latitudeDegree(), other.longitudeDegree(),
+                                             azimuth0, azimuth1);
+    (void)azimuth1;
 
-    float y = std::sin(lon2 - lon1) * std::cos(lat2);
-    float x = std::cos(lat1) * std::sin(lat2) - std::sin(lat1) * std::cos(lat2) * std::cos(lon2 - lon1);
-    float theta = std::atan2(y, x);
-
-    /* ensure that angle is between [0, 360[ */
-    while (0.0 > theta)
-        theta += 2_pi;
-    while (2_pi <= theta)
-        theta -= 2_pi;
-
-    return theta * types::radian;
+    return azimuth0 * types::degree;
 }
