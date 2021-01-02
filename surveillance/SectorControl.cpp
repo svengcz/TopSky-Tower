@@ -35,6 +35,7 @@ SectorControl::SectorControl(const std::string& airport, const std::list<types::
             switch (sector.type()) {
             case types::Sector::Type::Tower:
             case types::Sector::Type::Ground:
+            case types::Sector::Type::Delivery:
                 airportSectors.push_back(sector);
                 break;
             default:
@@ -95,13 +96,35 @@ SectorControl::SectorControl(const std::string& airport, const std::list<types::
     });
 
     /* create all relevant siblings */
-    SectorControl::linkSiblings(nodes);
+    auto siblings = SectorControl::linkSiblings(nodes);
 
     /* create the final graph */
-    this->m_rootNode = SectorControl::createGraph(nodes);
+    SectorControl::createGraph(siblings);
 
     /* add the centers of the top-level to get the complete hierarchy */
-    this->finalizeGraph(sectors);
+    for (const auto& deputy : std::as_const(siblings.front().front()->sector.borders().front().deputies())) {
+        for (const auto& sector : std::as_const(sectors)) {
+            /* found the correct deputy */
+            if (sector.controllerInfo().identifier() == deputy) {
+                std::shared_ptr<Node> node(new Node(sector));
+
+                if (nullptr == this->m_rootNode) {
+                    node->children = siblings.front();
+
+                    for (auto& sibling : siblings.front())
+                        sibling->parents.push_back(node);
+                }
+                else {
+                    this->m_rootNode->parents.push_back(node);
+                    node->children.push_back(this->m_rootNode);
+                }
+
+                this->m_rootNode = node;
+
+                break;
+            }
+        }
+    }
 
     this->m_unicom->controllers.push_back(types::ControllerInfo());
 }
@@ -116,8 +139,6 @@ void SectorControl::destroyNode(std::shared_ptr<Node>& node) {
     if (nullptr == node)
         return;
 
-    node->siblings.clear();
-
     for (auto& child : node->children)
         SectorControl::destroyNode(child);
 
@@ -125,10 +146,6 @@ void SectorControl::destroyNode(std::shared_ptr<Node>& node) {
 }
 
 void SectorControl::insertNode(std::list<std::shared_ptr<Node>>& nodes, const types::Sector& sector) {
-    /* ignore the delivery */
-    if (types::Sector::Type::Delivery == sector.type())
-        return;
-
     /* check if the sector is already a node */
     bool alreadyRegistered = false;
     for (const auto& node : std::as_const(nodes)) {
@@ -205,16 +222,14 @@ std::list<std::shared_ptr<SectorControl::Node>> SectorControl::findRelevantSecto
     return retval;
 }
 
-void SectorControl::linkSiblings(std::list<std::shared_ptr<SectorControl::Node>>& nodes) {
-    std::shared_ptr<SectorControl::Node> lastNode = nullptr;
+std::list<std::list<std::shared_ptr<SectorControl::Node>>> SectorControl::linkSiblings(std::list<std::shared_ptr<Node>>& nodes) {
+    std::list<std::list<std::shared_ptr<SectorControl::Node>>> retval;
 
-    for (auto it = nodes.begin(); nodes.end() != it;) {
-        bool erased = false;
-
-        if (nullptr != lastNode) {
+    for (auto it = nodes.begin(); nodes.end() != it; ++it) {
+        if (0 != retval.size()) {
             /* both sectors have the same type -> further analysis is needed */
-            if (lastNode->sector.type() == (*it)->sector.type()) {
-                switch (lastNode->sector.type()) {
+            if (retval.back().front()->sector.type() == (*it)->sector.type()) {
+                switch (retval.back().front()->sector.type()) {
                 case types::Sector::Type::Approach:
                 {
                     /*
@@ -224,15 +239,11 @@ void SectorControl::linkSiblings(std::list<std::shared_ptr<SectorControl::Node>>
                      * If the altitudes are comparable (max. 10% difference), they are the same.
                      * In the end we get two or more approaches where the lowest approach is the feeder.
                      */
-                    auto ratio = (lastNode->sector.borders().back().upperAltitude() - (*it)->sector.borders().back().upperAltitude()) / (*it)->sector.borders().back().upperAltitude();
-                    if (-0.1 <= ratio.value() && 0.1 >= ratio.value()) {
-                        lastNode->siblings.push_back(*it);
-                        it = nodes.erase(it);
-                        erased = true;
-                    }
-                    else {
-                        lastNode = *it;
-                    }
+                    auto ratio = (retval.back().front()->sector.borders().back().upperAltitude() - (*it)->sector.borders().back().upperAltitude()) / (*it)->sector.borders().back().upperAltitude();
+                    if (-0.1 <= ratio.value() && 0.1 >= ratio.value())
+                        retval.back().push_back(*it);
+                    else
+                        retval.push_back({ *it });
                     break;
                 }
                 case types::Sector::Type::Departure:
@@ -244,95 +255,69 @@ void SectorControl::linkSiblings(std::list<std::shared_ptr<SectorControl::Node>>
                      *
                      * Assume that all siblings have the same prefix.
                      */
-                    if (lastNode->sector.controllerInfo().prefix() == (*it)->sector.controllerInfo().prefix()) {
-                        lastNode->siblings.push_back(*it);
-                        it = nodes.erase(it);
-                        erased = true;
-                    }
-                    else {
-                        lastNode = *it;
-                    }
+                    if (retval.back().front()->sector.controllerInfo().prefix() == (*it)->sector.controllerInfo().prefix())
+                        retval.back().push_back({ *it });
+                    else
+                        retval.push_back({ *it });
+                    break;
+                case types::Sector::Type::Delivery:
+                    retval.push_back({ *it });
                     break;
                 default:
                     break;
                 }
             }
+            else if (types::Sector::Type::Departure == (*it)->sector.type()) {
+                retval.back().push_back(*it);
+            }
             else {
-                lastNode = *it;
+                retval.push_back({ *it });
             }
         }
         else {
-            lastNode = *it;
+            retval.push_back({ *it });
         }
-
-        if (false == erased)
-            ++it;
     }
+
+    return retval;
 }
 
-std::shared_ptr<SectorControl::Node> SectorControl::createGraph(const std::list<std::shared_ptr<SectorControl::Node>>& nodes) {
+void SectorControl::createGraph(std::list<std::list<std::shared_ptr<Node>>>& siblings) {
     std::list<std::shared_ptr<SectorControl::Node>> parents;
-    std::shared_ptr<SectorControl::Node> root = nullptr;
 
-    for (const auto& node : std::as_const(nodes)) {
-        if (0 != parents.size()) {
-            /* define the parent-child relation for the non-ground or departure stations */
-            if (types::Sector::Type::Ground != node->sector.type() && types::Sector::Type::Departure != node->sector.type()) {
-                for (auto& parent : parents) {
-                    parent->children.push_back(node);
-                    node->parents.push_back(parent);
+    for (auto it = siblings.cbegin(); siblings.cend() != it; ++it) {
+        if (types::Sector::Type::Ground == it->front()->sector.type()) {
+            for (const auto& level : std::as_const(siblings)) {
+                if (types::Sector::Type::Tower == level.front()->sector.type() &&
+                    it->front()->sector.controllerInfo().prefix() == level.front()->sector.controllerInfo().prefix())
+                {
+                    for (auto& node : *it)
+                        node->parents = level;
+                    for (auto& node : level)
+                        node->children = *it;
                 }
             }
-
-            /* found the departure -> the actual parent is the feeder -> both are the next parents */
-            if (types::Sector::Type::Departure == node->sector.type()) {
-                /* remove the old elements and keep only the feeder */
-                if (1 != parents.size())
-                    parents = { parents.back() };
-                parents.front()->parents.front()->children.push_back(node);
-                node->parents.push_back(parents.front()->parents.front());
-                parents.push_back(node);
-            }
-            /* last parent is not the feeder -> overwrite it */
-            else if (types::Sector::Type::Approach == node->sector.type()) {
-                *parents.begin() = node;
-            }
-            /* ask the first parent for the children and find the correct tower */
-            else if (types::Sector::Type::Ground == node->sector.type()) {
-                auto& children = parents.front()->children;
-                for (auto& child : children) {
-                    if (types::Sector::Type::Tower == child->sector.type() &&
-                        child->sector.controllerInfo().prefix() == node->sector.controllerInfo().prefix())
-                    {
-                        child->children.push_back(node);
-                        node->parents.push_back(child);
-                    }
+        }
+        else if (types::Sector::Type::Delivery == it->front()->sector.type()) {
+            for (const auto& level : std::as_const(siblings)) {
+                if (types::Sector::Type::Ground == level.front()->sector.type() &&
+                    it->front()->sector.controllerInfo().prefix() == level.front()->sector.controllerInfo().prefix())
+                {
+                    for (auto& node : *it)
+                        node->parents = level;
+                    for (auto& node : level)
+                        node->children = *it;
                 }
             }
         }
         else {
-            parents.push_back(node);
-            root = node;
-        }
-    }
+            for (auto& node : *it)
+                node->parents = parents;
+            for (auto& node : parents)
+                node->children.insert(node->children.end(), it->begin(), it->end());
 
-    return root;
-}
-
-void SectorControl::finalizeGraph(const std::list<types::Sector>& sectors) {
-    /* unable to find other sectors */
-    if (nullptr == this->m_rootNode || 0 == this->m_rootNode->sector.borders().size())
-        return;
-
-    for (const auto& deputy : std::as_const(this->m_rootNode->sector.borders().front().deputies())) {
-        for (const auto& sector : std::as_const(sectors)) {
-            if (sector.controllerInfo().identifier() == deputy && types::Sector::Type::Center <= sector.type()) {
-                std::shared_ptr<SectorControl::Node> newNode(new SectorControl::Node(sector));
-
-                newNode->children.push_back(this->m_rootNode);
-                this->m_rootNode->parents.push_back(newNode);
-                this->m_rootNode = newNode;
-            }
+            if (types::Sector::Type::Tower < it->front()->sector.type())
+                parents = *it;
         }
     }
 }
@@ -345,12 +330,6 @@ std::shared_ptr<SectorControl::Node> SectorControl::findNodeBasedOnIdentifier(co
     /* this node is the correct one */
     if (node->sector.controllerInfo().identifier() == identifier)
         return node;
-
-    /* check the siblings */
-    for (const auto& sibling : std::as_const(node->siblings)) {
-        if (sibling->sector.controllerInfo().identifier() == identifier)
-            return sibling;
-    }
 
     /* check every child recursivly */
     for (const auto& child : std::as_const(node->children)) {
@@ -380,12 +359,6 @@ std::shared_ptr<SectorControl::Node> SectorControl::findNodeBasedOnInformation(c
             if (controller.prefix() == info.prefix() && controller.suffix() == info.suffix())
                 return node;
         }
-    }
-
-    for (const auto& sibling : std::as_const(node->siblings)) {
-        auto candidate = SectorControl::findNodeBasedOnInformation(sibling, info);
-        if (nullptr != candidate)
-            return candidate;
     }
 
     for (const auto& child : std::as_const(node->children)) {
@@ -476,14 +449,6 @@ std::shared_ptr<SectorControl::Node> SectorControl::findSectorInList(const std::
             if (nullptr == retval || node->sector.type() == bestType)
                 retval = node;
         }
-
-        /* check the siblings which are not reachable by parent, child tests */
-        for (const auto& sibling : std::as_const(node->siblings)) {
-            if (true == sibling->sector.isInsideSector(position)) {
-                if (nullptr == retval || sibling->sector.type() == bestType)
-                    retval = sibling;
-            }
-        }
     }
 
     return retval;
@@ -496,28 +461,40 @@ const types::ControllerInfo& SectorControl::ownSector() const {
         return this->m_ownSector->sector.controllerInfo();
 }
 
-std::shared_ptr<SectorControl::Node> SectorControl::findResponsible(const types::Position& position, types::Flight::Type type) const {
-    std::shared_ptr<SectorControl::Node> next = nullptr;
+std::shared_ptr<SectorControl::Node> SectorControl::findOnlineResponsible(const types::Flight& flight,
+                                                                          const types::Position& position) const {
+    std::list<std::shared_ptr<Node>> candidates;
 
-    /* test the children */
-    next = SectorControl::findSectorInList(this->m_ownSector->children, position, type, true);
+    for (const auto& parent : std::as_const(this->m_ownSector->parents)) {
+        auto candidate = SectorControl::findLowestSector(parent, flight, position);
+        if (nullptr != candidate) {
+            candidates.push_back(candidate);
 
-    /* test the node itself */
-    if (nullptr == next && true == this->m_ownSector->sector.isInsideSector(position))
-        return this->m_ownSector;
+            /* found a sector and a departure is irrelevant */
+            if (types::Sector::Type::Approach != candidate->sector.type())
+                break;
+        }
+    }
 
-    /* test the siblings */
-    if (nullptr == next)
-        next = SectorControl::findSectorInList(this->m_ownSector->siblings, position, type, false);
+    if (0 == candidates.size())
+        return nullptr;
 
-    /* test the parents */
-    if (nullptr == next)
-        next = SectorControl::findSectorInList(this->m_ownSector->parents, position, type, false);
+    std::shared_ptr<Node> node = candidates.front();
 
-    return next;
-}
+    /* check if a departure or an approach is more helpful */
+    if (1 < candidates.size()) {
+        for (const auto& candidate : std::as_const(candidates)) {
+            if (candidate->sector.type() == types::Sector::Type::Departure && flight.type() == types::Flight::Type::Departure) {
+                node = candidate;
+                break;
+            }
+            else if (candidate->sector.type() == types::Sector::Type::Approach && flight.type() == types::Flight::Type::Arrival) {
+                node = candidate;
+                break;
+            }
+        }
+    }
 
-std::shared_ptr<SectorControl::Node> SectorControl::findOnlineResponsible(std::shared_ptr<SectorControl::Node>& node) {
     /* avoid wrong calls */
     if (nullptr == node)
         return this->m_unicom;
@@ -538,41 +515,29 @@ std::shared_ptr<SectorControl::Node> SectorControl::findOnlineResponsible(std::s
 }
 
 std::shared_ptr<SectorControl::Node> SectorControl::findLowestSector(const std::shared_ptr<SectorControl::Node>& node,
-                                                                     const types::Position& position) {
+                                                                     const types::Flight& flight, const types::Position& position) {
     /* check the children */
     for (const auto& child : std::as_const(node->children)) {
-        auto retval = SectorControl::findLowestSector(child, position);
-        if (nullptr != retval)
-            return retval;
+        auto retval = SectorControl::findLowestSector(child, flight, position);
+        if (nullptr != retval) {
+            if (types::Sector::Type::Delivery != retval->sector.type() || false == flight.flightPlan().clearedFlag())
+                return retval;
+        }
     }
 
     /* check the node itself */
     if (true == node->sector.isInsideSector(position))
         return node;
 
-    /* check the siblings */
-    for (const auto& sibling : std::as_const(node->siblings)) {
-        auto retval = SectorControl::findLowestSector(sibling, position);
-        if (nullptr != retval)
-            return retval;
-    }
-
     return nullptr;
 }
 
-bool SectorControl::isInOwnSectors(const types::Position& position) const {
-    auto node = SectorControl::findLowestSector(this->m_ownSector, position);
-    if (nullptr != node) {
-        /* controlled in own sector */
-        if (node == this->m_ownSector)
-            return true;
-        /* controlled by lower sector but it can be offline */
-        else
-            return 0 == node->controllers.size();
-    }
-    else {
+bool SectorControl::isInOwnSectors(const types::Flight& flight, const types::Position& position) const {
+    auto node = this->findOnlineResponsible(flight, position);
+    if (nullptr == node)
         return false;
-    }
+
+    return this->m_ownSector == node && nullptr != this->m_ownSector;
 }
 
 void SectorControl::update(const types::Flight& flight) {
@@ -588,15 +553,15 @@ void SectorControl::update(const types::Flight& flight) {
     }
 
     /* get current sector of the flight */
-    this->m_sectorsOfFlights[flight.callsign()] = this->findLowestSector(this->m_rootNode, flight.currentPosition());
+    this->m_sectorsOfFlights[flight.callsign()] = this->findLowestSector(this->m_rootNode, flight, flight.currentPosition());
     if (nullptr == this->m_sectorsOfFlights[flight.callsign()])
         this->m_sectorsOfFlights.erase(flight.callsign());
 
-    if (false == manuallyChanged && false == handoffDone && true == this->isInOwnSectors(flight.currentPosition())) {
+    if (false == manuallyChanged && false == handoffDone && true == this->isInOwnSectors(flight, flight.currentPosition())) {
         auto predicted = flight.predict(20_s, 20_kn);
 
         /* the aircraft remains in own sector */
-        if (true == this->isInOwnSectors(predicted)) {
+        if (true == this->isInOwnSectors(flight, predicted)) {
             /* check if an old handoff exists */
             it = this->m_handoffs.find(flight.callsign());
             if (this->m_handoffs.end() != it)
@@ -605,21 +570,19 @@ void SectorControl::update(const types::Flight& flight) {
         }
 
         /* get the next responsible node and the next online station */
-        auto nextNode = this->findResponsible(predicted, flight.type());
-        auto nextOnline = this->findOnlineResponsible(nextNode);
+        auto nextNode = this->findOnlineResponsible(flight, predicted);
 
         /* no handoff to the controlled sector needed */
-        if (nextOnline != this->m_ownSector)
-            this->m_handoffs[flight.callsign()] = { false, false, flight, nextOnline };
+        if (nextNode != this->m_ownSector)
+            this->m_handoffs[flight.callsign()] = { false, false, flight, nextNode };
     }
     /* check if we have to remove the handoff information */
     else if (this->m_handoffs.end() != it && true == it->second.handoffPerformed) {
         /* find the current online controller */
-        auto currentNode = this->findResponsible(flight.currentPosition(), flight.type());
-        auto currentOnline = this->findOnlineResponsible(currentNode);
+        auto currentNode = this->findOnlineResponsible(flight, flight.currentPosition());
 
         /* check if an other controller is responsible */
-        if (currentOnline != this->m_ownSector)
+        if (currentNode != this->m_ownSector)
             this->m_handoffs.erase(it);
     }
 }
@@ -646,7 +609,7 @@ bool SectorControl::handoffPossible(const std::string& callsign) const {
         return false;
 
     auto& flight = surveillance::FlightRegistry::instance().flight(callsign);
-    return this->isInOwnSectors(flight.currentPosition());
+    return this->isInOwnSectors(flight, flight.currentPosition());
 }
 
 void SectorControl::handoffPerformed(const std::string& callsign) {
@@ -691,9 +654,6 @@ std::list<std::shared_ptr<SectorControl::Node>> SectorControl::findSectorCandida
 
     if (this->m_ownSector != node && 0 != node->controllers.size())
         retval.push_back(node);
-
-    for (const auto& sibling : std::as_const(node->siblings))
-        retval.splice(retval.end(), this->findSectorCandidates(sibling));
 
     for (const auto& child : std::as_const(node->children))
         retval.splice(retval.end(), this->findSectorCandidates(child));
