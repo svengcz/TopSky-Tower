@@ -48,6 +48,18 @@ ExternalProject_Add(
         -DBUILD_TESTING=OFF
 )
 ExternalProject_Add(
+    GeographicLib
+    GIT_REPOSITORY https://git.code.sf.net/p/geographiclib/code
+    GIT_TAG release
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCPACK_BINARY_NSIS=OFF
+        -DGEOGRAPHICLIB_DATA=${CMAKE_INSTALL_PREFIX}
+        -DGEOGRAPHICLIB_TYPE=STATIC
+        -DGEOGRAPHICLIB_PRECISION=1
+)
+ExternalProject_Add(
     Boost
     URL https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2
     URL_HASH SHA256=953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb
