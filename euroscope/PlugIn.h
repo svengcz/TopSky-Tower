@@ -10,6 +10,8 @@
 #error "include 'stdafx.h' before including this file for PCH"
 #endif
 
+#include <functional>
+
 #pragma warning(push, 0)
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
