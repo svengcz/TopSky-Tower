@@ -176,7 +176,9 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     }
 
     auto plugin = static_cast<PlugIn*>(this->GetPlugIn());
-    this->m_controllers->setOwnSector(plugin->ControllerMyself().GetPositionId());
+    std::string_view positionId(plugin->ControllerMyself().GetPositionId());
+    if (0 != positionId.length() && "XX" != positionId)
+        this->m_controllers->setOwnSector(Converter::convert(plugin->ControllerMyself()));
 
     /* update the internal information of the radar targets */
     for (auto rt = plugin->RadarTargetSelectFirst(); true == rt.IsValid(); rt = plugin->RadarTargetSelectNext(rt)) {

@@ -98,8 +98,9 @@ namespace topskytower {
             void controllerOffline(const types::ControllerInfo& info);
             /**
              * @brief Defines the sector of this controller
+             * @param[in] info The controller information
              */
-            void setOwnSector(const std::string_view& identifier);
+            void setOwnSector(const types::ControllerInfo& info);
             /**
              * @brief Returns the own sector
              * @return The own sector

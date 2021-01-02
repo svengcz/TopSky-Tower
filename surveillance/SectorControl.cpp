@@ -443,12 +443,13 @@ void SectorControl::controllerOffline(const types::ControllerInfo& info) {
     }
 }
 
-void SectorControl::setOwnSector(const std::string_view& identifier) {
+void SectorControl::setOwnSector(const types::ControllerInfo& info) {
     /* mark the same sector as the own sector */
-    if (nullptr != this->m_ownSector && identifier == this->m_ownSector->sector.controllerInfo().identifier())
+    if (nullptr != this->m_ownSector && info.identifier() == this->m_ownSector->sector.controllerInfo().identifier())
         return;
 
-    this->m_ownSector = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, identifier);
+    this->m_ownSector = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, info.identifier());
+    this->m_ownSector->controllers.push_back(info);
 }
 
 std::shared_ptr<SectorControl::Node> SectorControl::findSectorInList(const std::list<std::shared_ptr<SectorControl::Node>>& nodes,
