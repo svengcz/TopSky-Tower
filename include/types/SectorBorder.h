@@ -10,10 +10,6 @@
 #include <string>
 #include <vector>
 
-#pragma warning(push, 0)
-#include <boost/geometry/geometries/polygon.hpp>
-#pragma warning(pop)
-
 #include <types/Coordinate.h>
 #include <types/Position.h>
 #include <types/Quantity.hpp>
@@ -30,7 +26,7 @@ namespace topskytower {
             std::vector<std::string>       m_deputies;
             types::Length                  m_lowerAltitude;
             types::Length                  m_upperAltitude;
-            bg::model::polygon<Coordinate> m_shape;
+            std::vector<types::Coordinate> m_edges;
             types::Angle                   m_boundingBox[2][2];
 
         public:
@@ -96,11 +92,6 @@ namespace topskytower {
              * @param[in] edges The edges of the border
              */
             void setEdges(const std::list<types::Coordinate>& edges);
-            /**
-             * @brief Returns the edges of the border
-             * @return The edges that describe the border
-             */
-            const bg::model::ring<types::Coordinate>& edges() const;
             /**
              * @brief Checks if a coordinate is inside the border and ignores the altitude restrictions
              * @param[in] coordinate The checked coordinate

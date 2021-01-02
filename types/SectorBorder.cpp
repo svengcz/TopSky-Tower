@@ -7,7 +7,18 @@
 
 #include <algorithm>
 
+#pragma warning(push, 0)
+#include <boost/geometry/algorithms/detail/course.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
+#include <boost/geometry/geometries/register/point.hpp>
+#include <boost/geometry/geometry.hpp>
+#pragma warning(pop)
+
+#include <GeographicLib/Gnomonic.hpp>
+
 #include <types/SectorBorder.h>
+
+namespace bg = boost::geometry;
 
 using namespace topskytower;
 using namespace topskytower::types;
@@ -17,7 +28,7 @@ SectorBorder::SectorBorder() noexcept :
         m_deputies(),
         m_lowerAltitude(),
         m_upperAltitude(),
-        m_shape(),
+        m_edges(),
         m_boundingBox{ { std::numeric_limits<float>::max() * types::degree, -std::numeric_limits<float>::max() * types::degree },
                        { std::numeric_limits<float>::max() * types::degree, -std::numeric_limits<float>::max() * types::degree } } { }
 
@@ -27,7 +38,7 @@ SectorBorder::SectorBorder(std::string&& owner, std::vector<std::string>&& deput
         m_deputies(std::move(deputies)),
         m_lowerAltitude(lowerAltitude),
         m_upperAltitude(upperAltitude),
-        m_shape(),
+        m_edges(),
         m_boundingBox{ { std::numeric_limits<float>::max() * types::degree, -std::numeric_limits<float>::max() * types::degree },
                        { std::numeric_limits<float>::max() * types::degree, -std::numeric_limits<float>::max() * types::degree } } { }
 
@@ -36,7 +47,7 @@ SectorBorder::SectorBorder(const SectorBorder& other) noexcept :
         m_deputies(other.m_deputies),
         m_lowerAltitude(other.m_lowerAltitude),
         m_upperAltitude(other.m_upperAltitude),
-        m_shape(other.m_shape),
+        m_edges(other.m_edges),
         m_boundingBox{ { other.m_boundingBox[0][0], other.m_boundingBox[0][1] },
                        { other.m_boundingBox[1][0], other.m_boundingBox[1][1] } } { }
 
@@ -45,7 +56,7 @@ SectorBorder::SectorBorder(SectorBorder&& other) noexcept :
         m_deputies(std::move(other.m_deputies)),
         m_lowerAltitude(other.m_lowerAltitude),
         m_upperAltitude(other.m_upperAltitude),
-        m_shape(std::move(other.m_shape)),
+        m_edges(std::move(other.m_edges)),
         m_boundingBox{ { other.m_boundingBox[0][0], other.m_boundingBox[0][1] },
                        { other.m_boundingBox[1][0], other.m_boundingBox[1][1] } } { }
 
@@ -55,7 +66,7 @@ SectorBorder& SectorBorder::operator=(const SectorBorder& other) noexcept {
         this->m_deputies = other.m_deputies;
         this->m_lowerAltitude = other.m_lowerAltitude;
         this->m_upperAltitude = other.m_upperAltitude;
-        this->m_shape = other.m_shape;
+        this->m_edges = other.m_edges;
 
         for (int i = 0; i < 2; ++i) {
             for (int c = 0; c < 2; ++c)
@@ -71,7 +82,7 @@ SectorBorder& SectorBorder::operator=(SectorBorder&& other) noexcept {
         this->m_deputies = std::move(other.m_deputies);
         this->m_lowerAltitude = other.m_lowerAltitude;
         this->m_upperAltitude = other.m_upperAltitude;
-        this->m_shape = std::move(other.m_shape);
+        this->m_edges = std::move(other.m_edges);
 
         for (int i = 0; i < 2; ++i) {
             for (int c = 0; c < 2; ++c)
@@ -98,26 +109,25 @@ const types::Length& SectorBorder::upperAltitude() const {
 }
 
 void SectorBorder::setEdges(const std::list<types::Coordinate>& edges) {
+    if (3 > edges.size())
+        return;
+
+    this->m_edges.clear();
+    this->m_edges.reserve(edges.size());
+
     this->m_boundingBox[0][0] = std::numeric_limits<float>::max() * types::degree;
     this->m_boundingBox[0][1] = -std::numeric_limits<float>::max() * types::degree;
     this->m_boundingBox[1][0] = std::numeric_limits<float>::max() * types::degree;
     this->m_boundingBox[1][1] = -std::numeric_limits<float>::max() * types::degree;
-    this->m_shape = bg::model::polygon<Coordinate>();
 
-    for (const auto& coordinate : std::as_const(edges)) {
-        this->m_boundingBox[0][0] = std::min(coordinate.longitude(), this->m_boundingBox[0][0]);
-        this->m_boundingBox[0][1] = std::max(coordinate.longitude(), this->m_boundingBox[0][1]);
-        this->m_boundingBox[1][0] = std::min(coordinate.latitude(), this->m_boundingBox[1][0]);
-        this->m_boundingBox[1][1] = std::max(coordinate.latitude(), this->m_boundingBox[1][1]);
-
-        bg::append(this->m_shape, coordinate);
+    /* create the polygon and calculate the center point */
+    for (const auto& edge : std::as_const(edges)) {
+        this->m_boundingBox[0][0] = std::min(this->m_boundingBox[0][0], edge.longitude());
+        this->m_boundingBox[0][1] = std::max(this->m_boundingBox[0][1], edge.longitude());
+        this->m_boundingBox[1][0] = std::min(this->m_boundingBox[1][0], edge.latitude());
+        this->m_boundingBox[1][1] = std::max(this->m_boundingBox[1][1], edge.latitude());
+        this->m_edges.push_back(edge);
     }
-
-    bg::correct(this->m_shape);
-}
-
-const bg::model::ring<types::Coordinate>& SectorBorder::edges() const {
-    return this->m_shape.outer();
 }
 
 bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate) const {
@@ -127,7 +137,25 @@ bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate) const {
     if (this->m_boundingBox[1][0] > coordinate.latitude() || this->m_boundingBox[1][1] < coordinate.latitude())
         return false;
 
-    return bg::covered_by(coordinate, this->m_shape);
+    GeographicLib::Gnomonic projection(GeographicLib::Geodesic::WGS84());
+    bg::model::polygon<bg::model::point<float, 2, bg::cs::cartesian>> polygon;
+
+    for (const auto& edge : std::as_const(this->m_edges)) {
+        float x, y;
+
+        projection.Forward(coordinate.latitudeDegree(), coordinate.longitudeDegree(),
+                           edge.latitudeDegree(), edge.longitudeDegree(), x, y);
+
+        bg::append(polygon, bg::model::point<float, 2, bg::cs::cartesian>(x, y));
+    }
+    bg::correct(polygon);
+
+    float x, y;
+
+    projection.Forward(coordinate.latitudeDegree(), coordinate.longitudeDegree(),
+                       coordinate.latitudeDegree(), coordinate.longitudeDegree(), x, y);
+
+    return bg::within(bg::model::point<float, 2, bg::cs::cartesian>(x, y), polygon);
 }
 
 bool SectorBorder::isInsideBorder(const types::Position& position) const {
