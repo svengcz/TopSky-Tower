@@ -93,6 +93,7 @@ ADD_LIBRARY(
 TARGET_INCLUDE_DIRECTORIES(TopSky-Tower INTERFACE EuroScope)
 TARGET_LINK_LIBRARIES(TopSky-Tower EuroScope Gdiplus types formats surveillance)
 TARGET_LINK_LIBRARIES(TopSky-Tower debug libcurl-d.lib optimized libcurl.lib)
+TARGET_LINK_LIBRARIES(TopSky-Tower debug Geographic_d.lib optimized Geographic.lib)
 
 # configure the debugger
 IF(MSVC)
