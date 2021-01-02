@@ -5,6 +5,8 @@
  *   Implements the sector control system
  */
 
+#include <algorithm>
+
 #include <surveillance/FlightRegistry.h>
 #include <surveillance/SectorControl.h>
 
