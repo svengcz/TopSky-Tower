@@ -8,6 +8,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
+#include <sstream>
 
 #define CURL_STATICLIB 1
 #include <curl/curl.h>
