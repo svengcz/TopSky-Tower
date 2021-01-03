@@ -41,6 +41,51 @@ static void __analyzeScratchPad(const std::string& scratchPad, types::Flight& fl
         flight.setEstablishedOnILS(true);
 }
 
+static __inline types::Aircraft __translate(const std::string& code, char wtc) {
+    const auto& aircrafts = surveillance::ConfigurationRegistry::instance().aircrafts();
+    types::Aircraft retval;
+
+    auto it = aircrafts.find(code);
+    if (aircrafts.cend() != it) {
+        retval = it->second;
+    }
+    else {
+        switch (wtc) {
+        case 'L':
+            retval = aircrafts.find("C172")->second;
+            break;
+        case 'H':
+            retval = aircrafts.find("B744")->second;
+            break;
+        case 'J':
+            retval = aircrafts.find("A388")->second;
+            break;
+        case 'M':
+        default:
+            retval = aircrafts.find("A320")->second;
+            break;
+        }
+    }
+
+    switch (wtc) {
+    case 'L':
+        retval.setWTC(types::Aircraft::WTC::Light);
+        break;
+    case 'H':
+        retval.setWTC(types::Aircraft::WTC::Heavy);
+        break;
+    case 'J':
+        retval.setWTC(types::Aircraft::WTC::Super);
+        break;
+    case 'M':
+    default:
+        retval.setWTC(types::Aircraft::WTC::Medium);
+        break;
+    }
+
+    return retval;
+}
+
 types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     types::FlightPlan retval;
 
@@ -55,6 +100,54 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
         break;
     }
 
+    /* translate the capabilities-entry */
+    switch (plan.GetFlightPlanData().GetCapibilities()) {
+    case 'T':
+    case 'U':
+        retval.setTransponderExistence(true);
+        break;
+    case 'D':
+    case 'M':
+    case 'Y':
+        retval.setRnavCapable(true);
+        break;
+    case 'B':
+    case 'A':
+    case 'N':
+    case 'P':
+    case 'C':
+    case 'I':
+    case 'E':
+    case 'F':
+    case 'G':
+    case 'R':
+    case 'W':
+    case 'Q':
+        retval.setRnavCapable(true);
+        retval.setTransponderExistence(true);
+        break;
+    case 'X':
+    default:
+        break;
+    }
+
+    auto aircraft = __translate(plan.GetFlightPlanData().GetAircraftFPType(), plan.GetFlightPlanData().GetAircraftWtc());
+    aircraft.setEngineCount(static_cast<std::uint8_t>(plan.GetFlightPlanData().GetEngineNumber()));
+    switch (plan.GetFlightPlanData().GetEngineType()) {
+    case 'P':
+    case 'T':
+        aircraft.setEngineType(types::Aircraft::EngineType::Turboprop);
+        break;
+    case 'E':
+        aircraft.setEngineType(types::Aircraft::EngineType::Electric);
+        break;
+    case 'J':
+    default:
+        aircraft.setEngineType(types::Aircraft::EngineType::Jet);
+        break;
+    }
+
+    retval.setAircraft(aircraft);
     retval.setOrigin(plan.GetFlightPlanData().GetOrigin());
     retval.setDepartureRoute(plan.GetFlightPlanData().GetSidName());
     retval.setDestination(plan.GetFlightPlanData().GetDestination());
