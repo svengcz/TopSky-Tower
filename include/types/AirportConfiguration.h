@@ -18,8 +18,9 @@ namespace topskytower {
          * @ingroup types
          */
         struct StandardInstrumentDeparture {
-            std::string   name;           /**< SID's name */
-            types::Length clearanceLimit; /**< SID's clearance limit */
+            std::string   name;               /**< SID's name */
+            types::Length clearanceLimit;     /**< SID's clearance limit */
+            bool          containsStepClimbs; /**< SID contains step climbs or speed restrictions */
         };
 
         /**

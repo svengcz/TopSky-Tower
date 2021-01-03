@@ -21,11 +21,12 @@ void AirportFileFormat::parseSid(const std::string& line, types::StandardInstrum
         return;
 
     auto split = helper::String::splitString(line, ":");
-    if (3 != split.size())
+    if (4 != split.size())
         return;
 
     sid.name = split[1];
     sid.clearanceLimit = static_cast<float>(std::atoi(split[2].c_str())) * types::feet;
+    sid.containsStepClimbs = '0' != split[3][0];
 }
 
 AirportFileFormat::AirportFileFormat(const std::string& filename) :
