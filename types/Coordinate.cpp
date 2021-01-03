@@ -79,14 +79,6 @@ Angle& Coordinate::longitude() {
     return this->m_longitude;
 }
 
-float Coordinate::longitudeDegree() const {
-    return this->m_longitude.convert(types::degree);
-}
-
-void Coordinate::setLongitudeDegree(float value) {
-    this->m_longitude = value * types::degree;
-}
-
 const Angle& Coordinate::latitude() const {
     return this->m_latitude;
 }
@@ -95,33 +87,25 @@ Angle& Coordinate::latitude() {
     return this->m_latitude;
 }
 
-float Coordinate::latitudeDegree() const {
-    return this->m_latitude.convert(types::degree);
-}
-
-void Coordinate::setLatitudeDegree(float value) {
-    this->m_latitude = value * types::degree;
-}
-
 Coordinate Coordinate::projection(const Angle& heading, const Length& distance) const {
     float lat, lon;
-    GeographicLib::Geodesic::WGS84().Direct(this->latitudeDegree(), this->longitudeDegree(), heading.convert(types::degree),
-                                            distance.convert(types::metre), lat, lon);
+    GeographicLib::Geodesic::WGS84().Direct(this->latitude().convert(types::degree), this->longitude().convert(types::degree),
+                                            heading.convert(types::degree), distance.convert(types::metre), lat, lon);
     return std::move(Coordinate(lon * types::degree, lat * types::degree));
 }
 
 Length Coordinate::distanceTo(const Coordinate& other) const {
     float distance;
-    GeographicLib::Geodesic::WGS84().Inverse(this->latitudeDegree(), this->longitudeDegree(),
-                                             other.latitudeDegree(), other.longitudeDegree(),
+    GeographicLib::Geodesic::WGS84().Inverse(this->latitude().convert(types::degree), this->longitude().convert(types::degree),
+                                             other.latitude().convert(types::degree), other.longitude().convert(types::degree),
                                              distance);
     return distance * types::metre;
 }
 
 Angle Coordinate::bearingTo(const Coordinate& other) const {
     float azimuth0, azimuth1;
-    GeographicLib::Geodesic::WGS84().Inverse(this->latitudeDegree(), this->longitudeDegree(),
-                                             other.latitudeDegree(), other.longitudeDegree(),
+    GeographicLib::Geodesic::WGS84().Inverse(this->latitude().convert(types::degree), this->longitude().convert(types::degree),
+                                             other.latitude().convert(types::degree), other.longitude().convert(types::degree),
                                              azimuth0, azimuth1);
     (void)azimuth1;
 
