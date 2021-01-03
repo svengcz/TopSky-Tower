@@ -34,7 +34,8 @@ namespace topskytower {
             enum class EngineType {
                 Unknown   = 0, /**< Unknown engine type */
                 Turboprop = 1, /**< Turboprobs in use */
-                Jet       = 2  /**< Jets in use */
+                Jet       = 2, /**< Jets in use */
+                Electric  = 3  /**< Electric engines in use */
             };
 
         private:
