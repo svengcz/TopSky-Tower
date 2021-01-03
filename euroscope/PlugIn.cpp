@@ -54,6 +54,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("Manually alerts 2", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts2));
     this->RegisterTagItemType("Flight marker", static_cast<int>(PlugIn::TagItemElement::FlightMarker));
     this->RegisterTagItemType("PDC indicator", static_cast<int>(PlugIn::TagItemElement::PdcIndicator));
+    this->RegisterTagItemType("SID step climb indicator", static_cast<int>(PlugIn::TagItemElement::SIDStepClimbIndicator));
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
@@ -188,6 +189,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     case PlugIn::TagItemElement::PdcIndicator:
     {
         std::string msg("\u2022 ");
+        *fontSize = 4.0f;
         std::memcpy(itemString, msg.c_str(), msg.length() + 1);
 
         if (true == surveillance::PdcControl::instance().messagesAvailable(flight))
@@ -197,6 +199,31 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
         break;
     }
+    case PlugIn::TagItemElement::SIDStepClimbIndicator:
+        if (flight.flightPlan().type() == types::FlightPlan::Type::IFR) {
+            const auto& config = surveillance::ConfigurationRegistry::instance().airportConfiguration(flight.flightPlan().origin());
+            auto sidIt = config.sids.find(flight.flightPlan().departureRoute());
+
+            if (config.sids.cend() != sidIt) {
+                if (true == sidIt->second.containsStepClimbs) {
+                    std::strcpy(itemString, "YES");
+                    *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
+                }
+                else {
+                    std::strcpy(itemString, "NO");
+                    *colorCode = EuroScopePlugIn::TAG_COLOR_NON_CONCERNED;
+                }
+            }
+            else {
+                std::strcpy(itemString, "UKN");
+                *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
+            }
+        }
+        else {
+            std::strcpy(itemString, "VFR");
+            *colorCode = EuroScopePlugIn::TAG_COLOR_NON_CONCERNED;
+        }
+        break;
     default:
         break;
     }

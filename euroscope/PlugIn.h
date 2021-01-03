@@ -55,12 +55,13 @@ namespace topskytower {
 
         private:
             enum class TagItemElement {
-                HandoffFrequency = 2001,
-                ManuallyAlerts0  = 2002,
-                ManuallyAlerts1  = 2003,
-                ManuallyAlerts2  = 2004,
-                FlightMarker     = 2005,
-                PdcIndicator     = 2006
+                HandoffFrequency      = 2001,
+                ManuallyAlerts0       = 2002,
+                ManuallyAlerts1       = 2003,
+                ManuallyAlerts2       = 2004,
+                FlightMarker          = 2005,
+                PdcIndicator          = 2006,
+                SIDStepClimbIndicator = 2007
             };
 
             std::string                             m_settingsPath;
