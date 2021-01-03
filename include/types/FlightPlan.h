@@ -107,12 +107,12 @@ namespace topskytower {
              * @brief Sets the clearance flag of the flight plan
              * @param[in] flag True if the flight is cleared according to the flight plan, else false
              */
-            void setClearedFlag(bool flag);
+            void setClearanceFlag(bool flag);
             /**
              * @brief Returns the clearance flag of the flight plan
              * @return True if the flight is cleared according to the flight plan, else false
              */
-            bool clearedFlag() const;
+            bool clearanceFlag() const;
             /**
              * @brief Sets the assigned squawk for the flight
              * @param[in] squawk The new assigned squawk

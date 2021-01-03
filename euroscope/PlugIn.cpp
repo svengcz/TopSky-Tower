@@ -507,7 +507,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                                   2, false == surveillance::PdcControl::instance().messagesAvailable(flight), false);
         this->AddPopupListElement("Send stand-by", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendStandby));
         this->AddPopupListElement("Send clearance", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendClearance),
-                                  false, 2, true == flight.flightPlan().clearedFlag(), false);
+                                  false, 2, true == flight.flightPlan().clearanceFlag(), false);
         break;
     case PlugIn::TagItemFunction::PdcReadMessage:
     {

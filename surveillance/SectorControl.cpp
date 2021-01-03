@@ -520,7 +520,7 @@ std::shared_ptr<SectorControl::Node> SectorControl::findLowestSector(const std::
     for (const auto& child : std::as_const(node->children)) {
         auto retval = SectorControl::findLowestSector(child, flight, position);
         if (nullptr != retval) {
-            if (types::Sector::Type::Delivery != retval->sector.type() || false == flight.flightPlan().clearedFlag())
+            if (types::Sector::Type::Delivery != retval->sector.type() || false == flight.flightPlan().clearanceFlag())
                 return retval;
         }
     }

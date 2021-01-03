@@ -67,11 +67,11 @@ const Length& FlightPlan::clearanceLimit() const {
     return this->m_clearanceLimit;
 }
 
-void FlightPlan::setClearedFlag(bool flag) {
+void FlightPlan::setClearanceFlag(bool flag) {
     this->m_cleared = flag;
 }
 
-bool FlightPlan::clearedFlag() const {
+bool FlightPlan::clearanceFlag() const {
     return this->m_cleared;
 }
 
