@@ -2,7 +2,7 @@
  * Author:
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
- *   Implements the euroscope file format
+ *   Implements the airport file format
  */
 
 #include <filesystem>
