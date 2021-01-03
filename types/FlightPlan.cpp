@@ -7,17 +7,21 @@
 
 #include <types/FlightPlan.h>
 
+using namespace topskytower;
 using namespace topskytower::types;
 
 FlightPlan::FlightPlan() :
         m_type(FlightPlan::Type::Unknown),
+        m_aircraft(),
         m_origin(),
         m_departureRoute(),
         m_destination(),
         m_arrivalRoute(),
         m_assignedSquawk(0),
         m_clearanceLimit(),
-        m_cleared(false) { }
+        m_clearanceFlags(false),
+        m_rnavCapable(false),
+        m_transponderExists(false) { }
 
 void FlightPlan::setType(FlightPlan::Type type) {
     this->m_type = type;
@@ -25,6 +29,14 @@ void FlightPlan::setType(FlightPlan::Type type) {
 
 FlightPlan::Type FlightPlan::type() const {
     return this->m_type;
+}
+
+void FlightPlan::setAircraft(const types::Aircraft& aircraft) {
+    this->m_aircraft = aircraft;
+}
+
+const types::Aircraft& FlightPlan::aircraft() const {
+    return this->m_aircraft;
 }
 
 void FlightPlan::setOrigin(const std::string& origin) {
@@ -68,11 +80,11 @@ const Length& FlightPlan::clearanceLimit() const {
 }
 
 void FlightPlan::setClearanceFlag(bool flag) {
-    this->m_cleared = flag;
+    this->m_clearanceFlags = flag;
 }
 
 bool FlightPlan::clearanceFlag() const {
-    return this->m_cleared;
+    return this->m_clearanceFlags;
 }
 
 void FlightPlan::setAssignedSquawk(std::uint16_t squawk) {
@@ -81,4 +93,20 @@ void FlightPlan::setAssignedSquawk(std::uint16_t squawk) {
 
 std::uint16_t FlightPlan::assignedSquawk() const {
     return this->m_assignedSquawk;
+}
+
+void FlightPlan::setRnavCapable(bool capable) {
+    this->m_rnavCapable = capable;
+}
+
+bool FlightPlan::rnavCapable() const {
+    return this->m_rnavCapable;
+}
+
+void FlightPlan::setTransponderExistence(bool exists) {
+    this->m_transponderExists = exists;
+}
+
+bool FlightPlan::transponderExists() const {
+    return this->m_transponderExists;
 }

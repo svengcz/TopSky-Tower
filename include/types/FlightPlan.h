@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include <types/Aircraft.h>
 #include <types/Quantity.hpp>
 
 namespace topskytower {
@@ -28,14 +29,17 @@ namespace topskytower {
             };
 
         private:
-            Type          m_type;
-            std::string   m_origin;
-            std::string   m_departureRoute;
-            std::string   m_destination;
-            std::string   m_arrivalRoute;
-            std::uint16_t m_assignedSquawk;
-            types::Length m_clearanceLimit;
-            bool          m_cleared;
+            Type            m_type;
+            types::Aircraft m_aircraft;
+            std::string     m_origin;
+            std::string     m_departureRoute;
+            std::string     m_destination;
+            std::string     m_arrivalRoute;
+            std::uint16_t   m_assignedSquawk;
+            types::Length   m_clearanceLimit;
+            bool            m_clearanceFlags;
+            bool            m_rnavCapable;
+            bool            m_transponderExists;
 
         public:
             /**
@@ -53,6 +57,16 @@ namespace topskytower {
              * @return The flight plan type
              */
             Type type() const;
+            /**
+             * @brief Sets the aircraft
+             * @param[in] aircraft The new aircraft
+             */
+            void setAircraft(const types::Aircraft& aircraft);
+            /**
+             * @brief Returns the registered aircraft
+             * @return The aircraft
+             */
+            const types::Aircraft& aircraft() const;
             /**
              * @brief Sets the origin of the flight
              * @param[in] origin The new origin
@@ -123,6 +137,26 @@ namespace topskytower {
              * @return The assigned squawk or zero
              */
             std::uint16_t assignedSquawk() const;
+            /**
+             * @brief Sets if a flight is RNAV-capable
+             * @param[in] capable True if the flight is RNAV-capable, else false
+             */
+            void setRnavCapable(bool capable);
+            /**
+             * @brief Returns if the flight is RNAV-capable
+             * @return True if the flight is RNAV-capable, else false
+             */
+            bool rnavCapable() const;
+            /**
+             * @brief Sets if a flight has a transponder
+             * @param[in] exists True if the flight has a transponder, else false
+             */
+            void setTransponderExistence(bool exists);
+            /**
+             * @brief Returns if the flight has a transponder
+             * @return True if the flight has a transponder, else false
+             */
+            bool transponderExists() const;
         };
     }
 }
