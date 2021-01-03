@@ -9,6 +9,8 @@
 #include <map>
 #include <string>
 
+#include <types/Quantity.hpp>
+
 namespace topskytower {
     namespace types {
         /**
@@ -17,7 +19,7 @@ namespace topskytower {
          */
         struct StandardInstrumentDeparture {
             std::string   name;           /**< SID's name */
-            std::uint16_t clearanceLimit; /**< SID's clearance limit */
+            types::Length clearanceLimit; /**< SID's clearance limit */
         };
 
         /**

@@ -25,7 +25,7 @@ void AirportFileFormat::parseSid(const std::string& line, types::StandardInstrum
         return;
 
     sid.name = split[1];
-    sid.clearanceLimit = static_cast<std::uint16_t>(std::atoi(split[2].c_str()));
+    sid.clearanceLimit = static_cast<float>(std::atoi(split[2].c_str())) * types::feet;
 }
 
 AirportFileFormat::AirportFileFormat(const std::string& filename) :
