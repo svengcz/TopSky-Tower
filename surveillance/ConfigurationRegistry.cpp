@@ -16,7 +16,15 @@ using namespace topskytower::surveillance;
 
 ConfigurationRegistry::ConfigurationRegistry() :
         m_systemConfig(),
-        m_airportsConfigurations(nullptr) { }
+        m_airportsConfiguration(nullptr),
+        m_aircraftConfiguration(nullptr) { }
+
+ConfigurationRegistry::~ConfigurationRegistry() {
+    if (nullptr != this->m_airportsConfiguration)
+        delete this->m_airportsConfiguration;
+    if (nullptr != this->m_aircraftConfiguration)
+        delete this->m_aircraftConfiguration;
+}
 
 void ConfigurationRegistry::configure(const std::string& path) {
     formats::SettingsFileFormat settings(path + "\\TopSkyTowerSettings.txt");
@@ -30,10 +38,13 @@ void ConfigurationRegistry::configure(const std::string& path) {
         }
     }
 
-    if (nullptr != this->m_airportsConfigurations)
-        delete this->m_airportsConfigurations;
+    if (nullptr != this->m_airportsConfiguration)
+        delete this->m_airportsConfiguration;
+    this->m_airportsConfiguration = new formats::AirportFileFormat(path + "\\TopSkyTowerAirports.txt");
 
-    this->m_airportsConfigurations = new formats::AirportFileFormat(path + "\\TopSkyTowerAirports.txt");
+    if (nullptr != this->m_aircraftConfiguration)
+        delete this->m_aircraftConfiguration;
+    this->m_aircraftConfiguration = new formats::AircraftFileFormat(path + "\\TopSkyTowerAircrafts.txt");
 }
 
 const types::SystemConfiguration& ConfigurationRegistry::systemConfiguration() const {
@@ -41,7 +52,11 @@ const types::SystemConfiguration& ConfigurationRegistry::systemConfiguration() c
 }
 
 const types::AirportConfiguration& ConfigurationRegistry::airportConfiguration(const std::string& icao) const {
-    return this->m_airportsConfigurations->configuration(icao);
+    return this->m_airportsConfiguration->configuration(icao);
+}
+
+const std::map<std::string, types::Aircraft>& ConfigurationRegistry::aircrafts() const {
+    return this->m_aircraftConfiguration->aircrafts();
 }
 
 ConfigurationRegistry& ConfigurationRegistry::instance() {
