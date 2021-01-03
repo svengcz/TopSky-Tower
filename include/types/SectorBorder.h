@@ -10,9 +10,17 @@
 #include <string>
 #include <vector>
 
+#pragma warning(push, 0)
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
+#include <boost/geometry/geometry.hpp>
+#pragma warning(pop)
+
 #include <types/Coordinate.h>
 #include <types/Position.h>
 #include <types/Quantity.hpp>
+
+namespace bg = boost::geometry;
 
 namespace topskytower {
     namespace types {
@@ -22,12 +30,13 @@ namespace topskytower {
          */
         class SectorBorder {
         private:
-            std::string                    m_owner;
-            std::vector<std::string>       m_deputies;
-            types::Length                  m_lowerAltitude;
-            types::Length                  m_upperAltitude;
-            std::vector<types::Coordinate> m_edges;
-            types::Angle                   m_boundingBox[2][2];
+            std::string                                                       m_owner;
+            std::vector<std::string>                                          m_deputies;
+            types::Length                                                     m_lowerAltitude;
+            types::Length                                                     m_upperAltitude;
+            types::Coordinate                                                 m_centroid;
+            bg::model::polygon<bg::model::point<float, 2, bg::cs::cartesian>> m_shape;
+            types::Angle                                                      m_boundingBox[2][2];
 
         public:
             /**
