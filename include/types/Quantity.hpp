@@ -275,6 +275,8 @@ namespace topskytower {
             return lhs.value() > rhs.value();
         }
 
+        /**< Defines a kilogram */
+        constexpr Mass kilogram(1.0f);
         /**< Defines the literal of kilograms */
         constexpr Mass operator"" _kg(long double value) { return Mass(static_cast<float>(value)); }
         /**< Defines the literal of kilograms */
