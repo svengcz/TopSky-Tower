@@ -30,18 +30,31 @@ namespace topskytower {
         };
 
         /**
+         * @brief Defines constraints for specific destinations
+         */
+        struct DestinationConstraint {
+            std::string   destination;        /**< The destination's ICAO */
+            bool          evenCruiseLevel;    /**< Marks if an even flight level is required */
+            types::Length minimumCruiseLevel; /**< Defines the minimum flight level */
+            types::Length maximumCruiseLevel; /**< Defines the maximum flight level */
+        };
+
+        /**
          * @brief Describes a airport configuration
          * @ingroup types
          */
         struct AirportConfiguration {
-            bool                                               valid; /**< Marks if the configuration is valid */
-            std::map<std::string, StandardInstrumentDeparture> sids;  /**< The SIDs per airports */
+            bool                                               valid;                  /**< Marks if the configuration is valid */
+            std::map<std::string, StandardInstrumentDeparture> sids;                   /**< The SIDs per airports */
+            std::list<DestinationConstraint>                   destinationConstraints; /**< The constraints of specific destinations */
 
             /**
              * @brief Creates an empty and unintialized airport configuration
              */
             AirportConfiguration() :
-                    valid(false) { }
+                    valid(false),
+                    sids(),
+                    destinationConstraints() { }
         };
     }
 }
