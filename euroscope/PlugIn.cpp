@@ -505,7 +505,9 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->OpenPopupList(area, "Aircraft menu", 2);
 
         /* define the menu bar for the tracking functions */
-        if (true == radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe()) {
+        if (true == system::ConfigurationRegistry::instance().systemConfiguration().trackingOnGround &&
+            true == radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe())
+        {
             this->AddPopupListElement("Transfer", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
                                       false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
                                       false == flightScreen->sectorControl().handoffRequired(flight.callsign()), false);
@@ -521,14 +523,16 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             std::string_view ctrCallsign = radarTarget.GetCorrelatedFlightPlan().GetHandoffTargetControllerCallsign();
             std::string_view trackedCallsign = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerCallsign();
 
-            this->AddPopupListElement("Assume", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
-                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, 0 != trackedCallsign.length(), false);
-            this->AddPopupListElement("Accept", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
-                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
-                                      this->ControllerMyself().GetCallsign() != ctrCallsign, false);
-            this->AddPopupListElement("Refuse", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
-                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
-                                      this->ControllerMyself().GetCallsign() != ctrCallsign, false);
+            if (true == system::ConfigurationRegistry::instance().systemConfiguration().trackingOnGround) {
+                this->AddPopupListElement("Assume", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
+                                          false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, 0 != trackedCallsign.length(), false);
+                this->AddPopupListElement("Accept", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
+                                          false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
+                                          this->ControllerMyself().GetCallsign() != ctrCallsign, false);
+                this->AddPopupListElement("Refuse", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
+                                          false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
+                                          this->ControllerMyself().GetCallsign() != ctrCallsign, false);
+            }
             this->AddPopupListElement("Handoff", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
                                       false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
                                       false == flightScreen->sectorControl().handoffRequired(flight.callsign()), false);
