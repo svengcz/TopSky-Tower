@@ -40,6 +40,7 @@ ADD_LIBRARY(
         ${HEADER_FILES}
 )
 TARGET_LINK_LIBRARIES(types helper)
+ADD_DEPENDENCIES(types GeographicLib Boost)
 
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
 SOURCE_GROUP("Header Files" FILES ${HEADER_FILES})

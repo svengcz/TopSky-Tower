@@ -23,6 +23,7 @@ ADD_LIBRARY(
         ${HEADER_FILES}
 )
 TARGET_LINK_LIBRARIES(surveillance types formats system)
+ADD_DEPENDENCIES(surveillance Curl)
 
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
 SOURCE_GROUP("Header Files" FILES ${HEADER_FILES})
