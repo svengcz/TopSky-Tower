@@ -10,6 +10,7 @@
 
 #include <types/Aircraft.h>
 #include <types/Quantity.hpp>
+#include <types/Route.h>
 
 namespace topskytower {
     namespace types {
@@ -34,12 +35,14 @@ namespace topskytower {
             std::string     m_origin;
             std::string     m_departureRoute;
             std::string     m_destination;
+            types::Length   m_flightLevel;
             std::string     m_arrivalRoute;
             std::uint16_t   m_assignedSquawk;
             types::Length   m_clearanceLimit;
             bool            m_clearanceFlags;
             bool            m_rnavCapable;
             bool            m_transponderExists;
+            Route           m_route;
 
         public:
             /**
@@ -87,6 +90,16 @@ namespace topskytower {
              * @return The destination as ICAO
              */
             const std::string& destination() const;
+            /**
+             * @brief Sets the cruise flight level
+             * @param[in] flightLevel The new cruise flight level
+             */
+            void setFlightLevel(const types::Length& flightLevel);
+            /**
+             * @brief Returns the cruise flight level
+             * @return The cruise flight level
+             */
+            const types::Length& flightLevel() const;
             /**
              * @brief Sets the departure route (SID) of the flight
              * @param[in] route The new SID
@@ -157,6 +170,16 @@ namespace topskytower {
              * @return True if the flight has a transponder, else false
              */
             bool transponderExists() const;
+            /**
+             * @brief Sets the defined route of the flight
+             * @param[in] route The new route
+             */
+            void setRoute(Route&& route);
+            /**
+             * @brief Returns the route of the flight
+             * @return The route
+             */
+            const Route& route() const;
         };
     }
 }

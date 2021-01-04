@@ -16,12 +16,14 @@ FlightPlan::FlightPlan() :
         m_origin(),
         m_departureRoute(),
         m_destination(),
+        m_flightLevel(),
         m_arrivalRoute(),
         m_assignedSquawk(0),
         m_clearanceLimit(),
         m_clearanceFlags(false),
         m_rnavCapable(false),
-        m_transponderExists(false) { }
+        m_transponderExists(false),
+        m_route() { }
 
 void FlightPlan::setType(FlightPlan::Type type) {
     this->m_type = type;
@@ -53,6 +55,14 @@ void FlightPlan::setDestination(const std::string& destination) {
 
 const std::string& FlightPlan::destination() const {
     return this->m_destination;
+}
+
+void FlightPlan::setFlightLevel(const types::Length& flightLevel) {
+    this->m_flightLevel = flightLevel;
+}
+
+const types::Length& FlightPlan::flightLevel() const {
+    return this->m_flightLevel;
 }
 
 void FlightPlan::setDepartureRoute(const std::string& route) {
@@ -109,4 +119,12 @@ void FlightPlan::setTransponderExistence(bool exists) {
 
 bool FlightPlan::transponderExists() const {
     return this->m_transponderExists;
+}
+
+void FlightPlan::setRoute(Route&& route) {
+    this->m_route = std::move(route);
+}
+
+const Route& FlightPlan::route() const {
+    return this->m_route;
 }
