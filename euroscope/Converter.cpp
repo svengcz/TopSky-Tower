@@ -134,6 +134,7 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
         break;
     }
 
+    /* translate the aircraft and set some specific values */
     auto aircraft = __translate(plan.GetFlightPlanData().GetAircraftFPType(), plan.GetFlightPlanData().GetAircraftWtc());
     aircraft.setEngineCount(static_cast<std::uint8_t>(plan.GetFlightPlanData().GetEngineNumber()));
     switch (plan.GetFlightPlanData().GetEngineType()) {
@@ -150,6 +151,7 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
         break;
     }
 
+    /* define the route information */
     retval.setAircraft(aircraft);
     retval.setOrigin(plan.GetFlightPlanData().GetOrigin());
     retval.setDepartureRoute(plan.GetFlightPlanData().GetSidName());
