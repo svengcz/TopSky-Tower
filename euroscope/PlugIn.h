@@ -49,6 +49,9 @@ namespace topskytower {
                 PdcReadMessage                      = 3012, /**< Read the next PDC message */
                 PdcSendStandby                      = 3013, /**< Send a stand-by message */
                 PdcSendClearance                    = 3014, /**< Sends the departure clearance message */
+                FlightPlanCheckMenu                 = 3015, /**< Opens the flight plan check menu */
+                FlightPlanCheckErrorLog             = 3016, /**< Opens a window with all error logs */
+                FlightPlanCheckOverwrite            = 3017, /**< Overwrites detected errors and marks the flight plan as OK */
                 UiElementIds                        = 4000, /**< Elements of the UI entries */
                 UiEditTextRequest                   = 4001, /**< Request an edit-field */
                 UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */
@@ -77,6 +80,7 @@ namespace topskytower {
             RadarScreen* findLastActiveScreen();
             static bool summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
                                                  char* itemString, int* colorCode);
+            static std::string flightPlanCheckResultLog(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes);
 
         public:
             /**

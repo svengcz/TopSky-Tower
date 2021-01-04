@@ -22,6 +22,7 @@
 #include <system/ConfigurationRegistry.h>
 #include <version.h>
 
+#include "ui/MessageViewerWindow.h"
 #include "ui/PdcDepartureClearanceWindow.h"
 #include "ui/PdcMessageViewerWindow.h"
 #include "PlugIn.h"
@@ -60,6 +61,7 @@ PlugIn::PlugIn() :
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
+    this->RegisterTagItemFunction("FP check menu", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckMenu));
 }
 
 PlugIn::~PlugIn() {
@@ -412,6 +414,52 @@ RadarScreen* PlugIn::findLastActiveScreen() {
     return retval;
 }
 
+std::string PlugIn::flightPlanCheckResultLog(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes) {
+    std::string retval;
+
+    if (0 == codes.size()) {
+        return "Completely wrong or no flight plan received!";
+    }
+    else {
+        for (const auto& code : std::as_const(codes)) {
+            switch (code) {
+            case surveillance::FlightPlanControl::ErrorCode::VFR:
+                retval += "VFR flight!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::NoError:
+                retval += "Valid flight plan - No errors found!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::Route:
+                retval += "No or an invalid route received!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::DepartureRoute:
+                retval += "Unknown SID found!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::EngineType:
+                retval += "ACs engine type is invalid!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::Navigation:
+                retval += "Navigation capabilities (i.e. RNAV) insufficient!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::Transponder:
+                retval += "AC does not have a transponder!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::FlightLevel:
+                retval += "Requested flight level is not between min/max allowed FL!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::EvenOddLevel:
+                retval += "Requested flight level is wrong based on even-odd-rule!\n";
+                break;
+            default:
+                retval += "Unknown error found!\n";
+                break;
+            }
+        }
+    }
+
+    return retval;
+}
+
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
     if (PlugIn::TagItemFunction::UiElementIds < static_cast<PlugIn::TagItemFunction>(functionId)) {
         switch (static_cast<PlugIn::TagItemFunction>(functionId)) {
@@ -584,7 +632,14 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                 radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(ctrCallsign.c_str());
             }
             else if (0 != candidates.size()) {
-                /* TODO */
+                RadarScreen::EuroscopeEvent esEvent = {
+                    static_cast<int>(PlugIn::TagItemFunction::SectorControllerHandoverSelectEvent),
+                    flight.callsign(),
+                    "",
+                    pt,
+                    area
+                };
+                this->findLastActiveScreen()->registerEuroscopeEvent(std::move(esEvent));
             }
         }
         break;
@@ -600,7 +655,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                 ctrCallsign += candidate.suffix();
 
                 this->AddPopupListElement(ctrCallsign.c_str(), "",
-                    static_cast<int>(PlugIn::TagItemFunction::SectorControllerHandoverSelect));
+                                          static_cast<int>(PlugIn::TagItemFunction::SectorControllerHandoverSelect));
             }
         }
         break;
@@ -612,8 +667,8 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("Read", "", static_cast<int>(PlugIn::TagItemFunction::PdcReadMessage), false,
                                   2, false == surveillance::PdcControl::instance().messagesAvailable(flight), false);
         this->AddPopupListElement("Send stand-by", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendStandby));
-        this->AddPopupListElement("Send clearance", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendClearance),
-                                  false, 2, true == flight.flightPlan().clearanceFlag(), false);
+        this->AddPopupListElement("Send clearance", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendClearance), false,
+                                  EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.flightPlan().clearanceFlag(), false);
         break;
     case PlugIn::TagItemFunction::PdcReadMessage:
     {
@@ -655,6 +710,36 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
         break;
     }
+    case PlugIn::TagItemFunction::FlightPlanCheckMenu:
+    {
+        /* check if the flight plan is valid */
+        const auto& codes = surveillance::FlightPlanControl::instance().errorCodes(flight.callsign());
+        bool isValid = false;
+        if (1 == codes.size()) {
+            if (surveillance::FlightPlanControl::ErrorCode::NoError == codes.front() ||
+                surveillance::FlightPlanControl::ErrorCode::VFR == codes.front())
+            {
+                isValid = true;
+            }
+        }
+
+        this->OpenPopupList(area, "FP check", 1);
+        this->AddPopupListElement("Read results", "", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckErrorLog));
+        this->AddPopupListElement("Overwrite", "", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckOverwrite), false,
+                                  EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == isValid, false);
+        break;
+    }
+    case PlugIn::TagItemFunction::FlightPlanCheckErrorLog:
+    {
+        auto messageLog = PlugIn::flightPlanCheckResultLog(surveillance::FlightPlanControl::instance().errorCodes(flight.callsign()));
+        auto viewer = new MessageViewerWindow(this->findLastActiveScreen(), "FP check: " + flight.callsign(),
+                                              messageLog);
+        viewer->setActive(true);
+        break;
+    }
+    case PlugIn::TagItemFunction::FlightPlanCheckOverwrite:
+        surveillance::FlightPlanControl::instance().overwrite(flight.callsign());
+        break;
     default:
         break;
     }
