@@ -161,6 +161,16 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     retval.setClearanceLimit(static_cast<float>(plan.GetControllerAssignedData().GetClearedAltitude()) * types::feet);
     retval.setClearanceFlag(plan.GetClearenceFlag());
 
+    /* convert the route */
+    std::vector<types::Waypoint> waypoints;
+    waypoints.reserve(plan.GetExtractedRoute().GetPointsNumber());
+    for (int i = 0; i < plan.GetExtractedRoute().GetPointsNumber(); ++i) {
+        waypoints.push_back(std::move(types::Waypoint(plan.GetExtractedRoute().GetPointName(i),
+                                                      Converter::convert(plan.GetExtractedRoute().GetPointPosition(i)))));
+    }
+    types::Route route(std::move(waypoints));
+    retval.setRoute(std::move(route));
+
     if (nullptr != plan.GetControllerAssignedData().GetSquawk())
         retval.setAssignedSquawk(static_cast<std::uint16_t>(std::atoi(plan.GetControllerAssignedData().GetSquawk())));
 
