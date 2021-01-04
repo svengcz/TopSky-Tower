@@ -93,7 +93,7 @@ bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char 
     if (true == flight.onMissedApproach()) {
         localOffset += 9;
         if (localIdx == idx) {
-            std::strcat(itemString, "MIS/APP ");
+            std::strcat(itemString, "M/A ");
             inserted = true;
         }
     }
