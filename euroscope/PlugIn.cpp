@@ -541,7 +541,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
         /* define the menu bar for the manually alerts */
         if (true == radarTarget.GetCorrelatedFlightPlan().IsValid()) {
-            this->AddPopupListElement("Mis/App", (true == flight.onMissedApproach() ? "X" : ""),
+            this->AddPopupListElement("M/A", (true == flight.onMissedApproach() ? "X" : ""),
                                       static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
             this->AddPopupListElement("Irreg", (true == flight.irregularHandoff() ? "X" : ""),
                                       static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
@@ -553,7 +553,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
         break;
     case PlugIn::TagItemFunction::AircraftControlSignal:
-        if (0 == std::strncmp(itemString, "Mis/App", 7))
+        if (0 == std::strncmp(itemString, "M/A", 7))
             PlugIn::updateManuallyAlerts(radarTarget, "MISAP_");
         else if (0 == std::strncmp(itemString, "Irreg", 5))
             PlugIn::updateManuallyAlerts(radarTarget, "IRREG_");
