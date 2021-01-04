@@ -17,26 +17,23 @@ using namespace topskytower;
 using namespace topskytower::formats;
 using namespace topskytower::types;
 
-bool AirportFileFormat::parseSid(const std::string& line, types::StandardInstrumentDeparture& sid) {
-    auto split = helper::String::splitString(line, ":");
-    if (9 != split.size())
+bool AirportFileFormat::parseSid(const std::vector<std::string>& elements, types::StandardInstrumentDeparture& sid) {
+    if (9 != elements.size())
         return false;
-    if ("SID" != split[0])
+    if (0 == elements[1].length())
         return false;
-    if (0 == split[1].length())
-        return false;
-    if (0 == split[2].length())
+    if (0 == elements[2].length())
         return false;
 
     /* translate the mandatory entries */
-    sid.name = split[1];
-    sid.clearanceLimit = static_cast<float>(std::atoi(split[2].c_str())) * types::feet;
+    sid.name = elements[1];
+    sid.clearanceLimit = static_cast<float>(std::atoi(elements[2].c_str())) * types::feet;
 
     /* translate the optional entries */
-    if (0 != split[3].length())
-        sid.containsStepClimbs = '0' != split[3][0];
-    if (0 != split[4].length()) {
-        switch (split[4][0]) {
+    if (0 != elements[3].length())
+        sid.containsStepClimbs = '0' != elements[3][0];
+    if (0 != elements[4].length()) {
+        switch (elements[4][0]) {
         case 'J':
             sid.engineType = types::Aircraft::EngineType::Jet;
             break;
@@ -50,14 +47,34 @@ bool AirportFileFormat::parseSid(const std::string& line, types::StandardInstrum
             return false;
         }
     }
-    if (0 != split[5].length())
-        sid.requiresTransponder = '0' != split[5][0];
-    if (0 != split[6].length())
-        sid.requiresRnav = '0' != split[6][0];
-    if (0 != split[7].length())
-        sid.minimumCruiseLevel = static_cast<float>(std::atoi(split[7].c_str())) * types::feet;
-    if (0 != split[8].length())
-        sid.maximumCruiseLevel = static_cast<float>(std::atoi(split[8].c_str())) * types::feet;
+    if (0 != elements[5].length())
+        sid.requiresTransponder = '0' != elements[5][0];
+    if (0 != elements[6].length())
+        sid.requiresRnav = '0' != elements[6][0];
+    if (0 != elements[7].length())
+        sid.minimumCruiseLevel = static_cast<float>(std::atoi(elements[7].c_str())) * types::feet;
+    if (0 != elements[8].length())
+        sid.maximumCruiseLevel = static_cast<float>(std::atoi(elements[8].c_str())) * types::feet;
+
+    return true;
+}
+
+bool AirportFileFormat::parseConstraint(const std::vector<std::string>& elements, types::DestinationConstraint& constraint) {
+    if (5 != elements.size())
+        return false;
+    if (0 == elements[1].length())
+        return false;
+    if (0 == elements[2].length())
+        return false;
+
+    constraint.destination = elements[1];
+    constraint.evenCruiseLevel = '0' != elements[2][0];
+    if (0 != elements[3].length())
+        constraint.minimumCruiseLevel = static_cast<float>(std::atoi(elements[3].c_str())) * types::feet;
+    if (0 != elements[4].length())
+        constraint.maximumCruiseLevel = static_cast<float>(std::atoi(elements[4].c_str())) * types::feet;
+
+    return true;
 }
 
 AirportFileFormat::AirportFileFormat(const std::string& filename) :
@@ -71,19 +88,34 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
 
         this->m_configurations[icao].valid = true;
         for (const auto& line : std::as_const(block.second)) {
-            types::StandardInstrumentDeparture sid = {
-                "",
-                0_ft,
-                false,
-                types::Aircraft::EngineType::Unknown,
-                false,
-                false,
-                0_ft,
-                99000_ft
-            };
+            auto split = helper::String::splitString(line, ":");
 
-            this->parseSid(line, sid);
-            this->m_configurations[icao].sids[sid.name] = sid;
+            if ("SID" == split[0]) {
+                types::StandardInstrumentDeparture sid = {
+                    "",
+                    0_ft,
+                    false,
+                    types::Aircraft::EngineType::Unknown,
+                    false,
+                    false,
+                    0_ft,
+                    99000_ft
+                };
+
+                if (true == this->parseSid(split, sid))
+                    this->m_configurations[icao].sids[sid.name] = sid;
+            }
+            else if ("CSTR" == split[0]) {
+                types::DestinationConstraint constraint = {
+                    "",
+                    false,
+                    0_ft,
+                    99000_ft
+                };
+
+                if (true == this->parseConstraint(split, constraint))
+                    this->m_configurations[icao].destinationConstraints.push_back(constraint);
+            }
         }
     }
 }

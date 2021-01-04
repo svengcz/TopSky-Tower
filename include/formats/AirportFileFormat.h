@@ -21,7 +21,8 @@ namespace topskytower {
         private:
             std::map<std::string, types::AirportConfiguration> m_configurations;
 
-            bool parseSid(const std::string& line, types::StandardInstrumentDeparture& sid);
+            bool parseSid(const std::vector<std::string>& elements, types::StandardInstrumentDeparture& sid);
+            bool parseConstraint(const std::vector<std::string>& elements, types::DestinationConstraint& constraint);
 
         public:
             /**
