@@ -5,10 +5,10 @@
  *   Implements the flight registry
  */
 
-#include <surveillance/FlightRegistry.h>
+#include <system/FlightRegistry.h>
 
 using namespace topskytower;
-using namespace topskytower::surveillance;
+using namespace topskytower::system;
 
 FlightRegistry::FlightRegistry() : m_flights() { }
 

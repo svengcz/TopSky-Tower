@@ -14,9 +14,9 @@
 #include <curl/curl.h>
 
 #include <helper/String.h>
-#include <surveillance/ConfigurationRegistry.h>
-#include <surveillance/FlightRegistry.h>
 #include <surveillance/PdcControl.h>
+#include <system/ConfigurationRegistry.h>
+#include <system/FlightRegistry.h>
 
 using namespace std::chrono;
 using namespace topskytower;
@@ -117,7 +117,7 @@ static __inline std::uint8_t __toHex(std::uint8_t x) {
 void PdcControl::sendMessage(std::string& message) {
     __receivedData.clear();
 
-    helper::String::stringReplace(message, "%LOGON%", surveillance::ConfigurationRegistry::instance().systemConfiguration().hoppiesCode);
+    helper::String::stringReplace(message, "%LOGON%", system::ConfigurationRegistry::instance().systemConfiguration().hoppiesCode);
     /* replace invalid characters by URI markers */
     std::ostringstream os;
     for (std::string::const_iterator it = message.begin(); it != message.end(); ++it) {
@@ -298,7 +298,7 @@ void PdcControl::receiveMessages() {
             }
 
             /* validate that the flight exists */
-            if (false == surveillance::FlightRegistry::instance().flightExists(pdcMsg.sender))
+            if (false == system::FlightRegistry::instance().flightExists(pdcMsg.sender))
                 continue;
 
             this->m_comChannelsLock.lock();
@@ -402,7 +402,7 @@ bool PdcControl::sendMessage(const PdcControl::MessagePtr& message) {
 
 void PdcControl::run() {
     while (false == this->m_stopHoppiesThread) {
-        const auto& hoppies = surveillance::ConfigurationRegistry::instance().systemConfiguration().hoppiesCode;
+        const auto& hoppies = system::ConfigurationRegistry::instance().systemConfiguration().hoppiesCode;
 
         /* unable to communicate with Hoppies */
         if (0 == hoppies.length()) {

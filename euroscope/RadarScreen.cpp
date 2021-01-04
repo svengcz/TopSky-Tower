@@ -155,7 +155,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     if (true == this->m_updateFlightRegistry) {
         this->m_disconnectedFlightsLock.lock();
         for (const auto& callsign : std::as_const(this->m_disconnectedFlights)) {
-            surveillance::FlightRegistry::instance().removeFlight(callsign);
+            system::FlightRegistry::instance().removeFlight(callsign);
             this->m_controllers->removeFlight(callsign);
         }
         this->m_disconnectedFlights.clear();
@@ -186,10 +186,10 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
 
         if (true == this->m_updateFlightRegistry) {
             flight = Converter::convert(rt, this->m_airport);
-            surveillance::FlightRegistry::instance().updateFlight(flight);
+            system::FlightRegistry::instance().updateFlight(flight);
         }
         else {
-            flight = surveillance::FlightRegistry::instance().flight(rt.GetCallsign());
+            flight = system::FlightRegistry::instance().flight(rt.GetCallsign());
         }
 
         this->m_controllers->update(flight);

@@ -17,8 +17,8 @@
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
 
-#include <surveillance/FlightRegistry.h>
 #include <surveillance/SectorControl.h>
+#include <system/FlightRegistry.h>
 
 #include "ui/UiManager.h"
 

@@ -8,7 +8,7 @@
 #include "stdafx.h"
 
 #include <helper/String.h>
-#include <surveillance/ConfigurationRegistry.h>
+#include <system/ConfigurationRegistry.h>
 
 #include "TextViewer.h"
 
@@ -45,7 +45,7 @@ bool TextViewer::visualize(Gdiplus::Graphics* graphics) {
     this->m_visualization.setPosition(Gdiplus::PointF(this->m_area.X + 4.0f, this->m_area.Y + 4.0f));
     this->m_visualization.visualize();
 
-    auto color = surveillance::ConfigurationRegistry::instance().systemConfiguration().uiForegroundColor;
+    auto color = system::ConfigurationRegistry::instance().systemConfiguration().uiForegroundColor;
     Gdiplus::Pen pen(Gdiplus::Color(255, color[0], color[1], color[2]), 1.0f);
     graphics->DrawRectangle(&pen, this->m_area);
 

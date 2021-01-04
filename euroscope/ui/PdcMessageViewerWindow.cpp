@@ -7,8 +7,8 @@
 
 #include "stdafx.h"
 
-#include <surveillance/ConfigurationRegistry.h>
 #include <surveillance/PdcControl.h>
+#include <system/ConfigurationRegistry.h>
 
 #include "../RadarScreen.h"
 #include "elements/TextViewer.h"

@@ -15,7 +15,7 @@
 #include <sstream>
 
 #include <helper/String.h>
-#include <surveillance/ConfigurationRegistry.h>
+#include <system/ConfigurationRegistry.h>
 
 #include "Converter.h"
 
@@ -42,7 +42,7 @@ static void __analyzeScratchPad(const std::string& scratchPad, types::Flight& fl
 }
 
 static __inline types::Aircraft __translate(const std::string& code, char wtc) {
-    const auto& aircrafts = surveillance::ConfigurationRegistry::instance().aircrafts();
+    const auto& aircrafts = system::ConfigurationRegistry::instance().aircrafts();
     types::Aircraft retval;
 
     auto it = aircrafts.find(code);
@@ -159,7 +159,7 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
         retval.setAssignedSquawk(static_cast<std::uint16_t>(std::atoi(plan.GetControllerAssignedData().GetSquawk())));
 
     if (types::FlightPlan::Type::IFR == retval.type()) {
-        auto& config = surveillance::ConfigurationRegistry::instance().airportConfiguration(retval.origin());
+        auto& config = system::ConfigurationRegistry::instance().airportConfiguration(retval.origin());
 
         auto sidIt = config.sids.find(retval.departureRoute());
         if (config.sids.cend() != sidIt && sidIt->second.clearanceLimit != retval.clearanceLimit()) {

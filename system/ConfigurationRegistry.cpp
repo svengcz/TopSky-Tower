@@ -9,10 +9,10 @@
 #include <string>
 
 #include <formats/SettingsFileFormat.h>
-#include <surveillance/ConfigurationRegistry.h>
+#include <system/ConfigurationRegistry.h>
 
 using namespace topskytower;
-using namespace topskytower::surveillance;
+using namespace topskytower::system;
 
 ConfigurationRegistry::ConfigurationRegistry() :
         m_systemConfig(),

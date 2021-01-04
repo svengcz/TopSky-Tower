@@ -7,7 +7,7 @@
 
 #include "stdafx.h"
 
-#include <surveillance/ConfigurationRegistry.h>
+#include <system/ConfigurationRegistry.h>
 
 #include "UiElement.h"
 
@@ -41,12 +41,12 @@ void UiElement::setArea(Gdiplus::RectF& area) {
 }
 
 Gdiplus::Color UiElement::backgroundColor() {
-    const auto& color = surveillance::ConfigurationRegistry::instance().systemConfiguration().uiBackgroundColor;
+    const auto& color = system::ConfigurationRegistry::instance().systemConfiguration().uiBackgroundColor;
     return Gdiplus::Color(255, color[0], color[1], color[2]);
 }
 
 Gdiplus::Color UiElement::foregroundColor() {
-    const auto& color = surveillance::ConfigurationRegistry::instance().systemConfiguration().uiForegroundColor;
+    const auto& color = system::ConfigurationRegistry::instance().systemConfiguration().uiForegroundColor;
     return Gdiplus::Color(255, color[0], color[1], color[2]);
 }
 

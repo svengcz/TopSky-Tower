@@ -3,24 +3,24 @@
 # License:
 #   Closed Source
 # Brief:
-#   Creates the surveillance library
+#   Creates the system library
 
 SET(HEADER_FILES
-    ${CMAKE_SOURCE_DIR}/include/surveillance/PdcControl.h
-    ${CMAKE_SOURCE_DIR}/include/surveillance/SectorControl.h
+    ${CMAKE_SOURCE_DIR}/include/system/ConfigurationRegistry.h
+    ${CMAKE_SOURCE_DIR}/include/system/FlightRegistry.h
 )
 SET(SOURCE_FILES
-    PdcControl.cpp
-    SectorControl.cpp
+    ConfigurationRegistry.cpp
+    FlightRegistry.cpp
 )
 
 # define the helper library
 ADD_LIBRARY(
-    surveillance STATIC
+    system STATIC
         ${SOURCE_FILES}
         ${HEADER_FILES}
 )
-TARGET_LINK_LIBRARIES(surveillance types formats system)
+TARGET_LINK_LIBRARIES(system types formats)
 
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
 SOURCE_GROUP("Header Files" FILES ${HEADER_FILES})

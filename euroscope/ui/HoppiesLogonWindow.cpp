@@ -7,8 +7,8 @@
 
 #include "stdafx.h"
 
-#include <surveillance/ConfigurationRegistry.h>
 #include <surveillance/PdcControl.h>
+#include <system/ConfigurationRegistry.h>
 
 #include "../RadarScreen.h"
 #include "elements/Button.h"
@@ -53,7 +53,7 @@ HoppiesLogonWindow::HoppiesLogonWindow(RadarScreen* parent) :
     dimension = Gdiplus::RectF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y + 55.0f, this->m_contentArea.Width - 4.0f, 23.0f);
     this->m_elements.push_back(new EditText(this->m_parent, "Password", dimension));
     static_cast<EditText*>(this->m_elements.back())->setPasswordField(true);
-    const auto& hoppies = surveillance::ConfigurationRegistry::instance().systemConfiguration().hoppiesCode;
+    const auto& hoppies = system::ConfigurationRegistry::instance().systemConfiguration().hoppiesCode;
     static_cast<EditText*>(this->m_elements.back())->setContent(hoppies);
 
     /* create the elements */

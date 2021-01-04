@@ -17,8 +17,8 @@
 #include <curl/curl.h>
 
 #include <helper/String.h>
-#include <surveillance/ConfigurationRegistry.h>
 #include <surveillance/PdcControl.h>
+#include <system/ConfigurationRegistry.h>
 #include <version.h>
 
 #include "ui/PdcDepartureClearanceWindow.h"
@@ -46,7 +46,7 @@ PlugIn::PlugIn() :
     PathRemoveFileSpecA(path);
     this->m_settingsPath = path;
 
-    surveillance::ConfigurationRegistry::instance().configure(this->m_settingsPath);
+    system::ConfigurationRegistry::instance().configure(this->m_settingsPath);
 
     this->RegisterTagItemType("Handoff frequency", static_cast<int>(PlugIn::TagItemElement::HandoffFrequency));
     this->RegisterTagItemType("Manually alerts 0", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts0));
@@ -150,7 +150,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     itemString[0] = '\0';
     *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
 
-    const auto& flight = surveillance::FlightRegistry::instance().flight(callsign);
+    const auto& flight = system::FlightRegistry::instance().flight(callsign);
 
     switch (static_cast<PlugIn::TagItemElement>(itemCode)) {
     case PlugIn::TagItemElement::HandoffFrequency:
@@ -201,7 +201,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     }
     case PlugIn::TagItemElement::SIDStepClimbIndicator:
         if (flight.flightPlan().type() == types::FlightPlan::Type::IFR) {
-            const auto& config = surveillance::ConfigurationRegistry::instance().airportConfiguration(flight.flightPlan().origin());
+            const auto& config = system::ConfigurationRegistry::instance().airportConfiguration(flight.flightPlan().origin());
             auto sidIt = config.sids.find(flight.flightPlan().departureRoute());
 
             if (config.sids.cend() != sidIt) {
@@ -333,7 +333,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
     /* check if we are tracking and search the flight */
     bool tracked = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe();
-    auto& flight = surveillance::FlightRegistry::instance().flight(callsign);
+    auto& flight = system::FlightRegistry::instance().flight(callsign);
 
     /* check if an handoff is possible */
     RadarScreen* flightScreen = nullptr;

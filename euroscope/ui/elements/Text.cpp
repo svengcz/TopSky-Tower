@@ -7,7 +7,7 @@
 
 #include "stdafx.h"
 
-#include <surveillance/ConfigurationRegistry.h>
+#include <system/ConfigurationRegistry.h>
 
 #include "Text.h"
 
@@ -20,11 +20,11 @@ Text::Text() :
         m_graphics(nullptr),
         m_rectangle(),
         m_text(),
-        m_fontFamily(new Gdiplus::FontFamily(std::wstring(surveillance::ConfigurationRegistry::instance().systemConfiguration().fontFamily.begin(),
-                                                          surveillance::ConfigurationRegistry::instance().systemConfiguration().fontFamily.end()).c_str(), nullptr)),
+        m_fontFamily(new Gdiplus::FontFamily(std::wstring(system::ConfigurationRegistry::instance().systemConfiguration().fontFamily.begin(),
+                                                          system::ConfigurationRegistry::instance().systemConfiguration().fontFamily.end()).c_str(), nullptr)),
         m_font(nullptr),
         m_fontColor(),
-        m_fontSize(surveillance::ConfigurationRegistry::instance().systemConfiguration().fontSize),
+        m_fontSize(system::ConfigurationRegistry::instance().systemConfiguration().fontSize),
         m_position(),
         m_bold(false),
         m_italic(false) { }

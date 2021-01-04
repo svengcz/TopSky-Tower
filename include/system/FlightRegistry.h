@@ -1,6 +1,6 @@
 /*
  * @brief Defines a flight registry
- * @file surveillance/FlightRegistry.h
+ * @file system/FlightRegistry.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 
@@ -11,10 +11,10 @@
 #include <types/Flight.h>
 
 namespace topskytower {
-    namespace surveillance {
+    namespace system {
         /**
          * @brief Describes a flight registry that contains all visible flights
-         * @ingroup surveillance
+         * @ingroup system
          */
         class FlightRegistry {
         private:

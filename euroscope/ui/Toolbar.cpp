@@ -7,7 +7,7 @@
 
 #include "stdafx.h"
 
-#include <surveillance/ConfigurationRegistry.h>
+#include <system/ConfigurationRegistry.h>
 
 #include "../PlugIn.h"
 #include "../RadarScreen.h"
@@ -108,7 +108,7 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         resetUi = false;
         break;
     case Toolbar::ClickId::Reload:
-        surveillance::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath());
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath());
         break;
     case Toolbar::ClickId::PDC:
         this->m_manager->activateUi(UiManager::WindowId::PdcLogon);

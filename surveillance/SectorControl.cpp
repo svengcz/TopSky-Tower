@@ -7,8 +7,8 @@
 
 #include <algorithm>
 
-#include <surveillance/FlightRegistry.h>
 #include <surveillance/SectorControl.h>
+#include <system/FlightRegistry.h>
 
 using namespace topskytower;
 using namespace topskytower::surveillance;
@@ -608,7 +608,7 @@ bool SectorControl::handoffPossible(const std::string& callsign) const {
     if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
         return false;
 
-    auto& flight = surveillance::FlightRegistry::instance().flight(callsign);
+    auto& flight = system::FlightRegistry::instance().flight(callsign);
     return this->isInOwnSectors(flight, flight.currentPosition());
 }
 
@@ -687,7 +687,7 @@ std::list<types::ControllerInfo> SectorControl::handoffSectors() const {
 void SectorControl::handoffSectorSelect(const std::string& callsign, const std::string& identifier) {
     auto it = this->m_handoffs.find(callsign);
     if (this->m_handoffs.end() == it) {
-        this->m_handoffs[callsign] = { false, false, surveillance::FlightRegistry::instance().flight(callsign), nullptr };
+        this->m_handoffs[callsign] = { false, false, system::FlightRegistry::instance().flight(callsign), nullptr };
         it = this->m_handoffs.find(callsign);
     }
 
