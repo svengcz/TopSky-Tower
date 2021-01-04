@@ -109,5 +109,10 @@ Angle Coordinate::bearingTo(const Coordinate& other) const {
                                              azimuth0, azimuth1);
     (void)azimuth1;
 
+    while (0.0 > azimuth0)
+        azimuth0 += 360.0f;
+    while (360.0 < azimuth0)
+        azimuth0 += 360.0f;
+
     return azimuth0 * types::degree;
 }
