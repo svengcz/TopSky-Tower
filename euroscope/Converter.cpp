@@ -156,6 +156,7 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     retval.setOrigin(plan.GetFlightPlanData().GetOrigin());
     retval.setDepartureRoute(plan.GetFlightPlanData().GetSidName());
     retval.setDestination(plan.GetFlightPlanData().GetDestination());
+    retval.setFlightLevel(static_cast<float>(plan.GetFlightPlanData().GetFinalAltitude()) * types::feet);
     retval.setArrivalRoute(plan.GetFlightPlanData().GetStarName());
     retval.setClearanceLimit(static_cast<float>(plan.GetControllerAssignedData().GetClearedAltitude()) * types::feet);
     retval.setClearanceFlag(plan.GetClearenceFlag());
