@@ -88,8 +88,6 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
     return this->m_screens.back();
 }
 
-void PlugIn::OnAirportRunwayActivityChanged() { }
-
 bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]) {
     int localOffset = 0, localIdx = 0;
     bool inserted = false;

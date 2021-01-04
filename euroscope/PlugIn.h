@@ -104,10 +104,6 @@ namespace topskytower {
             EuroScopePlugIn::CRadarScreen* OnRadarScreenCreated(const char* displayName, bool needsRadarContent, bool geoReferenced,
                                                                 bool canBeSaved, bool canBeCreated) override;
             /**
-             * @brief Gets called as soon as the active runways changed
-             */
-            void OnAirportRunwayActivityChanged() override;
-            /**
              * @brief Called as soon as a tag entry needs to be updated
              * @param[in] flightPlan The requested flight plan
              * @param[in] radarTarget The corresponding RADAR target
