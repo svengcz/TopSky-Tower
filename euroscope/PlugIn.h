@@ -75,8 +75,8 @@ namespace topskytower {
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
             static void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);
             RadarScreen* findLastActiveScreen();
-            bool summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
-                                          char* itemString, int* colorCode);
+            static bool summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
+                                                 char* itemString, int* colorCode);
 
         public:
             /**

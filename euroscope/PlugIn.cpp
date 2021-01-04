@@ -300,8 +300,8 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             finalizeRoute = true;
         }
         else {
-            finalizeRoute = this->summarizeFlightPlanCheck(surveillance::FlightPlanControl::instance().errorCodes(flight.callsign()),
-                                                           itemString, colorCode);
+            finalizeRoute = PlugIn::summarizeFlightPlanCheck(surveillance::FlightPlanControl::instance().errorCodes(flight.callsign()),
+                                                             itemString, colorCode);
         }
 
         if (true == finalizeRoute && types::FlightPlan::Type::VFR != flight.flightPlan().type()) {
