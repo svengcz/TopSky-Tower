@@ -16,6 +16,7 @@
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
 
+#include <surveillance/FlightPlanControl.h>
 #include <types/AirportConfiguration.h>
 #include <types/SystemConfiguration.h>
 
@@ -61,7 +62,8 @@ namespace topskytower {
                 ManuallyAlerts2       = 2004,
                 FlightMarker          = 2005,
                 PdcIndicator          = 2006,
-                SIDStepClimbIndicator = 2007
+                SIDStepClimbIndicator = 2007,
+                FlighPlanCheck        = 2008
             };
 
             std::string                             m_settingsPath;
@@ -73,6 +75,8 @@ namespace topskytower {
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
             static void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);
             RadarScreen* findLastActiveScreen();
+            bool summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
+                                          char* itemString, int* colorCode);
 
         public:
             /**

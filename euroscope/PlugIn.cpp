@@ -17,6 +17,7 @@
 #include <curl/curl.h>
 
 #include <helper/String.h>
+#include <surveillance/FlightPlanControl.h>
 #include <surveillance/PdcControl.h>
 #include <system/ConfigurationRegistry.h>
 #include <version.h>
@@ -55,6 +56,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("Flight marker", static_cast<int>(PlugIn::TagItemElement::FlightMarker));
     this->RegisterTagItemType("PDC indicator", static_cast<int>(PlugIn::TagItemElement::PdcIndicator));
     this->RegisterTagItemType("SID step climb indicator", static_cast<int>(PlugIn::TagItemElement::SIDStepClimbIndicator));
+    this->RegisterTagItemType("Flight plan check", static_cast<int>(PlugIn::TagItemElement::FlighPlanCheck));
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
@@ -131,6 +133,69 @@ bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char 
     }
 
     return inserted;
+}
+
+bool PlugIn::summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
+                                      char* itemString, int* colorCode) {
+    /* something went wrong */
+    if (0 == codes.size()) {
+        std::strcpy(itemString, "UNK");
+        *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
+    }
+    /* more than one error found */
+    else if (1 != codes.size()) {
+        std::strcpy(itemString, "ERR");
+        *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
+    }
+    /* search the correct abbreviation of the error */
+    else {
+        std::string code;
+
+        /* get the correct error code */
+        switch (codes.front()) {
+        case surveillance::FlightPlanControl::ErrorCode::VFR:
+            code = "VFR";
+            break;
+        case surveillance::FlightPlanControl::ErrorCode::NoError:
+            code = "OK";
+            break;
+        case surveillance::FlightPlanControl::ErrorCode::Route:
+            code = "RTE";
+            break;
+        case surveillance::FlightPlanControl::ErrorCode::DepartureRoute:
+            code = "SID";
+            break;
+        case surveillance::FlightPlanControl::ErrorCode::EngineType:
+            code = "ENG";
+            break;
+        case surveillance::FlightPlanControl::ErrorCode::Navigation:
+            code = "NAV";
+            break;
+        case surveillance::FlightPlanControl::ErrorCode::Transponder:
+            code = "XPD";
+            break;
+        case surveillance::FlightPlanControl::ErrorCode::FlightLevel:
+            code = "FL";
+            break;
+        case surveillance::FlightPlanControl::ErrorCode::EvenOddLevel:
+            code = "E/O";
+            break;
+        default:
+            code = "UNK";
+            break;
+        }
+
+        std::strcpy(itemString, code.c_str());
+        if ("OK" == code) {
+            *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
+            return true;
+        }
+        else {
+            *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
+        }
+    }
+
+    return false;
 }
 
 void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlugIn::CRadarTarget radarTarget,
@@ -224,6 +289,47 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             *colorCode = EuroScopePlugIn::TAG_COLOR_NON_CONCERNED;
         }
         break;
+    case PlugIn::TagItemElement::FlighPlanCheck:
+    {
+        bool finalizeRoute = false;
+
+        surveillance::FlightPlanControl::instance().validate(flight);
+        if (true == surveillance::FlightPlanControl::instance().overwritten(flight.callsign())) {
+            std::strcpy(itemString, "OK");
+            *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
+            finalizeRoute = true;
+        }
+        else {
+            finalizeRoute = this->summarizeFlightPlanCheck(surveillance::FlightPlanControl::instance().errorCodes(flight.callsign()),
+                                                           itemString, colorCode);
+        }
+
+        if (true == finalizeRoute && types::FlightPlan::Type::VFR != flight.flightPlan().type()) {
+            std::string departure = flight.flightPlan().departureRoute() + "/";
+            departure += radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().GetDepartureRwy();
+            std::string route(radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().GetRoute());
+
+            /* check if the route is already configured */
+            if (std::string::npos == route.find(departure, 0)) {
+                auto pos = flight.flightPlan().departureRoute().find_first_of("0123456789", 0);
+                std::string firstWaypoint = flight.flightPlan().departureRoute().substr(0, pos);
+                auto entries = helper::String::splitString(route, " ");
+
+                /* find the first waypoint and ignore all before it */
+                auto wpIt = std::find(entries.cbegin(), entries.cend(), firstWaypoint);
+
+                /* create the new route */
+                std::string newRoute(departure + " ");
+                for (auto routeIt = wpIt; entries.cend() != routeIt; ++routeIt)
+                    newRoute += *routeIt + " ";
+
+                /* write into the flight plan */
+                radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().SetRoute(newRoute.c_str());
+            }
+        }
+
+        break;
+    }
     default:
         break;
     }
