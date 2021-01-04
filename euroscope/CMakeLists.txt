@@ -33,19 +33,16 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# enable MFC
-ADD_DEFINITIONS(-D_AFXDLL)
-SET(CMAKE_MFC_FLAG 2)
-
 SET(SOURCE_FILES
     Converter.cpp
     Converter.h
-    MFCApplication.cpp
-    MFCApplication.h
     PlugIn.cpp
     PlugIn.h
     RadarScreen.cpp
     RadarScreen.h
+    stdafx.cpp
+    stdafx.h
+    TopSkyTowerMain.cpp
 )
 SET(SOURCE_FILES_UI
     ui/HoppiesLogonWindow.cpp
@@ -75,12 +72,6 @@ SET(SOURCE_FILES_UI_ELEMENTS
     ui/elements/UiElement.cpp
     ui/elements/UiElement.h
 )
-SET(SOURCE_FILES_RES
-    stdafx.cpp
-    stdafx.h
-    res/resource.h
-    res/TopSky-Tower.rc
-)
 
 # define the plug in
 ADD_LIBRARY(
@@ -93,9 +84,10 @@ ADD_LIBRARY(
 
 # define the dependencies
 TARGET_INCLUDE_DIRECTORIES(TopSky-Tower INTERFACE EuroScope)
-TARGET_LINK_LIBRARIES(TopSky-Tower EuroScope Gdiplus types formats surveillance)
+TARGET_LINK_LIBRARIES(TopSky-Tower EuroScope types formats surveillance)
 TARGET_LINK_LIBRARIES(TopSky-Tower debug libcurl-d.lib optimized libcurl.lib)
 TARGET_LINK_LIBRARIES(TopSky-Tower debug Geographic_d.lib optimized Geographic.lib)
+TARGET_LINK_LIBRARIES(TopSky-Tower Gdiplus Shlwapi.lib Crypt32.lib Ws2_32.lib)
 
 # configure the debugger
 IF(MSVC)
@@ -109,4 +101,3 @@ ENDIF()
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
 SOURCE_GROUP("Source Files\\ui" FILES ${SOURCE_FILES_UI})
 SOURCE_GROUP("Source Files\\ui\\elements" FILES ${SOURCE_FILES_UI_ELEMENTS})
-SOURCE_GROUP("Source Files\\res" FILES ${SOURCE_FILES_RES})

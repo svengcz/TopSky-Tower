@@ -12,9 +12,7 @@
 
 #include <fstream>
 #include <Windows.h>
-
-#define CURL_STATICLIB 1
-#include <curl/curl.h>
+#include <shlwapi.h>
 
 #include <helper/String.h>
 #include <surveillance/FlightPlanControl.h>
@@ -41,7 +39,6 @@ PlugIn::PlugIn() :
         m_settingsPath(),
         m_screens(),
         m_uiCallback() {
-    curl_global_init(CURL_GLOBAL_ALL);
 
     char path[MAX_PATH] = { 0 };
     GetModuleFileNameA((HINSTANCE)&__ImageBase, path, _countof(path));
@@ -68,8 +65,6 @@ PlugIn::~PlugIn() {
     for (auto& screen : this->m_screens)
         delete screen;
     this->m_screens.clear();
-
-    curl_global_cleanup();
 }
 
 const std::string& PlugIn::settingsPath() const {

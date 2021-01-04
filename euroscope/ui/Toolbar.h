@@ -8,8 +8,6 @@
 
 #include <list>
 
-#include <gdiplus.h>
-
 #include "elements/UiElement.h"
 #include "elements/Text.h"
 

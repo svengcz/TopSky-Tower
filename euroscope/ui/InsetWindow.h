@@ -9,8 +9,6 @@
 #include <list>
 #include <string_view>
 
-#include <gdiplus.h>
-
 #include "elements/Text.h"
 #include "elements/UiElement.h"
 

@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <gdiplus.h>
 #include <memory>
 #include <string>
 

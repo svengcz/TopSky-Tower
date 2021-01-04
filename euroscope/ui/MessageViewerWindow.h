@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <gdiplus.h>
-
 #include "InsetWindow.h"
 
 namespace topskytower {

@@ -8,8 +8,6 @@
 
 #include <string>
 
-#include <gdiplus.h>
-
 #include "../UiManager.h"
 
 namespace topskytower {

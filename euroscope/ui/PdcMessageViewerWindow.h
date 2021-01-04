@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <gdiplus.h>
-
 #include <surveillance/PdcControl.h>
 
 #include "MessageViewerWindow.h"

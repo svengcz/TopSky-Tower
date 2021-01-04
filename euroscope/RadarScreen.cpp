@@ -9,8 +9,6 @@
 
 #include "stdafx.h"
 
-#include <gdiplus.h>
-
 #include <formats/AirportFileFormat.h>
 #include <formats/EseFileFormat.h>
 #include <surveillance/PdcControl.h>

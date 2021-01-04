@@ -10,8 +10,6 @@
 #include <map>
 #include <string_view>
 
-#include <gdiplus.h>
-
 namespace topskytower {
     namespace euroscope {
         class InsetWindow;
