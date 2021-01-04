@@ -10,7 +10,7 @@
 
 #include <surveillance/PdcControl.h>
 
-#include "InsetWindow.h"
+#include "MessageViewerWindow.h"
 
 namespace topskytower {
     namespace euroscope {
@@ -18,35 +18,14 @@ namespace topskytower {
          * @brief Defines the inset window which visualizes PDC messages
          * @ingroup euroscope
          */
-        class PdcMessageViewerWindow : public InsetWindow {
-        private:
-            bool m_firstRendering;
-
-            void centeredPosition();
-
+        class PdcMessageViewerWindow : public MessageViewerWindow {
         public:
             /**
              * @brief Creates a new PDC message viewer
              * @param[in] parent The corresponding RADAR screen
-             * @param[in[ message The PDC message
+             * @param[in] message The PDC message
              */
             PdcMessageViewerWindow(RadarScreen* parent, const surveillance::PdcControl::MessagePtr& message);
-            /**
-             * @brief Destroys the window
-             */
-            ~PdcMessageViewerWindow();
-
-            /**
-             * @brief Marks the window as active or not
-             * @param[in] active True if the window needs to be shown, else false
-             */
-            void setActive(bool active) override;
-            /**
-             * @brief Visualizes the toolbar with all active sub-menus
-             * @param[in] graphics The graphics container
-             * @return True if the element was visualized, else false
-             */
-            bool visualize(Gdiplus::Graphics* graphics) override;
         };
     }
 }
