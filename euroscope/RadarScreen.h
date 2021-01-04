@@ -155,6 +155,11 @@ namespace topskytower {
              * @return The last rendering time
              */
             const std::chrono::system_clock::time_point& lastRenderingTime() const;
+            /**
+             * @brief Removes a flight out of all internal structures
+             * @param[in] callsign The deletable callsign
+             */
+            void removeFlight(const std::string& callsign);
         };
     }
 }

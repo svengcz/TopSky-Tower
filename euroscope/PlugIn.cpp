@@ -659,3 +659,11 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     }
 }
+
+void PlugIn::removeFlight(const std::string& callsign) {
+    system::FlightRegistry::instance().removeFlight(callsign);
+    surveillance::FlightPlanControl::instance().removeFlight(callsign);
+
+    for (auto& screen : this->m_screens)
+        screen->removeFlight(callsign);
+}

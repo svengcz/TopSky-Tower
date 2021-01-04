@@ -13,7 +13,6 @@
 
 #include <formats/AirportFileFormat.h>
 #include <formats/EseFileFormat.h>
-#include <surveillance/FlightPlanControl.h>
 #include <surveillance/PdcControl.h>
 
 #include "Converter.h"
@@ -152,14 +151,13 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     if (false == this->m_initialized)
         return;
 
+    auto plugin = static_cast<PlugIn*>(this->GetPlugIn());
+
     /* remove disconnected flights */
     if (true == this->m_updateFlightRegistry) {
         this->m_disconnectedFlightsLock.lock();
-        for (const auto& callsign : std::as_const(this->m_disconnectedFlights)) {
-            system::FlightRegistry::instance().removeFlight(callsign);
-            surveillance::FlightPlanControl::instance().removeFlight(callsign);
-            this->m_controllers->removeFlight(callsign);
-        }
+        for (const auto& callsign : std::as_const(this->m_disconnectedFlights))
+            plugin->removeFlight(callsign);
         this->m_disconnectedFlights.clear();
         this->m_disconnectedFlightsLock.unlock();
     }
@@ -177,7 +175,6 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
                                esEvent.tagItemFunction, esEvent.point, esEvent.area);
     }
 
-    auto plugin = static_cast<PlugIn*>(this->GetPlugIn());
     std::string_view positionId(plugin->ControllerMyself().GetPositionId());
     if (0 != positionId.length() && "XX" != positionId)
         this->m_controllers->setOwnSector(Converter::convert(plugin->ControllerMyself()));
@@ -223,4 +220,9 @@ UiManager& RadarScreen::uiManager() {
 
 const std::chrono::system_clock::time_point& RadarScreen::lastRenderingTime() const {
     return this->m_lastRenderingTime;
+}
+
+void RadarScreen::removeFlight(const std::string& callsign) {
+    if (nullptr != this->m_controllers)
+        this->m_controllers->removeFlight(callsign);
 }

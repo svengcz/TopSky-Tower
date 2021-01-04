@@ -142,6 +142,11 @@ namespace topskytower {
                 std::function<void(const std::string&)> func = std::bind(cbFunction, instance, std::placeholders::_1);
                 this->m_uiCallback = func;
             }
+            /**
+             * @brief Removes a flight out of all internal structures
+             * @param[in] callsign The deletable callsign
+             */
+            void removeFlight(const std::string& callsign);
         };
     }
 }
