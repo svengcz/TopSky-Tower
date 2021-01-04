@@ -137,7 +137,7 @@ void RadarScreen::initialize() {
 void RadarScreen::OnRefresh(HDC hdc, int phase) {
     (void)hdc;
 
-    if (EuroScopePlugIn::REFRESH_PHASE_BEFORE_TAGS != phase)
+    if (EuroScopePlugIn::REFRESH_PHASE_AFTER_TAGS != phase)
         return;
 
     Gdiplus::Graphics graphics(hdc);
