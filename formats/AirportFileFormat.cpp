@@ -15,18 +15,49 @@
 
 using namespace topskytower;
 using namespace topskytower::formats;
+using namespace topskytower::types;
 
-void AirportFileFormat::parseSid(const std::string& line, types::StandardInstrumentDeparture& sid) {
-    if (std::string::npos == line.find("SID:"))
-        return;
-
+bool AirportFileFormat::parseSid(const std::string& line, types::StandardInstrumentDeparture& sid) {
     auto split = helper::String::splitString(line, ":");
-    if (4 != split.size())
-        return;
+    if (9 != split.size())
+        return false;
+    if ("SID" != split[0])
+        return false;
+    if (0 == split[1].length())
+        return false;
+    if (0 == split[2].length())
+        return false;
 
+    /* translate the mandatory entries */
     sid.name = split[1];
     sid.clearanceLimit = static_cast<float>(std::atoi(split[2].c_str())) * types::feet;
-    sid.containsStepClimbs = '0' != split[3][0];
+
+    /* translate the optional entries */
+    if (0 != split[3].length())
+        sid.containsStepClimbs = '0' != split[3][0];
+    if (0 != split[4].length()) {
+        switch (split[4][0]) {
+        case 'J':
+            sid.engineType = types::Aircraft::EngineType::Jet;
+            break;
+        case 'T':
+            sid.engineType = types::Aircraft::EngineType::Turboprop;
+            break;
+        case 'E':
+            sid.engineType = types::Aircraft::EngineType::Electric;
+            break;
+        default:
+            return false;
+        }
+    }
+    if (0 != split[5].length())
+        sid.requiresTransponder = '0' != split[5][0];
+    if (0 != split[6].length())
+        sid.requiresRnav = '0' != split[6][0];
+    if (0 != split[7].length())
+        sid.minimumCruiseLevel = static_cast<float>(std::atoi(split[7].c_str())) * types::feet;
+    if (0 != split[8].length())
+        sid.maximumCruiseLevel = static_cast<float>(std::atoi(split[8].c_str())) * types::feet;
 }
 
 AirportFileFormat::AirportFileFormat(const std::string& filename) :
@@ -40,7 +71,16 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
 
         this->m_configurations[icao].valid = true;
         for (const auto& line : std::as_const(block.second)) {
-            types::StandardInstrumentDeparture sid;
+            types::StandardInstrumentDeparture sid = {
+                "",
+                0_ft,
+                false,
+                types::Aircraft::EngineType::Unknown,
+                false,
+                false,
+                0_ft,
+                99000_ft
+            };
 
             this->parseSid(line, sid);
             this->m_configurations[icao].sids[sid.name] = sid;
