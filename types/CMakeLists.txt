@@ -14,9 +14,11 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/types/FlightPlan.h
     ${CMAKE_SOURCE_DIR}/include/types/Position.h
     ${CMAKE_SOURCE_DIR}/include/types/Quantity.hpp
+    ${CMAKE_SOURCE_DIR}/include/types/Route.h
     ${CMAKE_SOURCE_DIR}/include/types/Sector.h
     ${CMAKE_SOURCE_DIR}/include/types/SectorBorder.h
     ${CMAKE_SOURCE_DIR}/include/types/SystemConfiguration.h
+    ${CMAKE_SOURCE_DIR}/include/types/Waypoint.h
 )
 SET(SOURCE_FILES
     Aircraft.cpp
@@ -25,8 +27,10 @@ SET(SOURCE_FILES
     Flight.cpp
     FlightPlan.cpp
     Position.cpp
+    Route.cpp
     Sector.cpp
     SectorBorder.cpp
+    Waypoint.cpp
 )
 
 # define the helper library
