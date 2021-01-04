@@ -13,6 +13,7 @@
 
 #include <formats/AirportFileFormat.h>
 #include <formats/EseFileFormat.h>
+#include <surveillance/FlightPlanControl.h>
 #include <surveillance/PdcControl.h>
 
 #include "Converter.h"
@@ -156,6 +157,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
         this->m_disconnectedFlightsLock.lock();
         for (const auto& callsign : std::as_const(this->m_disconnectedFlights)) {
             system::FlightRegistry::instance().removeFlight(callsign);
+            surveillance::FlightPlanControl::instance().removeFlight(callsign);
             this->m_controllers->removeFlight(callsign);
         }
         this->m_disconnectedFlights.clear();
