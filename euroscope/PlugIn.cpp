@@ -294,7 +294,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             if (config.sids.cend() != sidIt) {
                 if (true == sidIt->second.containsStepClimbs) {
                     std::strcpy(itemString, "YES");
-                    *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
+                    *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
                 }
                 else {
                     std::strcpy(itemString, "NO");
