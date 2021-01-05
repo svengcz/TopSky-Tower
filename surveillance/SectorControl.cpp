@@ -508,6 +508,15 @@ std::shared_ptr<SectorControl::Node> SectorControl::findOnlineResponsible(const 
         auto deputyNode = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, deputy);
         if (nullptr != deputyNode && 0 != deputyNode->controllers.size())
             return deputyNode;
+
+        /* some deliveries do not have the complete deputy-hierarchy -> check the deputies of the deputies */
+        if (types::Sector::Type::Delivery == node->sector.type()) {
+            for (const auto& depDeputy : std::as_const(deputyNode->sector.borders().front().deputies())) {
+                auto secondStageNode = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, depDeputy);
+                if (nullptr != secondStageNode && 0 != secondStageNode->controllers.size())
+                    return secondStageNode;
+            }
+        }
     }
 
     /* no other real station is online */
