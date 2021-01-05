@@ -103,7 +103,7 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
             it->second.errorCodes.push_back(ErrorCode::FlightLevel);
 
         /* prepare for the even-odd checks */
-        bool even = 0 == static_cast<int>(flight.flightPlan().flightLevel().convert(types::feet)) % 2;
+        bool even = 0 == static_cast<int>(flight.flightPlan().flightLevel().convert(types::feet)) % 2000;
 
         /* check if a destination specific constraint is defined */
         bool foundDestinationConstraint = false;
