@@ -87,7 +87,7 @@ TARGET_INCLUDE_DIRECTORIES(TopSky-Tower INTERFACE EuroScope)
 TARGET_LINK_LIBRARIES(TopSky-Tower EuroScope types formats surveillance)
 TARGET_LINK_LIBRARIES(TopSky-Tower debug libcurl-d.lib optimized libcurl.lib)
 TARGET_LINK_LIBRARIES(TopSky-Tower debug Geographic_d.lib optimized Geographic.lib)
-TARGET_LINK_LIBRARIES(TopSky-Tower Gdiplus Shlwapi.lib Crypt32.lib Ws2_32.lib)
+TARGET_LINK_LIBRARIES(TopSky-Tower Gdiplus Shlwapi.lib Crypt32.lib Ws2_32.lib Winmm.lib)
 ADD_DEPENDENCIES(TopSky-Tower Eigen)
 
 # configure the debugger and update the linker flags

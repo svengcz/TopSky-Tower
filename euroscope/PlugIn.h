@@ -68,6 +68,7 @@ namespace topskytower {
             std::string                             m_settingsPath;
             std::list<RadarScreen*>                 m_screens;
             std::function<void(const std::string&)> m_uiCallback;
+            std::string                             m_pdcNotificationSound;
 
             void handleHandoffPerform(POINT point, RECT area, const std::string& callsign, bool tracked);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
@@ -77,6 +78,7 @@ namespace topskytower {
             static bool summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
                                                  char* itemString, int* colorCode);
             static std::string flightPlanCheckResultLog(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes);
+            void pdcMessageReceived();
 
         public:
             /**

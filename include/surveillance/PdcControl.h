@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <functional>
 #include <thread>
 #include <list>
 #include <map>
@@ -175,6 +176,7 @@ namespace topskytower {
             std::thread                         m_hoppiesThread;
             std::mutex                          m_comChannelsLock;
             std::map<std::string, MessageQueue> m_comChannels;
+            std::function<void()>               m_notification;
 
             PdcControl();
             void receiveMessages();
@@ -234,6 +236,18 @@ namespace topskytower {
              * @param[in] message The clearance message
              */
             void sendClearanceMessage(const ClearanceMessagePtr& message);
+            /**
+             * @brief Registers a callback that is triggered as soon as a new PDC message received
+             * @tparam T The element which registers the callback
+             * @tparam F The callback function
+             * @param[in] instance The instance which registers the callback
+             * @param[in] cbFunction The callback function
+             */
+            template <typename T, typename F>
+            void registerNotificationCallback(T* instance, F cbFunction) {
+                std::function<void()> func = std::bind(cbFunction, instance);
+                this->m_notification = func;
+            }
             /**
              * @brief Returns the PDC control singleton
              * @return The PDC control system

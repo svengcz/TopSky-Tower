@@ -92,7 +92,8 @@ PdcControl::PdcControl() :
         m_stopHoppiesThread(false),
         m_hoppiesThread(&PdcControl::run, this),
         m_comChannelsLock(),
-        m_comChannels() {
+        m_comChannels(),
+        m_notification() {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     this->m_cpdlcCounter = std::rand() % 10000 + 1789;
 }
@@ -233,6 +234,8 @@ void PdcControl::handleMessage(PdcControl::Message& message) {
 }
 
 void PdcControl::receiveMessages() {
+    bool messagesReceived = false;
+
     if (0 == this->m_airports.size())
         return;
 
@@ -304,8 +307,13 @@ void PdcControl::receiveMessages() {
             this->m_comChannelsLock.lock();
             this->handleMessage(pdcMsg);
             this->m_comChannelsLock.unlock();
+            messagesReceived = true;
         }
     }
+
+    /* send the notification if a callback is registered and at least one message is received */
+    if (true == messagesReceived && nullptr != this->m_notification)
+        this->m_notification();
 }
 
 bool PdcControl::prepareCpdlc(std::string& url, const PdcControl::MessagePtr& message) {

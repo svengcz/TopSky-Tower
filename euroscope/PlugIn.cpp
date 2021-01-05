@@ -8,6 +8,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "stdafx.h"
 
+#include <filesystem>
 #include <fstream>
 #include <Windows.h>
 #include <shlwapi.h>
@@ -25,6 +26,8 @@
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
+namespace fs = std::filesystem;
+
 using namespace topskytower;
 using namespace topskytower::euroscope;
 
@@ -39,7 +42,8 @@ PlugIn::PlugIn() :
                                  PLUGIN_COPYRIGHT),
         m_settingsPath(),
         m_screens(),
-        m_uiCallback() {
+        m_uiCallback(),
+        m_pdcNotificationSound() {
     Gdiplus::GdiplusStartup(&__gdiplusToken, &__gdiStartupInput, nullptr);
 
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION_BUILD + " loaded").c_str(),
@@ -64,6 +68,15 @@ PlugIn::PlugIn() :
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
     this->RegisterTagItemFunction("FP check menu", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckMenu));
+
+    /* search for the sound file and register the PDC sound callback */
+    for (auto& entry : fs::recursive_directory_iterator(path)) {
+        if (true == fs::is_regular_file(entry) && "TopSkyTower-Pdc.wav" == entry.path().filename().string()) {
+            this->m_pdcNotificationSound = entry.path().string();
+            surveillance::PdcControl::instance().registerNotificationCallback(this, &PlugIn::pdcMessageReceived);
+            break;
+        }
+    }
 }
 
 PlugIn::~PlugIn() {
@@ -787,4 +800,8 @@ void PlugIn::removeFlight(const std::string& callsign) {
 
     for (auto& screen : this->m_screens)
         screen->removeFlight(callsign);
+}
+
+void PlugIn::pdcMessageReceived() {
+    PlaySoundA(this->m_pdcNotificationSound.c_str(), NULL, SND_ASYNC);
 }
