@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <map>
-
 #include <formats/EseFileFormat.h>
 #include <types/AirportConfiguration.h>
 
@@ -19,10 +17,11 @@ namespace topskytower {
          */
         class AirportFileFormat {
         private:
-            std::map<std::string, types::AirportConfiguration> m_configurations;
+            types::AirportConfiguration m_configuration;
 
             bool parseSid(const std::vector<std::string>& elements, types::StandardInstrumentDeparture& sid);
             bool parseConstraint(const std::vector<std::string>& elements, types::DestinationConstraint& constraint);
+            bool parseDepartures(const std::vector<std::string>& lines);
 
         public:
             /**
@@ -33,11 +32,10 @@ namespace topskytower {
             AirportFileFormat(const std::string& filename);
 
             /**
-             * @brief Returns the airport configuration of a special ICAO
-             * @param[in] icao The airport's ICAO code
+             * @brief Returns the airport configuration
              * @return The airport configuration
              */
-            const types::AirportConfiguration& configuration(const std::string& icao) const;
+            const types::AirportConfiguration& configuration() const;
         };
     }
 }

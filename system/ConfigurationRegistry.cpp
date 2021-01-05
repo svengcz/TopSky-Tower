@@ -5,28 +5,41 @@
  *   Implements the configuration registry
  */
 
+#include <filesystem>
 #include <fstream>
 #include <string>
 
 #include <formats/SettingsFileFormat.h>
 #include <system/ConfigurationRegistry.h>
 
+namespace fs = std::filesystem;
+
 using namespace topskytower;
 using namespace topskytower::system;
 
 ConfigurationRegistry::ConfigurationRegistry() :
         m_systemConfig(),
-        m_airportsConfiguration(nullptr),
+        m_airportConfigurations(),
         m_aircraftConfiguration(nullptr) { }
 
 ConfigurationRegistry::~ConfigurationRegistry() {
-    if (nullptr != this->m_airportsConfiguration)
-        delete this->m_airportsConfiguration;
+    this->cleanup();
+}
+
+void ConfigurationRegistry::cleanup() {
+    for (auto it = this->m_airportConfigurations.begin(); this->m_airportConfigurations.end() != it; ++it)
+        delete it->second;
+    this->m_airportConfigurations.clear();
+
     if (nullptr != this->m_aircraftConfiguration)
         delete this->m_aircraftConfiguration;
+
+    this->m_systemConfig.valid = false;
 }
 
 void ConfigurationRegistry::configure(const std::string& path) {
+    this->cleanup();
+
     formats::SettingsFileFormat settings(path + "\\TopSkyTowerSettings.txt");
     settings.parse(this->m_systemConfig);
 
@@ -38,12 +51,21 @@ void ConfigurationRegistry::configure(const std::string& path) {
         }
     }
 
-    if (nullptr != this->m_airportsConfiguration)
-        delete this->m_airportsConfiguration;
-    this->m_airportsConfiguration = new formats::AirportFileFormat(path + "\\TopSkyTowerAirports.txt");
+    for (auto& entry : fs::recursive_directory_iterator(path)) {
+        if (true == fs::is_regular_file(entry) && 0 == entry.path().filename().string().find("TopSkyTowerAirport")) {
+            /* extract the ICAO code of the airport */
+            auto filename = entry.path().filename().stem().string();
+            auto icao = filename.substr(filename.length() - 4, 4);
 
-    if (nullptr != this->m_aircraftConfiguration)
-        delete this->m_aircraftConfiguration;
+#pragma warning(disable: 4244)
+            std::transform(icao.begin(), icao.end(), icao.begin(), ::toupper);
+#pragma warning(default: 4244)
+
+            /* read the configuration */
+            this->m_airportConfigurations[icao] = new formats::AirportFileFormat(entry.path().string());
+        }
+    }
+
     this->m_aircraftConfiguration = new formats::AircraftFileFormat(path + "\\TopSkyTowerAircrafts.txt");
 }
 
@@ -52,7 +74,13 @@ const types::SystemConfiguration& ConfigurationRegistry::systemConfiguration() c
 }
 
 const types::AirportConfiguration& ConfigurationRegistry::airportConfiguration(const std::string& icao) const {
-    return this->m_airportsConfiguration->configuration(icao);
+    static types::AirportConfiguration __fallback;
+
+    auto it = this->m_airportConfigurations.find(icao);
+    if (this->m_airportConfigurations.cend() != it)
+        return it->second->configuration();
+    else
+        return __fallback;
 }
 
 const std::map<std::string, types::Aircraft>& ConfigurationRegistry::aircrafts() const {

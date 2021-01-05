@@ -77,54 +77,53 @@ bool AirportFileFormat::parseConstraint(const std::vector<std::string>& elements
     return true;
 }
 
+bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines) {
+    for (const auto& line : std::as_const(lines)) {
+        auto split = helper::String::splitString(line, ":");
+
+        if ("SID" == split[0]) {
+            types::StandardInstrumentDeparture sid = {
+                "",
+                0_ft,
+                false,
+                types::Aircraft::EngineType::Unknown,
+                false,
+                false,
+                0_ft,
+                99000_ft
+            };
+
+            if (true == this->parseSid(split, sid))
+                this->m_configuration.sids[sid.name] = sid;
+        }
+        else if ("CSTR" == split[0]) {
+            types::DestinationConstraint constraint = {
+                "",
+                false,
+                0_ft,
+                99000_ft
+            };
+
+            if (true == this->parseConstraint(split, constraint))
+                this->m_configuration.destinationConstraints.push_back(constraint);
+        }
+    }
+
+    return true;
+}
+
 AirportFileFormat::AirportFileFormat(const std::string& filename) :
-        m_configurations() {
+        m_configuration() {
     IniFileFormat file(filename);
 
     for (const auto& block : std::as_const(file.m_blocks)) {
-        std::string icao(block.first);
-        helper::String::stringReplace(icao, "[", "");
-        helper::String::stringReplace(icao, "]", "");
+        this->m_configuration.valid = true;
 
-        this->m_configurations[icao].valid = true;
-        for (const auto& line : std::as_const(block.second)) {
-            auto split = helper::String::splitString(line, ":");
-
-            if ("SID" == split[0]) {
-                types::StandardInstrumentDeparture sid = {
-                    "",
-                    0_ft,
-                    false,
-                    types::Aircraft::EngineType::Unknown,
-                    false,
-                    false,
-                    0_ft,
-                    99000_ft
-                };
-
-                if (true == this->parseSid(split, sid))
-                    this->m_configurations[icao].sids[sid.name] = sid;
-            }
-            else if ("CSTR" == split[0]) {
-                types::DestinationConstraint constraint = {
-                    "",
-                    false,
-                    0_ft,
-                    99000_ft
-                };
-
-                if (true == this->parseConstraint(split, constraint))
-                    this->m_configurations[icao].destinationConstraints.push_back(constraint);
-            }
-        }
+        if ("[DEPARTURES]" == block.first)
+            this->m_configuration.valid &= this->parseDepartures(block.second);
     }
 }
 
-const types::AirportConfiguration& AirportFileFormat::configuration(const std::string& icao) const {
-    static types::AirportConfiguration fallback;
-    auto it = this->m_configurations.find(icao);
-    if (this->m_configurations.cend() != it)
-        return it->second;
-    else
-        return fallback;
+const types::AirportConfiguration& AirportFileFormat::configuration() const {
+    return this->m_configuration;
 }

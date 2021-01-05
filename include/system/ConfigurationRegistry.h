@@ -20,11 +20,12 @@ namespace topskytower {
          */
         class ConfigurationRegistry {
         private:
-            types::SystemConfiguration   m_systemConfig;
-            formats::AirportFileFormat*  m_airportsConfiguration;
-            formats::AircraftFileFormat* m_aircraftConfiguration;
+            types::SystemConfiguration                         m_systemConfig;
+            std::map<std::string, formats::AirportFileFormat*> m_airportConfigurations;
+            formats::AircraftFileFormat*                       m_aircraftConfiguration;
 
             ConfigurationRegistry();
+            void cleanup();
 
         public:
             /**
