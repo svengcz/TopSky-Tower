@@ -597,6 +597,20 @@ void SectorControl::removeFlight(const std::string& callsign) {
         this->m_sectorsOfFlights.erase(sit);
 }
 
+bool SectorControl::isInOwnSector(const std::string& callsign) {
+    auto it = this->m_sectorsOfFlights.find(callsign);
+
+    if (this->m_sectorsOfFlights.cend() != it) {
+        if (it->second == this->m_ownSector)
+            return true;
+
+        const auto& flight = system::FlightRegistry::instance().flight(callsign);
+        return this->isInOwnSectors(flight, flight.currentPosition());
+    }
+
+    return false;
+}
+
 bool SectorControl::handoffRequired(const std::string& callsign) const {
     auto it = this->m_handoffs.find(callsign);
     if (this->m_handoffs.cend() != it)
