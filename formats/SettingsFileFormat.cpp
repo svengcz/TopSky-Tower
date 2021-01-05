@@ -62,6 +62,9 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("SYS_TrackingOnGround" == entry[0]) {
             config.trackingOnGround = '0' != entry[1][0];
         }
+        else if ("SURV_FlightPlanCheckEvenOdd" == entry[0]) {
+            config.flightPlanCheckEvenOdd = '0' != entry[1][0];
+        }
         else {
             config.valid = false;
             return;

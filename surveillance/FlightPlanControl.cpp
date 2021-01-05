@@ -69,71 +69,68 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
         it->second.requestedFlightLevel = flight.flightPlan().flightLevel();
         it->second.errorCodes.clear();
 
-        if (types::FlightPlan::Type::VFR == flight.flightPlan().type()) {
-            it->second.errorCodes.push_back(ErrorCode::VFR);
+        const auto& config = system::ConfigurationRegistry::instance().airportConfiguration(flight.flightPlan().origin());
+
+        /* no configuration for the SID found */
+        auto sit = config.sids.find(it->second.departureRoute);
+        if (config.sids.cend() == sit) {
+            it->second.errorCodes.push_back(ErrorCode::DepartureRoute);
+            return validationRequired;
         }
-        else {
-            const auto& config = system::ConfigurationRegistry::instance().airportConfiguration(flight.flightPlan().origin());
 
-            /* no configuration for the SID found */
-            auto sit = config.sids.find(it->second.departureRoute);
-            if (config.sids.cend() == sit) {
-                it->second.errorCodes.push_back(ErrorCode::DepartureRoute);
-                return validationRequired;
-            }
-
-            /* the engine-type needs to be checked */
-            if (types::Aircraft::EngineType::Unknown != sit->second.engineType) {
-                if (sit->second.engineType != flight.flightPlan().aircraft().engineType())
-                    it->second.errorCodes.push_back(ErrorCode::EngineType);
-            }
-
-            /* RNAV is required */
-            if (true == sit->second.requiresRnav && false == flight.flightPlan().rnavCapable())
-                it->second.errorCodes.push_back(ErrorCode::Navigation);
-
-            /* transponder is required */
-            if (true == sit->second.requiresTransponder && false == flight.flightPlan().transponderExists())
-                it->second.errorCodes.push_back(ErrorCode::Transponder);
-
-            /* check the flight level constraints */
-            if (sit->second.minimumCruiseLevel > flight.flightPlan().flightLevel() || sit->second.maximumCruiseLevel < flight.flightPlan().flightLevel())
-                it->second.errorCodes.push_back(ErrorCode::FlightLevel);
-
-            /* prepare for the even-odd checks */
-            bool even = 0 == static_cast<int>(flight.flightPlan().flightLevel().convert(types::feet)) % 2;
-
-            /* check if a destination specific constraint is defined */
-            bool foundDestinationConstraint = false;
-            for (const auto& constraint : std::as_const(config.destinationConstraints)) {
-                if (constraint.destination == flight.flightPlan().destination()) {
-                    if (true == constraint.evenCruiseLevel && false == even || false == constraint.evenCruiseLevel && true == even)
-                        it->second.errorCodes.push_back(ErrorCode::EvenOddLevel);
-
-                    foundDestinationConstraint = true;
-                    break;
-                }
-            }
-
-            if (false == foundDestinationConstraint) {
-                if (0 == flight.flightPlan().route().waypoints().size()) {
-                    it->second.errorCodes.push_back(ErrorCode::Route);
-                }
-                else {
-                    /* find the bearing between start and destination */
-                    const auto& waypoints = flight.flightPlan().route().waypoints();
-                    auto bearing = waypoints[0].position().bearingTo(waypoints.back().position());
-
-                    /* use the half circle rule*/
-                    if (180_deg > bearing && true == even || 180_deg <= bearing && false == even)
-                        it->second.errorCodes.push_back(ErrorCode::EvenOddLevel);
-                }
-            }
-
-            /* no error found */
-            if (0 == it->second.errorCodes.size())
-                it->second.errorCodes.push_back(ErrorCode::NoError);
+        /* the engine-type needs to be checked */
+        if (types::Aircraft::EngineType::Unknown != sit->second.engineType) {
+            if (sit->second.engineType != flight.flightPlan().aircraft().engineType())
+                it->second.errorCodes.push_back(ErrorCode::EngineType);
         }
+
+        /* RNAV is required */
+        if (true == sit->second.requiresRnav && false == flight.flightPlan().rnavCapable())
+            it->second.errorCodes.push_back(ErrorCode::Navigation);
+
+        /* transponder is required */
+        if (true == sit->second.requiresTransponder && false == flight.flightPlan().transponderExists())
+            it->second.errorCodes.push_back(ErrorCode::Transponder);
+
+        /* check the flight level constraints */
+        if (sit->second.minimumCruiseLevel > flight.flightPlan().flightLevel() || sit->second.maximumCruiseLevel < flight.flightPlan().flightLevel())
+            it->second.errorCodes.push_back(ErrorCode::FlightLevel);
+
+        /* prepare for the even-odd checks */
+        bool even = 0 == static_cast<int>(flight.flightPlan().flightLevel().convert(types::feet)) % 2;
+
+        /* check if a destination specific constraint is defined */
+        bool foundDestinationConstraint = false;
+        for (const auto& constraint : std::as_const(config.destinationConstraints)) {
+            if (constraint.destination == flight.flightPlan().destination()) {
+                if (true == constraint.evenCruiseLevel && false == even || false == constraint.evenCruiseLevel && true == even)
+                    it->second.errorCodes.push_back(ErrorCode::EvenOddLevel);
+
+                foundDestinationConstraint = true;
+                break;
+            }
+        }
+
+        if (false == foundDestinationConstraint &&
+            true == system::ConfigurationRegistry::instance().systemConfiguration().flightPlanCheckEvenOdd)
+        {
+            if (0 == flight.flightPlan().route().waypoints().size()) {
+                it->second.errorCodes.push_back(ErrorCode::Route);
+            }
+            else {
+                /* find the bearing between start and destination */
+                const auto& waypoints = flight.flightPlan().route().waypoints();
+                auto bearing = waypoints[0].position().bearingTo(waypoints.back().position());
+
+                /* use the half circle rule*/
+                if (180_deg > bearing && true == even || 180_deg <= bearing && false == even)
+                    it->second.errorCodes.push_back(ErrorCode::EvenOddLevel);
+            }
+        }
+
+        /* no error found */
+        if (0 == it->second.errorCodes.size())
+            it->second.errorCodes.push_back(ErrorCode::NoError);
     }
 
     return validationRequired;
