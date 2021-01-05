@@ -37,6 +37,8 @@ PlugIn::PlugIn() :
         m_settingsPath(),
         m_screens(),
         m_uiCallback() {
+    this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION_BUILD + " loaded").c_str(),
+                             false, false, false, false, false);
 
     char path[MAX_PATH] = { 0 };
     GetModuleFileNameA((HINSTANCE)&__ImageBase, path, _countof(path));
@@ -60,8 +62,6 @@ PlugIn::PlugIn() :
 }
 
 PlugIn::~PlugIn() {
-    if (nullptr != this->m_radioWindow)
-        DestroyWindow(this->m_radioWindow);
     this->m_screens.clear();
 }
 

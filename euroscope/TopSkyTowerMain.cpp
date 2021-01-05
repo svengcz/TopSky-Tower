@@ -37,9 +37,14 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
     return TRUE;
 }
 
+static PlugIn* __plugin = nullptr;
+
 void __declspec(dllexport) EuroScopePlugInInit(EuroScopePlugIn::CPlugIn** ppPlugInInstance) {
-    static PlugIn __topskyTowerInstance;
-    *ppPlugInInstance = &__topskyTowerInstance;
+    *ppPlugInInstance = __plugin = new PlugIn();
 }
 
-void __declspec(dllexport) EuroScopePlugInExit() { }
+void __declspec(dllexport) EuroScopePlugInExit() {
+    if (nullptr != __plugin)
+        delete __plugin;
+    __plugin = nullptr;
+}
