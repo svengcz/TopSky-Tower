@@ -131,6 +131,7 @@ SectorControl::SectorControl(const std::string& airport, const std::list<types::
 
 SectorControl::~SectorControl() {
     SectorControl::destroyNode(this->m_rootNode);
+    this->m_rootNode = nullptr;
     this->m_ownSector = nullptr;
     this->m_handoffs.clear();
 }
