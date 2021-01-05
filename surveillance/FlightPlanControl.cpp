@@ -44,6 +44,7 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
         validationRequired |= flight.flightPlan().type() != it->second.type;
         validationRequired |= flight.flightPlan().departureRoute() != it->second.departureRoute;
         validationRequired |= flight.flightPlan().destination() != it->second.destination;
+        validationRequired |= flight.flightPlan().flightLevel() != it->second.requestedFlightLevel;
     }
     else {
         this->m_flightChecks[flight.callsign()] = {
@@ -51,7 +52,8 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
             false,
             "",
             "",
-            types::FlightPlan::Type::Unknown
+            types::FlightPlan::Type::Unknown,
+            0_ft
         };
 
         it = this->m_flightChecks.find(flight.callsign());
@@ -64,6 +66,7 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
         it->second.departureRoute = flight.flightPlan().departureRoute();
         it->second.type =  flight.flightPlan().type();
         it->second.overwritten = false;
+        it->second.requestedFlightLevel = flight.flightPlan().flightLevel();
         it->second.errorCodes.clear();
 
         if (types::FlightPlan::Type::VFR == flight.flightPlan().type()) {

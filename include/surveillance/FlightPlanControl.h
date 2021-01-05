@@ -43,6 +43,7 @@ namespace topskytower {
                 std::string             destination;
                 std::string             departureRoute;
                 types::FlightPlan::Type type;
+                types::Length           requestedFlightLevel;
             };
 
             std::map<std::string, FlightPlanStatus> m_flightChecks;
