@@ -324,7 +324,10 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             auto& config = system::ConfigurationRegistry::instance().airportConfiguration(flight.flightPlan().origin());
             auto sidIt = config.sids.find(flight.flightPlan().departureRoute());
             auto esPlan = radarTarget.GetCorrelatedFlightPlan();
-            esPlan.GetControllerAssignedData().SetClearedAltitude(static_cast<int>(sidIt->second.clearanceLimit.convert(types::feet)));
+
+            auto clearedFL = static_cast<int>(sidIt->second.clearanceLimit.convert(types::feet));
+            if (esPlan.GetControllerAssignedData().GetClearedAltitude() != clearedFL)
+                esPlan.GetControllerAssignedData().SetClearedAltitude(clearedFL);
         }
 
         break;
