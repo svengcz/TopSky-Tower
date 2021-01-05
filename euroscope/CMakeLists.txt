@@ -90,12 +90,16 @@ TARGET_LINK_LIBRARIES(TopSky-Tower debug Geographic_d.lib optimized Geographic.l
 TARGET_LINK_LIBRARIES(TopSky-Tower Gdiplus Shlwapi.lib Crypt32.lib Ws2_32.lib)
 ADD_DEPENDENCIES(TopSky-Tower Eigen)
 
-# configure the debugger
+# configure the debugger and update the linker flags
 IF(MSVC)
     SET_TARGET_PROPERTIES(TopSky-Tower
         PROPERTIES
             VS_DEBUGGER_COMMAND ${EuroScope_EXECUTABLE}
             VS_DEBUGGER_WORKING_DIRECTORY ${EuroScope_DIR}
+    )
+    SET_TARGET_PROPERTIES(TopSky-Tower
+        PROPERTIES
+            LINK_FLAGS /SUBSYSTEM:WINDOWS
     )
 ENDIF()
 
