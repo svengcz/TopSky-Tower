@@ -15,20 +15,15 @@
 using namespace topskytower::euroscope;
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
-    static Gdiplus::GdiplusStartupInput __gdiStartupInput;
-    static ULONG_PTR                    __gdiplusToken;
-
     (void)module;
     (void)reserved;
 
     switch (reason) {
     case DLL_PROCESS_ATTACH:
-        Gdiplus::GdiplusStartup(&__gdiplusToken, &__gdiStartupInput, nullptr);
         curl_global_init(CURL_GLOBAL_ALL);
         break;
     case DLL_PROCESS_DETACH:
         curl_global_cleanup();
-        Gdiplus::GdiplusShutdown(__gdiplusToken);
         break;
     default:
         break;

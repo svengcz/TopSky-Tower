@@ -28,6 +28,9 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 using namespace topskytower;
 using namespace topskytower::euroscope;
 
+static Gdiplus::GdiplusStartupInput __gdiStartupInput;
+static ULONG_PTR                    __gdiplusToken;
+
 PlugIn::PlugIn() :
         EuroScopePlugIn::CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE,
                                  PLUGIN_NAME,
@@ -37,6 +40,8 @@ PlugIn::PlugIn() :
         m_settingsPath(),
         m_screens(),
         m_uiCallback() {
+    Gdiplus::GdiplusStartup(&__gdiplusToken, &__gdiStartupInput, nullptr);
+
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION_BUILD + " loaded").c_str(),
                              false, false, false, false, false);
 
@@ -63,6 +68,8 @@ PlugIn::PlugIn() :
 
 PlugIn::~PlugIn() {
     this->m_screens.clear();
+
+    Gdiplus::GdiplusShutdown(__gdiplusToken);
 }
 
 const std::string& PlugIn::settingsPath() const {
