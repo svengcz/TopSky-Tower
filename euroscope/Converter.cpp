@@ -104,10 +104,7 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     case 'U':
         retval.setTransponderExistence(true);
         break;
-    case 'D':
     case 'Y':
-        retval.setRnavCapable(true);
-        break;
     case 'M':
     case 'B':
     case 'A':
@@ -124,6 +121,8 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     case 'W':
     case 'Q':
     case 'L':
+    case 'D':
+    case 'K':
         retval.setRnavCapable(true);
         retval.setTransponderExistence(true);
         break;
