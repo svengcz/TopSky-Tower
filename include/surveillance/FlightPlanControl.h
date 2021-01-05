@@ -43,6 +43,8 @@ namespace topskytower {
                 std::string             destination;
                 std::string             departureRoute;
                 types::FlightPlan::Type type;
+                bool                    rnavCapable;
+                bool                    transponderAvailable;
                 types::Length           requestedFlightLevel;
             };
 

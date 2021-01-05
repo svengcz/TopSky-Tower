@@ -45,6 +45,8 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
         validationRequired |= flight.flightPlan().departureRoute() != it->second.departureRoute;
         validationRequired |= flight.flightPlan().destination() != it->second.destination;
         validationRequired |= flight.flightPlan().flightLevel() != it->second.requestedFlightLevel;
+        validationRequired |= flight.flightPlan().rnavCapable() != it->second.rnavCapable;
+        validationRequired |= flight.flightPlan().transponderExists() != it->second.transponderAvailable;
     }
     else {
         this->m_flightChecks[flight.callsign()] = {
@@ -53,6 +55,8 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
             "",
             "",
             types::FlightPlan::Type::Unknown,
+            false,
+            false,
             0_ft
         };
 
@@ -66,6 +70,8 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
         it->second.departureRoute = flight.flightPlan().departureRoute();
         it->second.type =  flight.flightPlan().type();
         it->second.overwritten = false;
+        it->second.rnavCapable = flight.flightPlan().rnavCapable();
+        it->second.transponderAvailable = flight.flightPlan().transponderExists();
         it->second.requestedFlightLevel = flight.flightPlan().flightLevel();
         it->second.errorCodes.clear();
 
