@@ -60,8 +60,8 @@ PlugIn::PlugIn() :
 }
 
 PlugIn::~PlugIn() {
-    for (auto& screen : this->m_screens)
-        delete screen;
+    if (nullptr != this->m_radioWindow)
+        DestroyWindow(this->m_radioWindow);
     this->m_screens.clear();
 }
 
