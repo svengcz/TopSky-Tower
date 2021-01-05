@@ -210,6 +210,15 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
     const auto& flight = system::FlightRegistry::instance().flight(callsign);
 
+    /* check if an handoff is possible */
+    RadarScreen* flightScreen = nullptr;
+    for (const auto& screen : std::as_const(this->m_screens)) {
+        if (true == screen->sectorControl().isInSector(flight)) {
+            flightScreen = screen;
+            break;
+        }
+    }
+
     switch (static_cast<PlugIn::TagItemElement>(itemCode)) {
     case PlugIn::TagItemElement::HandoffFrequency:
         /* test all loaded screens */
@@ -296,6 +305,10 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             finalizeRoute = PlugIn::summarizeFlightPlanCheck(surveillance::FlightPlanControl::instance().errorCodes(flight.callsign()),
                                                              itemString, colorCode);
         }
+
+        /* check if the flight is controlled by me */
+        if (nullptr == flightScreen || false == flightScreen->sectorControl().isInOwnSector(flight.callsign()))
+            finalizeRoute = false;
 
         if (true == finalizeRoute && types::FlightPlan::Type::VFR != flight.flightPlan().type()) {
             std::string departure = flight.flightPlan().departureRoute() + "/";
