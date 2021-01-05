@@ -22,6 +22,12 @@ FlightPlanControl::~FlightPlanControl() {
 }
 
 bool FlightPlanControl::validate(const types::Flight& flight) {
+    /* ignore VFR flights */
+    if (types::FlightPlan::Type::VFR == flight.flightPlan().type()) {
+        this->m_flightChecks[flight.callsign()].errorCodes = { surveillance::FlightPlanControl::ErrorCode::VFR };
+        return true;
+    }
+
     /* validate the input flight plan */
     if (0 == flight.flightPlan().destination().length())
         return false;

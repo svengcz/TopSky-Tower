@@ -179,7 +179,7 @@ bool PlugIn::summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanCo
         }
 
         std::strcpy(itemString, code.c_str());
-        if ("OK" == code) {
+        if ("OK" == code || "VFR" == code) {
             *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
             return true;
         }
