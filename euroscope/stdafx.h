@@ -6,12 +6,13 @@
 
 #include <algorithm>
 
+#include <targetver.h>
+
 #define NOMINMAX
 #include <Windows.h>
 using std::min;
 using std::max;
 
-#include <targetver.h>
 #include <version.h>
 
 #pragma warning(push, 0)
