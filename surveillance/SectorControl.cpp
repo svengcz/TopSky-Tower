@@ -424,6 +424,16 @@ void SectorControl::setOwnSector(const types::ControllerInfo& info) {
     if (nullptr != this->m_ownSector && info.identifier() == this->m_ownSector->sector.controllerInfo().identifier())
         return;
 
+    /* remove the old controller out of the list */
+    if (nullptr != this->m_ownSector) {
+        for (auto it = this->m_ownSector->controllers.begin(); this->m_ownSector->controllers.end() != it; ++it) {
+            if (it->controllerName() == info.controllerName()) {
+                this->m_ownSector->controllers.erase(it);
+                break;
+            }
+        }
+    }
+
     this->m_ownSector = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, info.identifier());
     this->m_ownSector->controllers.push_back(info);
 }
