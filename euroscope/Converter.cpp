@@ -172,16 +172,6 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     if (nullptr != plan.GetControllerAssignedData().GetSquawk())
         retval.setAssignedSquawk(static_cast<std::uint16_t>(std::atoi(plan.GetControllerAssignedData().GetSquawk())));
 
-    if (types::FlightPlan::Type::IFR == retval.type()) {
-        auto& config = system::ConfigurationRegistry::instance().airportConfiguration(retval.origin());
-
-        auto sidIt = config.sids.find(retval.departureRoute());
-        if (config.sids.cend() != sidIt && sidIt->second.clearanceLimit != retval.clearanceLimit()) {
-            retval.setClearanceLimit(sidIt->second.clearanceLimit);
-            plan.GetControllerAssignedData().SetClearedAltitude(static_cast<int>(sidIt->second.clearanceLimit.convert(types::feet)));
-        }
-    }
-
     return retval;
 }
 

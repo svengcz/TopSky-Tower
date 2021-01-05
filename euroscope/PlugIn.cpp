@@ -319,6 +319,12 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
                 /* write into the flight plan */
                 radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().SetRoute(newRoute.c_str());
             }
+
+            /* update the initial clearance limit */
+            auto& config = system::ConfigurationRegistry::instance().airportConfiguration(flight.flightPlan().origin());
+            auto sidIt = config.sids.find(flight.flightPlan().departureRoute());
+            auto esPlan = radarTarget.GetCorrelatedFlightPlan();
+            esPlan.GetControllerAssignedData().SetClearedAltitude(static_cast<int>(sidIt->second.clearanceLimit.convert(types::feet)));
         }
 
         break;
