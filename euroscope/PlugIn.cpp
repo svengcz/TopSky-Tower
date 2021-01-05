@@ -556,16 +556,28 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             PlugIn::updateFlightStrip(radarTarget, 7, "K");
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
-        if (0 == std::strncmp(itemString, "Release", 7))
+        if (0 == std::strncmp(itemString, "Release", 7)) {
             radarTarget.GetCorrelatedFlightPlan().EndTracking();
-        else if (0 == std::strncmp(itemString, "Assume", 6))
+
+            /* check if a handoff to UNICOM is ongoing */
+            if (true == flightScreen->sectorControl().handoffRequired(callsign)) {
+                auto controllers = flightScreen->sectorControl().handoffStations(callsign);
+                if (0 == controllers.front().size())
+                    flightScreen->sectorControl().handoffPerformed(callsign);
+            }
+        }
+        else if (0 == std::strncmp(itemString, "Assume", 6)) {
             radarTarget.GetCorrelatedFlightPlan().StartTracking();
-        else if (0 == std::strncmp(itemString, "Accept", 6))
+        }
+        else if (0 == std::strncmp(itemString, "Accept", 6)) {
             radarTarget.GetCorrelatedFlightPlan().AcceptHandoff();
-        else if (0 == std::strncmp(itemString, "Refuse", 6))
+        }
+        else if (0 == std::strncmp(itemString, "Refuse", 6)) {
             radarTarget.GetCorrelatedFlightPlan().RefuseHandoff();
-        else
+        }
+        else {
             this->handleHandoffPerform(pt, area, callsign, tracked);
+        }
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelectEvent:
         if (true == flightScreen->sectorControl().handoffRequired(callsign)) {
