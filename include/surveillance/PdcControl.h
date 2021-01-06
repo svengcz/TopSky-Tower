@@ -98,13 +98,13 @@ namespace topskytower {
                  * @brief Defines the different response types
                  */
                 enum class AnswerDefinition {
-                    Undefined = 0, /**! No response defined */
-                    No = 1, /**! No response expected */
-                    Yes = 2, /**! An answer is required */
-                    WilcoUnable = 3, /**! Expecting Wilco/Unable as answer */
+                    Undefined = 0,      /**! No response defined */
+                    No = 1,             /**! No response expected */
+                    Yes = 2,            /**! An answer is required */
+                    WilcoUnable = 3,    /**! Expecting Wilco/Unable as answer */
                     AffirmNegative = 4, /**! Expecting Affirm/Negative as answer */
-                    Roger = 5, /**! Expecting Roger as answer */
-                    NotRequired = 6  /**! No answer required */
+                    Roger = 5,          /**! Expecting Roger as answer */
+                    NotRequired = 6     /**! No answer required */
                 };
 
                 std::uint32_t    incomeMessageId;    /**< Defines the message ID of the sender */
@@ -190,6 +190,9 @@ namespace topskytower {
             void run();
 
         public:
+            /**
+             * @brief Destroys all internal structures
+             */
             ~PdcControl();
 
             PdcControl(const PdcControl& other) = delete;
