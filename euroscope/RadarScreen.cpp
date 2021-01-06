@@ -110,7 +110,8 @@ void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan 
 
 void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan, int type) {
     /* handle only relevant changes */
-    if (EuroScopePlugIn::CTR_DATA_TYPE_TEMPORARY_ALTITUDE != type && EuroScopePlugIn::CTR_DATA_TYPE_SQUAWK != type &&
+    if (EuroScopePlugIn::CTR_DATA_TYPE_TEMPORARY_ALTITUDE != type &&
+        EuroScopePlugIn::CTR_DATA_TYPE_SQUAWK != type &&
         EuroScopePlugIn::CTR_DATA_TYPE_SCRATCH_PAD_STRING != type)
     {
         return;
