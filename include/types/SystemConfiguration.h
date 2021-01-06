@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include <types/Quantity.hpp>
+
 namespace topskytower {
     namespace types {
         /**
@@ -15,14 +17,15 @@ namespace topskytower {
          * @ingroup types
          */
         struct SystemConfiguration {
-            bool         valid;                  /**< Marks if the configuration is valid */
-            std::string  hoppiesCode;            /**< Defines Hoppie's logon-code */
-            std::uint8_t uiBackgroundColor[3];   /**< Defines the background color of the UI elements */
-            std::uint8_t uiForegroundColor[3];   /**< Defines the foreground color of the UI elements */
-            std::string  fontFamily;             /**< Defines the font family of the visualizations */
-            float        fontSize;               /**< Defines the font size of the visualizations */
-            bool         trackingOnGround;       /**< Defines if the ground controllers track flights */
-            bool         flightPlanCheckEvenOdd; /**< Defines if the generic even-odd checks are performed */
+            bool          valid;                    /**< Marks if the configuration is valid */
+            std::string   hoppiesCode;              /**< Defines Hoppie's logon-code */
+            std::uint8_t  uiBackgroundColor[3];     /**< Defines the background color of the UI elements */
+            std::uint8_t  uiForegroundColor[3];     /**< Defines the foreground color of the UI elements */
+            std::string   fontFamily;               /**< Defines the font family of the visualizations */
+            float         fontSize;                 /**< Defines the font size of the visualizations */
+            bool          trackingOnGround;         /**< Defines if the ground controllers track flights */
+            bool          flightPlanCheckEvenOdd;   /**< Defines if the generic even-odd checks are performed */
+            types::Length standAssociationDistance; /**< Defines the maximum distance to assign automatically an aircraft to a stand */
 
             /**
              * @brief Creates an empty and uninitialized system configuration
@@ -35,7 +38,8 @@ namespace topskytower {
                     fontFamily(),
                     fontSize(0.0f),
                     trackingOnGround(false),
-                    flightPlanCheckEvenOdd(true) { }
+                    flightPlanCheckEvenOdd(true),
+                    standAssociationDistance(10_nm) { }
         };
     }
 }
