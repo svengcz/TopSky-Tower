@@ -108,7 +108,7 @@ namespace topskytower {
              * @brief Analysis the flight and checks if an handoff is needed
              * @param[in] flight The checked flight
              */
-            void update(const types::Flight& flight);
+            void updateFlight(const types::Flight& flight);
             /**
              * @brief Removes a flight out of the sector control
              * @param[in] callsign The deletable callsign

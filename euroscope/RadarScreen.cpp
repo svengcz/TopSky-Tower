@@ -97,7 +97,7 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
     this->m_flightRegistry->updateFlight(flight);
 
     if (nullptr != this->m_sectorControl)
-        this->m_sectorControl->update(flight);
+        this->m_sectorControl->updateFlight(flight);
 }
 
 void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) {

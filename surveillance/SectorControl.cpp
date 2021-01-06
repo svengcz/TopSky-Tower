@@ -560,7 +560,7 @@ bool SectorControl::isInOwnSectors(const types::Flight& flight, const types::Pos
     return this->m_ownSector == node && nullptr != this->m_ownSector;
 }
 
-void SectorControl::update(const types::Flight& flight) {
+void SectorControl::updateFlight(const types::Flight& flight) {
     if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
         return;
 
