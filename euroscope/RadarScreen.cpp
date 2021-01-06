@@ -126,6 +126,8 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
 
 void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) {
     this->m_flightRegistry->removeFlight(flightPlan.GetCallsign());
+    if (nullptr != this->m_sectorControl)
+        this->m_sectorControl->removeFlight(flightPlan.GetCallsign());
 }
 
 void RadarScreen::initialize() {
