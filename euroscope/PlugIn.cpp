@@ -97,7 +97,7 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
     (void)canBeCreated;
     (void)displayName;
 
-    this->m_screens.push_back(new RadarScreen(0 == this->m_screens.size()));
+    this->m_screens.push_back(new RadarScreen());
     return this->m_screens.back();
 }
 
@@ -211,6 +211,22 @@ bool PlugIn::summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanCo
     return false;
 }
 
+RadarScreen* PlugIn::findScreenAndFlight(const std::string& callsign, types::Flight& flight) const {
+    /* test which screen is relevant */
+    for (const auto& screen : std::as_const(this->m_screens)) {
+        if (true == screen->flightRegistry().flightExists(callsign)) {
+            /* copy it once -> the data is consistent over all screens */
+            if (flight.callsign() != callsign)
+                flight = screen->flightRegistry().flight(callsign);
+
+            if (true == screen->isInitialized() && true == screen->sectorControl().isInSector(flight))
+                return screen;
+        }
+    }
+
+    return nullptr;
+}
+
 void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlugIn::CRadarTarget radarTarget,
                           int itemCode, int tagData, char itemString[16], int* colorCode, COLORREF* rgb,
                           double* fontSize) {
@@ -228,16 +244,11 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     itemString[0] = '\0';
     *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
 
-    const auto& flight = system::FlightRegistry::instance().flight(callsign);
-
-    /* check if an handoff is possible */
-    RadarScreen* flightScreen = nullptr;
-    for (const auto& screen : std::as_const(this->m_screens)) {
-        if (true == screen->sectorControl().isInSector(flight)) {
-            flightScreen = screen;
-            break;
-        }
-    }
+    /* get the screen and the converted flight information */
+    types::Flight flight;
+    auto flightScreen = this->findScreenAndFlight(callsign, flight);
+    if (nullptr == flightScreen)
+        return;
 
     switch (static_cast<PlugIn::TagItemElement>(itemCode)) {
     case PlugIn::TagItemElement::HandoffFrequency:
@@ -327,7 +338,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         }
 
         /* check if the flight is controlled by me */
-        if (nullptr == flightScreen || false == flightScreen->sectorControl().isInOwnSector(flight.callsign()))
+        if (nullptr == flightScreen || false == flightScreen->sectorControl().isInOwnSector(flight))
             finalizeRoute = false;
 
         if (true == finalizeRoute && types::FlightPlan::Type::VFR != flight.flightPlan().type()) {
@@ -370,14 +381,14 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     }
 }
 
-void PlugIn::handleHandoffPerform(POINT point, RECT area, const std::string& callsign, bool tracked) {
+void PlugIn::handleHandoffPerform(POINT point, RECT area, const types::Flight& flight, bool tracked) {
     auto radarTarget = this->RadarTargetSelectASEL();
 
     /* test all loaded screens */
     for (const auto& screen : std::as_const(this->m_screens)) {
         /* found the correct screen with the handoff */
-        if (true == screen->sectorControl().handoffRequired(callsign)) {
-            auto controllers = screen->sectorControl().handoffStations(callsign);
+        if (true == screen->sectorControl().handoffRequired(flight)) {
+            auto controllers = screen->sectorControl().handoffStations(flight);
 
             /* check if handoff or a release is needed */
             if (1 == controllers.size()) {
@@ -388,12 +399,12 @@ void PlugIn::handleHandoffPerform(POINT point, RECT area, const std::string& cal
                     else
                         radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(controllers.front().c_str());
                 }
-                screen->sectorControl().handoffPerformed(callsign);
+                screen->sectorControl().handoffPerformed(flight);
             }
             else {
                 RadarScreen::EuroscopeEvent eventEntry = {
                     static_cast<int>(PlugIn::TagItemFunction::HandoffControllerSelectEvent),
-                    callsign,
+                    flight.callsign(),
                     "",
                     point,
                     area
@@ -520,16 +531,8 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
     /* check if we are tracking and search the flight */
     bool tracked = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe();
-    auto& flight = system::FlightRegistry::instance().flight(callsign);
-
-    /* check if an handoff is possible */
-    RadarScreen* flightScreen = nullptr;
-    for (const auto& screen : std::as_const(this->m_screens)) {
-        if (true == screen->sectorControl().isInSector(flight)) {
-            flightScreen = screen;
-            break;
-        }
-    }
+    types::Flight flight;
+    auto flightScreen = this->findScreenAndFlight(callsign, flight);
 
     /* nothing to do */
     if (nullptr == flightScreen)
@@ -792,14 +795,6 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     default:
         break;
     }
-}
-
-void PlugIn::removeFlight(const std::string& callsign) {
-    system::FlightRegistry::instance().removeFlight(callsign);
-    surveillance::FlightPlanControl::instance().removeFlight(callsign);
-
-    for (auto& screen : this->m_screens)
-        screen->removeFlight(callsign);
 }
 
 void PlugIn::pdcMessageReceived() {

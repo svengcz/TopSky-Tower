@@ -20,33 +20,20 @@ using namespace topskytower::euroscope;
 
 RadarScreen::RadarScreen() :
         EuroScopePlugIn::CRadarScreen(),
-        m_updateFlightRegistry(false),
         m_initialized(false),
         m_airport(),
         m_userInterface(this),
-        m_controllers(nullptr),
-        m_disconnectedFlightsLock(),
-        m_disconnectedFlights(),
-        m_guiEuroscopeEventsLock(),
-        m_guiEuroscopeEvents(),
-        m_lastRenderingTime() { }
-
-RadarScreen::RadarScreen(bool updateFlightRegistry) :
-        EuroScopePlugIn::CRadarScreen(),
-        m_updateFlightRegistry(updateFlightRegistry),
-        m_initialized(false),
-        m_airport(),
-        m_userInterface(this),
-        m_controllers(new surveillance::SectorControl()),
-        m_disconnectedFlightsLock(),
-        m_disconnectedFlights(),
+        m_flightRegistry(new system::FlightRegistry()),
+        m_sectorControl(nullptr),
         m_guiEuroscopeEventsLock(),
         m_guiEuroscopeEvents(),
         m_lastRenderingTime() { }
 
 RadarScreen::~RadarScreen() {
-    if (nullptr != this->m_controllers)
-        delete this->m_controllers;
+    if (nullptr != this->m_sectorControl)
+        delete this->m_sectorControl;
+    if (nullptr != this->m_flightRegistry)
+        delete this->m_flightRegistry;
 }
 
 void RadarScreen::OnAsrContentLoaded(bool loaded) {
@@ -90,26 +77,54 @@ void RadarScreen::OnMoveScreenObject(int objectType, const char* objectId, POINT
 }
 
 void RadarScreen::OnControllerPositionUpdate(EuroScopePlugIn::CController controller) {
-    if (nullptr != this->m_controllers && true == controller.IsValid() && true == controller.IsController()) {
+    if (nullptr != this->m_sectorControl && true == controller.IsValid() && true == controller.IsController()) {
         std::string_view view(controller.GetPositionId());
         if ("" != view && "XX" != view)
-            this->m_controllers->controllerUpdate(Converter::convert(controller));
+            this->m_sectorControl->controllerUpdate(Converter::convert(controller));
     }
 }
 
 void RadarScreen::OnControllerDisconnect(EuroScopePlugIn::CController controller) {
-    if (nullptr != this->m_controllers && true == controller.IsValid() && true == controller.IsController()) {
+    if (nullptr != this->m_sectorControl && true == controller.IsValid() && true == controller.IsController()) {
         std::string_view view(controller.GetPositionId());
         if ("" != view && "XX" != view)
-            this->m_controllers->controllerOffline(Converter::convert(controller));
+            this->m_sectorControl->controllerOffline(Converter::convert(controller));
     }
 }
 
-void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) {
-    if (true == this->m_updateFlightRegistry) {
-        std::lock_guard guard(this->m_disconnectedFlightsLock);
-        this->m_disconnectedFlights.push_back(flightPlan.GetCallsign());
+void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) {
+    auto flight = Converter::convert(radarTarget, this->m_airport);
+    this->m_flightRegistry->updateFlight(flight);
+
+    if (nullptr != this->m_sectorControl)
+        this->m_sectorControl->update(flight);
+}
+
+void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) {
+    if (false == flightPlan.GetCorrelatedRadarTarget().IsValid())
+        return;
+
+    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), this->m_airport);
+    this->m_flightRegistry->updateFlight(flight);
+}
+
+void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan, int type) {
+    /* handle only relevant changes */
+    if (EuroScopePlugIn::CTR_DATA_TYPE_TEMPORARY_ALTITUDE != type && EuroScopePlugIn::CTR_DATA_TYPE_SQUAWK != type &&
+        EuroScopePlugIn::CTR_DATA_TYPE_SCRATCH_PAD_STRING != type)
+    {
+        return;
     }
+
+    if (false == flightPlan.GetCorrelatedRadarTarget().IsValid())
+        return;
+
+    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), this->m_airport);
+    this->m_flightRegistry->updateFlight(flight);
+}
+
+void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) {
+    this->m_flightRegistry->removeFlight(flightPlan.GetCallsign());
 }
 
 void RadarScreen::initialize() {
@@ -122,9 +137,9 @@ void RadarScreen::initialize() {
     if (nullptr != sctFilename && 0 != std::strlen(sctFilename)) {
         formats::EseFileFormat file(sctFilename);
 
-        if (nullptr != this->m_controllers)
-            delete this->m_controllers;
-        this->m_controllers = new surveillance::SectorControl(this->m_airport, file.sectors());
+        if (nullptr != this->m_sectorControl)
+            delete this->m_sectorControl;
+        this->m_sectorControl = new surveillance::SectorControl(this->m_airport, file.sectors());
 
         this->m_initialized = true;
     }
@@ -149,15 +164,6 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
 
     auto plugin = static_cast<PlugIn*>(this->GetPlugIn());
 
-    /* remove disconnected flights */
-    if (true == this->m_updateFlightRegistry) {
-        this->m_disconnectedFlightsLock.lock();
-        for (const auto& callsign : std::as_const(this->m_disconnectedFlights))
-            plugin->removeFlight(callsign);
-        this->m_disconnectedFlights.clear();
-        this->m_disconnectedFlightsLock.unlock();
-    }
-
     /* execute one ES function event */
     if (0 != this->m_guiEuroscopeEvents.size()) {
         /* get the event and free the log to call the rest */
@@ -173,32 +179,21 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
 
     std::string_view positionId(plugin->ControllerMyself().GetPositionId());
     if (0 != positionId.length() && "XX" != positionId)
-        this->m_controllers->setOwnSector(Converter::convert(plugin->ControllerMyself()));
-
-    /* update the internal information of the radar targets */
-    for (auto rt = plugin->RadarTargetSelectFirst(); true == rt.IsValid(); rt = plugin->RadarTargetSelectNext(rt)) {
-        types::Flight flight;
-
-        if (true == this->m_updateFlightRegistry) {
-            flight = Converter::convert(rt, this->m_airport);
-            system::FlightRegistry::instance().updateFlight(flight);
-        }
-        else {
-            flight = system::FlightRegistry::instance().flight(rt.GetCallsign());
-        }
-
-        this->m_controllers->update(flight);
-    }
+        this->m_sectorControl->setOwnSector(Converter::convert(plugin->ControllerMyself()));
 
     this->m_lastRenderingTime = std::chrono::system_clock::now();
 }
 
 surveillance::SectorControl& RadarScreen::sectorControl() {
-    return *this->m_controllers;
+    return *this->m_sectorControl;
 }
 
 const surveillance::SectorControl& RadarScreen::sectorControl() const {
-    return *this->m_controllers;
+    return *this->m_sectorControl;
+}
+
+const system::FlightRegistry& RadarScreen::flightRegistry() const {
+    return *this->m_flightRegistry;
 }
 
 void RadarScreen::registerEuroscopeEvent(RadarScreen::EuroscopeEvent&& entry) {
@@ -214,11 +209,10 @@ UiManager& RadarScreen::uiManager() {
     return this->m_userInterface;
 }
 
-const std::chrono::system_clock::time_point& RadarScreen::lastRenderingTime() const {
-    return this->m_lastRenderingTime;
+bool RadarScreen::isInitialized() const {
+    return this->m_initialized;
 }
 
-void RadarScreen::removeFlight(const std::string& callsign) {
-    if (nullptr != this->m_controllers)
-        this->m_controllers->removeFlight(callsign);
+const std::chrono::system_clock::time_point& RadarScreen::lastRenderingTime() const {
+    return this->m_lastRenderingTime;
 }

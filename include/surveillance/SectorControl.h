@@ -116,39 +116,39 @@ namespace topskytower {
             void removeFlight(const std::string& callsign);
             /**
              * @brief Checks if a specific flight is in the own sector
-             * @param[in] callsign The requested callsign
+             * @param[in] flight The requested flight
              * @return True if it is in the own sector, else false
              */
-            bool isInOwnSector(const std::string& callsign);
+            bool isInOwnSector(const types::Flight& flight);
             /**
              * @brief Checks if an handoff is required for a specific callsign
-             * @param[in] callsign The requested callsign
+             * @param[in] flight The requested flight
              * @return True if an handoff is required, else false
              */
-            bool handoffRequired(const std::string& callsign) const;
+            bool handoffRequired(const types::Flight& flight) const;
             /**
              * @brief Checks if the aircraft is in the area sector and a handoff is possible
-             * @param[in] callsign The requested callsign
+             * @param[in] flight The requested flight
              * @return Trie if an handoff is possible, else false
              */
-            bool handoffPossible(const std::string& callsign) const;
+            bool handoffPossible(const types::Flight& flight) const;
             /**
              * @brief Marks that the handoff is performed for a specific callsign
-             * @param[in] callsign The requested callsign
+             * @param[in] flight The requested flight
              */
-            void handoffPerformed(const std::string& callsign);
+            void handoffPerformed(const types::Flight& flight);
             /**
              * @brief Returns the next frequency of a specific callsign
-             * @param[in] callsign The requested callsign
+             * @param[in] flight The requested flight
              * @return The next frequency
              */
-            const types::ControllerInfo& handoffSector(const std::string& callsign) const;
+            const types::ControllerInfo& handoffSector(const types::Flight& flight) const;
             /**
              * @brief Returns the next sector controllers of a specific callsign
-             * @param[in] callsign The requested callsign
+             * @param[in] flight The requested flight
              * @return The next sector controllers
              */
-            std::list<std::string> handoffStations(const std::string& callsign) const;
+            std::list<std::string> handoffStations(const types::Flight& flight) const;
             /**
              * @brief Returns all controller information of all sectors that can theoretically take over the flight
              * @return The controller informations of all potential sectors
@@ -156,10 +156,10 @@ namespace topskytower {
             std::list<types::ControllerInfo> handoffSectors() const;
             /**
              * @brief Sets the handoff sector manually which avoids automatic overwrites
-             * @param[in] callsign The requested callsign
+             * @param[in] flight The requested flight
              * @param[in] identifier The sector's identifier
              */
-            void handoffSectorSelect(const std::string& callsign, const std::string& identifier);
+            void handoffSectorSelect(const types::Flight& flight, const std::string& identifier);
             /**
              * @brief Checks if an handover of the sector is possible
              * @return True if the handover is possible, else false

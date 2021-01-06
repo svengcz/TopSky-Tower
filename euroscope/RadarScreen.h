@@ -45,13 +45,11 @@ namespace topskytower {
             };
 
         private:
-            bool                                  m_updateFlightRegistry;
             bool                                  m_initialized;
             std::string                           m_airport;
             UiManager                             m_userInterface;
-            surveillance::SectorControl*          m_controllers;
-            std::mutex                            m_disconnectedFlightsLock;
-            std::list<std::string>                m_disconnectedFlights;
+            system::FlightRegistry*               m_flightRegistry;
+            surveillance::SectorControl*          m_sectorControl;
             std::mutex                            m_guiEuroscopeEventsLock;
             std::list<EuroscopeEvent>             m_guiEuroscopeEvents;
             std::chrono::system_clock::time_point m_lastRenderingTime;
@@ -63,11 +61,6 @@ namespace topskytower {
              * @brief Creates a new RADAR screen
              */
             RadarScreen();
-            /**
-             * @brief Creates a new RADAR screen
-             * @param[in] updateFlightRegistry Defines if this screen is used to update the flight registry
-             */
-            RadarScreen(bool updateFlightRegistry);
             /**
              * @brief Destroys all internal structures
              */
@@ -111,6 +104,22 @@ namespace topskytower {
              */
             void OnControllerDisconnect(EuroScopePlugIn::CController controller) override;
             /**
+             * @brief Called as soon as a radar target position is updated
+             * @param[in] radarTarget The updated radar target
+             */
+            void OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) override;
+            /**
+             * @brief Called as soon as a flight plan is updated
+             * @param[in] flightPlan The updated flight plan
+             */
+            void OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) override;
+            /**
+             * @brief Called as soon as a controller updated the flight plan
+             * @param[in] flightPlan The updated flight plan
+             * @param[in] type The changed information
+             */
+            void OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan, int type) override;
+            /**
              * @brief Called as soon as a flight plan is offline
              * @param[in] flightPlan The disconnected flight plan
              */
@@ -132,6 +141,11 @@ namespace topskytower {
              */
             const surveillance::SectorControl& sectorControl() const;
             /**
+             * @brief Returns the flight registry
+             * @return The flight registry
+             */
+            const system::FlightRegistry& flightRegistry() const;
+            /**
              * @brief Registers an Euroscope GUI event to trigger the function call during the next rendering step
              * @param[in] entry The new GUI event
              */
@@ -147,15 +161,15 @@ namespace topskytower {
              */
             UiManager& uiManager();
             /**
+             * @brief Checks if the screen is initialized
+             * @return True if all information are available, else false
+             */
+            bool isInitialized() const;
+            /**
              * @brief Returns the timestamp of the last rendering
              * @return The last rendering time
              */
             const std::chrono::system_clock::time_point& lastRenderingTime() const;
-            /**
-             * @brief Removes a flight out of all internal structures
-             * @param[in] callsign The deletable callsign
-             */
-            void removeFlight(const std::string& callsign);
         };
     }
 }

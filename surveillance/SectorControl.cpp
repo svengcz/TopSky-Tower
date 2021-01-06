@@ -617,51 +617,49 @@ void SectorControl::removeFlight(const std::string& callsign) {
         this->m_sectorsOfFlights.erase(sit);
 }
 
-bool SectorControl::isInOwnSector(const std::string& callsign) {
-    auto it = this->m_sectorsOfFlights.find(callsign);
+bool SectorControl::isInOwnSector(const types::Flight& flight) {
+    auto it = this->m_sectorsOfFlights.find(flight.callsign());
 
     if (this->m_sectorsOfFlights.cend() != it) {
         if (it->second == this->m_ownSector)
             return true;
 
-        const auto& flight = system::FlightRegistry::instance().flight(callsign);
         return this->isInOwnSectors(flight, flight.currentPosition());
     }
 
     return false;
 }
 
-bool SectorControl::handoffRequired(const std::string& callsign) const {
-    auto it = this->m_handoffs.find(callsign);
+bool SectorControl::handoffRequired(const types::Flight& flight) const {
+    auto it = this->m_handoffs.find(flight.callsign());
     if (this->m_handoffs.cend() != it)
         return false == it->second.handoffPerformed;
     return false;
 }
 
-bool SectorControl::handoffPossible(const std::string& callsign) const {
+bool SectorControl::handoffPossible(const types::Flight& flight) const {
     if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
         return false;
 
-    auto& flight = system::FlightRegistry::instance().flight(callsign);
     return this->isInOwnSectors(flight, flight.currentPosition());
 }
 
-void SectorControl::handoffPerformed(const std::string& callsign) {
-    auto it = this->m_handoffs.find(callsign);
+void SectorControl::handoffPerformed(const types::Flight& flight) {
+    auto it = this->m_handoffs.find(flight.callsign());
     if (this->m_handoffs.end() != it)
         it->second.handoffPerformed = true;
 }
 
-const types::ControllerInfo& SectorControl::handoffSector(const std::string& callsign) const {
-    auto it = this->m_handoffs.find(callsign);
+const types::ControllerInfo& SectorControl::handoffSector(const types::Flight& flight) const {
+    auto it = this->m_handoffs.find(flight.callsign());
     if (this->m_handoffs.cend() == it)
         return this->m_unicom->sector.controllerInfo();
 
     return it->second.nextSector->sector.controllerInfo();
 }
 
-std::list<std::string> SectorControl::handoffStations(const std::string& callsign) const {
-    auto it = this->m_handoffs.find(callsign);
+std::list<std::string> SectorControl::handoffStations(const types::Flight& flight) const {
+    auto it = this->m_handoffs.find(flight.callsign());
     std::list<std::string> retval;
     if (this->m_handoffs.cend() == it)
         return retval;
@@ -718,11 +716,11 @@ std::list<types::ControllerInfo> SectorControl::handoffSectors() const {
     return retval;
 }
 
-void SectorControl::handoffSectorSelect(const std::string& callsign, const std::string& identifier) {
-    auto it = this->m_handoffs.find(callsign);
+void SectorControl::handoffSectorSelect(const types::Flight& flight, const std::string& identifier) {
+    auto it = this->m_handoffs.find(flight.callsign());
     if (this->m_handoffs.end() == it) {
-        this->m_handoffs[callsign] = { false, false, system::FlightRegistry::instance().flight(callsign), nullptr };
-        it = this->m_handoffs.find(callsign);
+        this->m_handoffs[flight.callsign()] = { false, false, flight, nullptr };
+        it = this->m_handoffs.find(flight.callsign());
     }
 
     auto node = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, identifier);

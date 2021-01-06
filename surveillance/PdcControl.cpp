@@ -300,10 +300,6 @@ void PdcControl::receiveMessages() {
                 i += 1;
             }
 
-            /* validate that the flight exists */
-            if (false == system::FlightRegistry::instance().flightExists(pdcMsg.sender))
-                continue;
-
             this->m_comChannelsLock.lock();
             this->handleMessage(pdcMsg);
             this->m_comChannelsLock.unlock();

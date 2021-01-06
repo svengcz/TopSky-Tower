@@ -36,8 +36,3 @@ const types::Flight& FlightRegistry::flight(const std::string& callsign) const {
     else
         return fallback;
 }
-
-FlightRegistry& FlightRegistry::instance() {
-    static FlightRegistry __instance;
-    return __instance;
-}
