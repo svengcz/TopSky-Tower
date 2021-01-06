@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <types/Aircraft.h>
+#include <types/Coordinate.h>
 #include <types/Quantity.hpp>
 
 namespace topskytower {
