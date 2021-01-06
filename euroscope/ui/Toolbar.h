@@ -32,6 +32,9 @@ namespace topskytower {
                 Group           = 1,
                 Settings        = 2,
                 Reload          = 3,
+                ReloadSystem    = 4,
+                ReloadAircrafts = 5,
+                ReloadAirports  = 6,
                 Systems         = 31,
                 PDC             = 32
             };

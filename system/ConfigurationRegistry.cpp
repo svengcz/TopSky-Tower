@@ -23,50 +23,61 @@ ConfigurationRegistry::ConfigurationRegistry() :
         m_aircraftConfiguration(nullptr) { }
 
 ConfigurationRegistry::~ConfigurationRegistry() {
-    this->cleanup();
+    this->cleanup(UpdateType::All);
 }
 
-void ConfigurationRegistry::cleanup() {
-    for (auto it = this->m_airportConfigurations.begin(); this->m_airportConfigurations.end() != it; ++it)
-        delete it->second;
-    this->m_airportConfigurations.clear();
+void ConfigurationRegistry::cleanup(UpdateType type) {
+    if (UpdateType::All == type || UpdateType::Airports == type) {
+        for (auto it = this->m_airportConfigurations.begin(); this->m_airportConfigurations.end() != it; ++it)
+            delete it->second;
+        this->m_airportConfigurations.clear();
+    }
 
-    if (nullptr != this->m_aircraftConfiguration)
-        delete this->m_aircraftConfiguration;
+    if (UpdateType::All == type || UpdateType::Aircrafts == type) {
+        if (nullptr != this->m_aircraftConfiguration)
+            delete this->m_aircraftConfiguration;
+        this->m_aircraftConfiguration = nullptr;
+    }
 
-    this->m_systemConfig.valid = false;
+    if (UpdateType::All == type || UpdateType::System == type)
+        this->m_systemConfig.valid = false;
 }
 
-void ConfigurationRegistry::configure(const std::string& path) {
-    this->cleanup();
+void ConfigurationRegistry::configure(const std::string& path, UpdateType type) {
+    this->cleanup(type);
 
-    formats::SettingsFileFormat settings(path + "\\TopSkyTowerSettings.txt");
-    settings.parse(this->m_systemConfig);
+    if (UpdateType::All == type || UpdateType::System == type) {
+        formats::SettingsFileFormat settings(path + "\\TopSkyTowerSettings.txt");
+        settings.parse(this->m_systemConfig);
 
-    std::ifstream stream(path + "\\TopSkyTowerHoppies.txt");
-    for (std::string line; std::getline(stream, line);) {
-        if (0 != line.size()) {
-            this->m_systemConfig.hoppiesCode = line;
-            break;
+        std::ifstream stream(path + "\\TopSkyTowerHoppies.txt");
+        for (std::string line; std::getline(stream, line);) {
+            if (0 != line.size()) {
+                this->m_systemConfig.hoppiesCode = line;
+                break;
+            }
         }
     }
 
-    for (auto& entry : fs::recursive_directory_iterator(path)) {
-        if (true == fs::is_regular_file(entry) && 0 == entry.path().filename().string().find("TopSkyTowerAirport")) {
-            /* extract the ICAO code of the airport */
-            auto filename = entry.path().filename().stem().string();
-            auto icao = filename.substr(filename.length() - 4, 4);
+    if (UpdateType::All == type || UpdateType::Airports == type) {
+        for (auto& entry : fs::recursive_directory_iterator(path)) {
+            if (true == fs::is_regular_file(entry) && 0 == entry.path().filename().string().find("TopSkyTowerAirport")) {
+                /* extract the ICAO code of the airport */
+                auto filename = entry.path().filename().stem().string();
+                auto icao = filename.substr(filename.length() - 4, 4);
 
 #pragma warning(disable: 4244)
-            std::transform(icao.begin(), icao.end(), icao.begin(), ::toupper);
+                std::transform(icao.begin(), icao.end(), icao.begin(), ::toupper);
 #pragma warning(default: 4244)
 
-            /* read the configuration */
-            this->m_airportConfigurations[icao] = new formats::AirportFileFormat(entry.path().string());
+                /* read the configuration */
+                this->m_airportConfigurations[icao] = new formats::AirportFileFormat(entry.path().string());
+            }
         }
     }
 
-    this->m_aircraftConfiguration = new formats::AircraftFileFormat(path + "\\TopSkyTowerAircrafts.txt");
+    if (UpdateType::All == type || UpdateType::Aircrafts == type)
+        this->m_aircraftConfiguration = new formats::AircraftFileFormat(path + "\\TopSkyTowerAircrafts.txt");
 }
 
 const types::SystemConfiguration& ConfigurationRegistry::systemConfiguration() const {

@@ -108,7 +108,20 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         resetUi = false;
         break;
     case Toolbar::ClickId::Reload:
-        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath());
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                            system::ConfigurationRegistry::UpdateType::All);
+        break;
+    case Toolbar::ClickId::ReloadSystem:
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                            system::ConfigurationRegistry::UpdateType::System);
+        break;
+    case Toolbar::ClickId::ReloadAirports:
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                            system::ConfigurationRegistry::UpdateType::Airports);
+        break;
+    case Toolbar::ClickId::ReloadAircrafts:
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                            system::ConfigurationRegistry::UpdateType::Aircrafts);
         break;
     case Toolbar::ClickId::PDC:
         this->m_manager->activateUi(UiManager::WindowId::PdcLogon);
@@ -228,7 +241,10 @@ void Toolbar::initialize() {
     /* set the settings menu */
     Toolbar::createElement("SETTINGS", Toolbar::ClickId::Settings, this->m_toplevel);
     this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
-    Toolbar::createElement("RELOAD", Toolbar::ClickId::Reload, this->m_toplevel->elements.back().child);
+    Toolbar::createElement("RELOAD ALL", Toolbar::ClickId::Reload, this->m_toplevel->elements.back().child);
+    Toolbar::createElement("RELOAD SYSTEM", Toolbar::ClickId::ReloadSystem, this->m_toplevel->elements.back().child);
+    Toolbar::createElement("RELOAD AIRCRAFTS", Toolbar::ClickId::ReloadAircrafts, this->m_toplevel->elements.back().child);
+    Toolbar::createElement("RELOAD AIRPORTS", Toolbar::ClickId::ReloadAirports, this->m_toplevel->elements.back().child);
 
     /* set the systems meny */
     Toolbar::createElement("SYSTEMS", Toolbar::ClickId::Systems, this->m_toplevel);

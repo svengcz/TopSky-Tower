@@ -54,7 +54,7 @@ PlugIn::PlugIn() :
     PathRemoveFileSpecA(path);
     this->m_settingsPath = path;
 
-    system::ConfigurationRegistry::instance().configure(this->m_settingsPath);
+    system::ConfigurationRegistry::instance().configure(this->m_settingsPath, system::ConfigurationRegistry::UpdateType::All);
 
     this->RegisterTagItemType("Handoff frequency", static_cast<int>(PlugIn::TagItemElement::HandoffFrequency));
     this->RegisterTagItemType("Manually alerts 0", static_cast<int>(PlugIn::TagItemElement::ManuallyAlerts0));
