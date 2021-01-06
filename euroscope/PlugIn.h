@@ -142,10 +142,10 @@ namespace topskytower {
                 this->m_uiCallback = func;
             }
             /**
-             * @brief Removes a flight out of all internal structures
-             * @param[in] callsign The deletable callsign
+             * @brief Removes the radar screen out of the registry
+             * @param[in] screen The closed screen
              */
-            void removeFlight(const std::string& callsign);
+            void removeRadarScreen(RadarScreen* screen);
         };
     }
 }

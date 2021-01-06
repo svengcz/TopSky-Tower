@@ -800,3 +800,11 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 void PlugIn::pdcMessageReceived() {
     PlaySoundA(this->m_pdcNotificationSound.c_str(), NULL, SND_ASYNC);
 }
+
+void PlugIn::removeRadarScreen(RadarScreen* screen) {
+    auto it = std::find(this->m_screens.begin(), this->m_screens.end(), screen);
+    if (this->m_screens.end() != it) {
+        this->m_screens.erase(it);
+        delete screen;
+    }
+}

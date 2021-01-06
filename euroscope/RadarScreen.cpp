@@ -45,7 +45,7 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
 }
 
 void RadarScreen::OnAsrContentToBeClosed() {
-    delete this;
+    static_cast<PlugIn*>(this->GetPlugIn())->removeRadarScreen(this);
 }
 
 void RadarScreen::OnClickScreenObject(int objectType, const char* objectId, POINT pt, RECT area, int button) {
