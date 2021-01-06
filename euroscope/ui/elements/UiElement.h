@@ -20,8 +20,8 @@ namespace topskytower {
          */
         class UiElement {
         protected:
-            RadarScreen*   m_parent;
-            Gdiplus::RectF m_area;
+            RadarScreen*   m_parent; /**< Defines the parent screen of this element */
+            Gdiplus::RectF m_area;   /**< Defines the visualization area of this element */
 
             /**
              * @brief Checks if a point is inside a rectangle

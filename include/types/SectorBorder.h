@@ -53,12 +53,12 @@ namespace topskytower {
             SectorBorder(std::string&& owner, std::vector<std::string>&& deputies, const types::Length& lowerAltitude,
                          const types::Length& upperAltitude) noexcept;
             /**
-             * @Brief Moves other into this border
+             * @brief Moves other into this border
              * @param[in] other The source border
              */
             SectorBorder(const SectorBorder& other) noexcept;
             /**
-             * @Brief Moves other into this border
+             * @brief Moves other into this border
              * @param[in] other The source border
              */
             SectorBorder(SectorBorder&& other) noexcept;

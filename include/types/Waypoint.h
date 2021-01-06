@@ -26,9 +26,22 @@ namespace topskytower {
              * @brief Creates an empty waypoint
              */
             Waypoint();
+            /**
+             * @brief Creates a waypoint
+             * @param[in] name The waypoint's name
+             * @param[in] position The waypoint's position
+             */
             Waypoint(const std::string& name, const types::Coordinate& position);
 
+            /**
+             * @brief Returns the waypoint's name
+             * @return The name
+             */
             const std::string& name() const;
+            /**
+             * @brief Returns the waypoint's position
+             * @return The position
+             */
             const types::Coordinate& position() const;
         };
     }

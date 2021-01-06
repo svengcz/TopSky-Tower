@@ -17,9 +17,9 @@ ControllerInfo::ControllerInfo() :
         m_primaryFrequency(),
         m_controllerName() { }
 
-ControllerInfo::ControllerInfo(const std::string& identifer, const std::string& prefix, const std::string& midfix,
+ControllerInfo::ControllerInfo(const std::string& identifier, const std::string& prefix, const std::string& midfix,
                                const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName) :
-        m_identifier(identifer),
+        m_identifier(identifier),
         m_prefix(prefix),
         m_midfix(midfix),
         m_suffix(suffix),

@@ -37,7 +37,7 @@ namespace topskytower {
              * @param[in] primaryFrequency The controller's primary frequency
              * @param[in] fullName The controller's full name
              */
-            ControllerInfo(const std::string& identifer, const std::string& prefix, const std::string& midfix,
+            ControllerInfo(const std::string& identifier, const std::string& prefix, const std::string& midfix,
                            const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName);
 
             /**

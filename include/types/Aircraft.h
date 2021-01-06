@@ -89,6 +89,10 @@ namespace topskytower {
              * @param[in] wtc The wake turbulence category
              */
             void setWTC(WTC wtc);
+            /**
+             * @brief Returns the aircraft's WTC
+             * @return The wake turbulence category
+             */
             WTC wtc() const;
             /**
              * @brief Sets the length
