@@ -93,7 +93,7 @@ bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines) {
                 99000_ft
             };
 
-            if (true == this->parseSid(split, sid))
+            if (true == AirportFileFormat::parseSid(split, sid))
                 this->m_configuration.sids[sid.name] = sid;
         }
         else if ("CSTR" == split[0]) {
@@ -104,7 +104,7 @@ bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines) {
                 99000_ft
             };
 
-            if (true == this->parseConstraint(split, constraint))
+            if (true == AirportFileFormat::parseConstraint(split, constraint))
                 this->m_configuration.destinationConstraints.push_back(constraint);
         }
     }
