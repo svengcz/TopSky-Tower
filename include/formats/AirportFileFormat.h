@@ -22,6 +22,13 @@ namespace topskytower {
             static bool parseSid(const std::vector<std::string>& elements, types::StandardInstrumentDeparture& sid);
             static bool parseConstraint(const std::vector<std::string>& elements, types::DestinationConstraint& constraint);
             bool parseDepartures(const std::vector<std::string>& lines);
+            static bool parseStandDefinition(const std::vector<std::string>& elements, types::Stand& stand);
+            static bool parseWingspan(const std::vector<std::string>& elements, types::Stand& stand);
+            static bool parseLength(const std::vector<std::string>& elements, types::Stand& stand);
+            static bool parseHeight(const std::vector<std::string>& elements, types::Stand& stand);
+            static bool parseWtc(const std::string& categories, std::list<types::Aircraft::WTC>& list);
+            static bool parseEngineType(const std::string& types, std::list<types::Aircraft::EngineType>& list);
+            bool parseStands(const std::vector<std::string>& lines);
 
         public:
             /**

@@ -112,6 +112,161 @@ bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines) {
     return true;
 }
 
+bool AirportFileFormat::parseStandDefinition(const std::vector<std::string>& elements, types::Stand& stand) {
+    stand.name = elements[2];
+    stand.position = types::Coordinate(elements[4], elements[3]);
+    stand.assignmentRadius = static_cast<float>(std::atoi(elements[5].c_str())) * types::metre;
+    return true;
+}
+
+static __inline void __resetStand(types::Stand& stand) {
+    stand.name = "";
+    stand.blockingStands.clear();
+    stand.priority = 0;
+    stand.manualAssignment = false;
+    stand.wingspan[0] = 0.0_m;
+    stand.wingspan[1] = 1000.0_m;
+    stand.length[0] = 0.0_m;
+    stand.length[1] = 1000.0_m;
+    stand.height[0] = 0.0_m;
+    stand.height[1] = 1000.0_m;
+    stand.wtcWhitelist.clear();
+    stand.wtcBlacklist.clear();
+    stand.engineTypeWhitelist.clear();
+    stand.engineTypeBlacklist.clear();
+}
+
+static __inline bool __parseLengthRange(const std::vector<std::string>& elements, types::Length& minimum, types::Length& maximum) {
+    if (2 == elements.size()) {
+        minimum = 0.0_m;
+        maximum = static_cast<float>(std::atof(elements[1].c_str())) * types::metre;
+        return true;
+    }
+    else if (3 == elements.size()) {
+        minimum = static_cast<float>(std::atof(elements[1].c_str())) * types::metre;
+        maximum = static_cast<float>(std::atof(elements[2].c_str())) * types::metre;
+        return true;
+    }
+
+    return false;
+}
+
+bool AirportFileFormat::parseWingspan(const std::vector<std::string>& elements, types::Stand& stand) {
+    return __parseLengthRange(elements, stand.wingspan[0], stand.wingspan[1]);
+}
+
+bool AirportFileFormat::parseLength(const std::vector<std::string>& elements, types::Stand& stand) {
+    return __parseLengthRange(elements, stand.length[0], stand.length[1]);
+}
+
+bool AirportFileFormat::parseHeight(const std::vector<std::string>& elements, types::Stand& stand) {
+    return __parseLengthRange(elements, stand.length[0], stand.length[1]);
+}
+
+bool AirportFileFormat::parseWtc(const std::string& categories, std::list<types::Aircraft::WTC>& list) {
+    for (const auto& category : std::as_const(categories)) {
+        switch (category) {
+        case 'L':
+            list.push_back(types::Aircraft::WTC::Light);
+            break;
+        case 'M':
+            list.push_back(types::Aircraft::WTC::Medium);
+            break;
+        case 'H':
+            list.push_back(types::Aircraft::WTC::Heavy);
+            break;
+        case 'J':
+            list.push_back(types::Aircraft::WTC::Super);
+            break;
+        default:
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static __inline types::Aircraft::EngineType __translateEngineType(char type) {
+    switch (type) {
+    case 'P':
+    case 'T':
+        return types::Aircraft::EngineType::Turboprop;
+    case 'E':
+        return types::Aircraft::EngineType::Electric;
+    case 'J':
+    default:
+        return types::Aircraft::EngineType::Jet;
+    }
+}
+
+bool AirportFileFormat::parseEngineType(const std::string& types, std::list<types::Aircraft::EngineType>& list) {
+    if (std::string::npos == types.find(",")) {
+        for (const auto& type : std::as_const(types))
+            list.push_back(__translateEngineType(type));
+    }
+    else {
+        auto split = helper::String::splitString(types, ",");
+        for (const auto& type : std::as_const(types))
+            list.push_back(__translateEngineType(type));
+    }
+
+    return true;
+}
+
+bool AirportFileFormat::parseStands(const std::vector<std::string>& lines) {
+    types::Stand stand;
+    __resetStand(stand);
+
+    for (const auto& line : std::as_const(lines)) {
+        auto split = helper::String::splitString(line, ":");
+        if (1 > split.size() && 0 == split[0].size())
+            continue;
+
+        if ("STAND" == split[0] && 6 == split.size()) {
+            if (0 != stand.name.length())
+                this->m_configuration.aircraftStands.push_back(stand);
+
+            __resetStand(stand);
+            AirportFileFormat::parseStandDefinition(split, stand);
+        }
+        else if ("WINGSPAN" == split[0] && 2 <= split.size()) {
+            AirportFileFormat::parseWingspan(split, stand);
+        }
+        else if ("LENGTH" == split[0] && 2 <= split.size()) {
+            AirportFileFormat::parseLength(split, stand);
+        }
+        else if ("HEIGHT" == split[0] && 2 <= split.size()) {
+            AirportFileFormat::parseHeight(split, stand);
+        }
+        else if ("MANUAL" == split[0] && 1 == split.size()) {
+            stand.manualAssignment = true;
+        }
+        else if ("BLOCKS" == split[0] && 2 == split.size()) {
+            stand.blockingStands = helper::String::splitString(split[1], ",");
+        }
+        else if ("WTC" == split[0] && 2 == split.size()) {
+            AirportFileFormat::parseWtc(split[1], stand.wtcWhitelist);
+        }
+        else if ("NOTWTC" == split[0] && 2 == split.size()) {
+            AirportFileFormat::parseWtc(split[1], stand.wtcBlacklist);
+        }
+        else if ("ENGINETYPE" == split[0] && 2 == split.size()) {
+            AirportFileFormat::parseEngineType(split[1], stand.engineTypeWhitelist);
+        }
+        else if ("NOTENGINETYPE" == split[0] && 2 == split.size()) {
+            AirportFileFormat::parseEngineType(split[1], stand.engineTypeBlacklist);
+        }
+        else if ("PRIORITY" == split[0] && 2 == split.size()) {
+            stand.priority = std::atoi(split[1].c_str());
+        }
+    }
+
+    if (0 != stand.name.length())
+        this->m_configuration.aircraftStands.push_back(stand);
+
+    return true;
+}
+
 AirportFileFormat::AirportFileFormat(const std::string& filename) :
         m_configuration() {
     IniFileFormat file(filename);
@@ -121,6 +276,8 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
 
         if ("[DEPARTURES]" == block.first)
             this->m_configuration.valid &= this->parseDepartures(block.second);
+        else if ("[STANDS]" == block.first)
+            this->m_configuration.valid &= this->parseStands(block.second);
     }
 }
 
