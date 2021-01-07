@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <functional>
 #include <map>
 
 #include <formats/AircraftFileFormat.h>
@@ -34,6 +35,7 @@ namespace topskytower {
             types::SystemConfiguration                         m_systemConfig;
             std::map<std::string, formats::AirportFileFormat*> m_airportConfigurations;
             formats::AircraftFileFormat*                       m_aircraftConfiguration;
+            std::map<void*, std::function<void(UpdateType)>>   m_notificationCallbacks;
 
             ConfigurationRegistry();
             void cleanup(UpdateType type);
@@ -72,6 +74,29 @@ namespace topskytower {
              * @return A map of aircrafts
              */
             const std::map<std::string, types::Aircraft>& aircrafts() const;
+            /**
+             * @brief Registers a callback that is triggered as soon as a new configuration is loaded
+             * @tparam T The element which registers the callback
+             * @tparam F The callback function
+             * @param[in] instance The instance which registers the callback
+             * @param[in] cbFunction The callback function
+             */
+            template <typename T, typename F>
+            void registerNotificationCallback(T* instance, F cbFunction) {
+                std::function<void(UpdateType)> func = std::bind(cbFunction, instance, std::placeholders::_1);
+                this->m_notificationCallbacks[static_cast<void*>(instance)] = func;
+            }
+            /**
+             * @brief Deletes a callback that is triggered as soon as a new configuration is loaded
+             * @tparam T The element which registered the callback
+             * @param[in] instance The instance which registers the callback
+             */
+            template <typename T>
+            void deleteNotificationCallback(T* instance) {
+                auto it = this->m_notificationCallbacks.find(static_cast<void*>(instance));
+                if (this->m_notificationCallbacks.end() != it)
+                    this->m_notificationCallbacks.erase(it);
+            }
             /**
              * @brief Returns the global instance of the registry
              * @return The global instance

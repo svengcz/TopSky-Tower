@@ -78,6 +78,9 @@ void ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
 
     if (UpdateType::All == type || UpdateType::Aircrafts == type)
         this->m_aircraftConfiguration = new formats::AircraftFileFormat(path + "\\TopSkyTowerAircrafts.txt");
+
+    for (const auto& notification : std::as_const(this->m_notificationCallbacks))
+        notification.second(type);
 }
 
 const types::SystemConfiguration& ConfigurationRegistry::systemConfiguration() const {
