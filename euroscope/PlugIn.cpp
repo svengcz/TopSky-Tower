@@ -280,8 +280,8 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         /* test all loaded screens */
         for (const auto& screen : std::as_const(this->m_screens)) {
             /* found the correct screen with the handoff */
-            if (true == screen->sectorControl().handoffRequired(callsign)) {
-                auto& info = screen->sectorControl().handoffSector(callsign);
+            if (true == screen->sectorControl().handoffRequired(flight)) {
+                auto& info = screen->sectorControl().handoffSector(flight);
                 std::string msg = info.identifier() + " " + info.primaryFrequency();
 
                 std::strncpy(itemString, msg.c_str(), 16 < (msg.length() + 1) ? 16 : msg.length() + 1);
