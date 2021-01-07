@@ -44,6 +44,9 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
         auto value = this->GetDataFromAsr("Airport");
         if (nullptr != value)
             this->m_airport = value;
+        else
+            this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", "No airport in the ASR file defined",
+                                                  true, true, false, false, false);
     }
 }
 
@@ -140,6 +143,9 @@ void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan
 }
 
 void RadarScreen::initialize() {
+    if (0 == this->m_airport.length())
+        return;
+
     if (true == this->m_initialized)
         return;
 
@@ -148,6 +154,8 @@ void RadarScreen::initialize() {
     /* received the correct sector filename identifier */
     if (nullptr != sctFilename && 0 != std::strlen(sctFilename)) {
         formats::EseFileFormat file(sctFilename);
+        if (0 == file.sectors().size())
+            return;
 
         if (nullptr != this->m_sectorControl)
             delete this->m_sectorControl;
