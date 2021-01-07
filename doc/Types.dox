@@ -1,0 +1,6 @@
+/**
+ * @defgroup types Types
+ * Contains all generic data-types which are used by the complete system
+ *
+ * All types, that are not specific for single components need to be defined here.
+ */

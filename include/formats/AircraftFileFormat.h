@@ -15,6 +15,21 @@ namespace topskytower {
         /**
          * @brief Defines the parser of aircraft definitions
          * @ingroup format
+         *
+         * The aircraft file format specifies the aircrafts.
+         * An aircraft contains relevant information about the dimension, weight, etc.
+         * These information are required to assign stands correctly.
+         *
+         * An aircraft is defined in a single line in the following format:
+         * @code{.xml}
+         * ICAO:WINGSPAN:LENGTH:HEIGHT:MTOW:TYPE
+         * @endcode
+         *
+         * The ICAO code is the official code of the aircraft.
+         * The wingspan, length and height are defined in meters and the maximum take-off weight in kilograms.
+         * The type differentiates between airline (A), military (M), business (B) and cargo (C).
+         *
+         * The aircraft file needs the following name: 'TopSkyTowerAircrafts.txt'.
          */
         class AircraftFileFormat {
         private:

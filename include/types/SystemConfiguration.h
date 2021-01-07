@@ -33,10 +33,10 @@ namespace topskytower {
             SystemConfiguration() :
                     valid(false),
                     hoppiesCode(),
-                    uiBackgroundColor{ 0, 0, 0 },
-                    uiForegroundColor{ 0, 0, 0, },
+                    uiBackgroundColor{ 50, 50, 50 },
+                    uiForegroundColor{ 150, 150, 150, },
                     fontFamily(),
-                    fontSize(0.0f),
+                    fontSize(3.2f),
                     trackingOnGround(false),
                     flightPlanCheckEvenOdd(true),
                     standAssociationDistance(10_nm) { }

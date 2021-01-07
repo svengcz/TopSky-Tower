@@ -1,0 +1,14 @@
+/**
+ * @defgroup format Formats
+ * Contains all file format definitions
+ *
+ * All file format definitions are described here.
+ * It defines all configuration formats and the SCT/ESE-parser.
+ *
+ * All TopSky-Tower specific configurations needs to be stored next to the DLL of the plug-in.
+ * Additionally needs the ping-sound file also be stored in the same directory with the following name:
+ * 'TopSkyTower-Pdc.wav'
+ *
+ * The 'TopSkyTowerHoppies.txt'-file contains the Hoppies-code without any other additional information.
+ * It is automatically loaded as soon as the system loads the generic system configurations.
+ */

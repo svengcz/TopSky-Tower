@@ -1,0 +1,7 @@
+/**
+ * @defgroup surveillance Surveillance
+ * Contains all components that define the safety nets or communication and validation systems
+ *
+ * The surveillance modules define algorithms to validate flights and predict critical situations.
+ * Additionally are the PDC- and flight plan components integrated, because of surveillance critical functions.
+ */

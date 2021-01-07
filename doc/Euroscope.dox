@@ -1,0 +1,7 @@
+/**
+ * @defgroup euroscope EuroScope
+ * Contains all converts and classes to communicate with EuroScope
+ *
+ * It defines the entry points, RADAR screens, converters and all visualization
+ * classes and functions to render the RADAR screen.
+ */
