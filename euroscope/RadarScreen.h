@@ -138,11 +138,6 @@ namespace topskytower {
              */
             surveillance::SectorControl& sectorControl();
             /**
-             * @brief Returns the constant controller manager
-             * @return The controller manager
-             */
-            const surveillance::SectorControl& sectorControl() const;
-            /**
              * @brief Returns the flight registry
              * @return The flight registry
              */
@@ -151,7 +146,7 @@ namespace topskytower {
              * @brief Returns the stand control
              * @return The stand control
              */
-            const surveillance::StandControl& standControl() const;
+            surveillance::StandControl& standControl() const;
             /**
              * @brief Registers an Euroscope GUI event to trigger the function call during the next rendering step
              * @param[in] entry The new GUI event

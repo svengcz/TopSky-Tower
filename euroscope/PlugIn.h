@@ -48,6 +48,12 @@ namespace topskytower {
                 FlightPlanCheckMenu                 = 3015, /**< Opens the flight plan check menu */
                 FlightPlanCheckErrorLog             = 3016, /**< Opens a window with all error logs */
                 FlightPlanCheckOverwrite            = 3017, /**< Overwrites detected errors and marks the flight plan as OK */
+                StandControlMenu                    = 3018, /**< Opens the stand control menu */
+                StandControlPublish                 = 3019, /**< Publishs the current stand */
+                StandControlAutomatic               = 3020, /**< Assigns a stand automatically to a flight */
+                StandControlManualEvent             = 3021, /**< Triggers the stand selection event */
+                StandControlManual                  = 3022, /**< Opens the selection menu */
+                StandControlManualSelect            = 3023, /**< Selects the final stand */
                 UiElementIds                        = 4000, /**< Elements of the UI entries */
                 UiEditTextRequest                   = 4001, /**< Request an edit-field */
                 UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */

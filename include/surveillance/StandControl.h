@@ -83,11 +83,22 @@ namespace topskytower {
              */
             void removeFlight(const std::string& callsign);
             /**
+             * @brief Assigns a stand manually to a flight
+             * @param[in] flight The assignable flight
+             * @param[in] stand The stand's identifier
+             */
+            void assignManually(const types::Flight& flight, const std::string& stand);
+            /**
              * @brief Returns the assigned or occupied stand of a flight
              * @param[in] flight The requested flight
              * @return The stand's identifier or an empty string, if no stand is assigned
              */
             std::string stand(const types::Flight& flight) const;
+            /**
+             * @brief Returns a list of all stand with a flag that indicates if the stand is occupied or not
+             * @return The list of all stands with the occupation state
+             */
+            std::list<std::pair<std::string, bool>> allStands() const;
             /**
              * @brief Returns if the stand is blocked by an other flight
              * @param[in] stand The requested stand

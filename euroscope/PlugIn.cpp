@@ -69,6 +69,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
     this->RegisterTagItemFunction("FP check menu", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckMenu));
+    this->RegisterTagItemFunction("Stand menu", static_cast<int>(PlugIn::TagItemFunction::StandControlMenu));
 
     /* search for the sound file and register the PDC sound callback */
     for (auto& entry : fs::recursive_directory_iterator(path)) {
@@ -381,6 +382,20 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     {
         auto stand = flightScreen->standControl().stand(flight);
         if (0 != stand.length()) {
+            /* validate that no other controller published a stand already */
+            std::string strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+            if (0 != strip.length()) {
+                auto split = helper::String::splitString(strip, "/");
+                /* validate that it is the stand-message */
+                if (3 == split.size() && "s" == split[0] && "s" == split[2]) {
+                    /* someone else published this stand -> take it */
+                    if (stand != split[1]) {
+                        flightScreen->standControl().assignManually(flight, split[1]);
+                        stand = split[1];
+                    }
+                }
+            }
+
             std::strcpy(itemString, stand.c_str());
 
             /* define the color */
@@ -389,10 +404,10 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             }
             else if (types::Flight::Type::Arrival == flight.type()) {
                 /* check if we have to publish the stand */
-                auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+                auto esStrip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
                 std::string expected = "s/" + stand + "/s";
 
-                if (strip == expected)
+                if (esStrip == expected)
                     *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
                 else
                     *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
@@ -818,6 +833,66 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     }
     case PlugIn::TagItemFunction::FlightPlanCheckOverwrite:
         surveillance::FlightPlanControl::instance().overwrite(flight.callsign());
+        break;
+    case PlugIn::TagItemFunction::StandControlMenu:
+    {
+        auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+        auto stand = "s/" + flightScreen->standControl().stand(flight) + "/s";
+
+        this->OpenPopupList(area, "Stand", 1);
+        this->AddPopupListElement("Publish", "", static_cast<int>(PlugIn::TagItemFunction::StandControlPublish),
+                                  false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, stand == strip, false);
+        this->AddPopupListElement("Automatic", "", static_cast<int>(PlugIn::TagItemFunction::StandControlAutomatic));
+        this->AddPopupListElement("Manual", "", static_cast<int>(PlugIn::TagItemFunction::StandControlManualEvent));
+        break;
+    }
+    case PlugIn::TagItemFunction::StandControlPublish:
+    {
+        auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+        auto stand = flightScreen->standControl().stand(flight);
+        if (0 != stand.length()) {
+            auto newStrip = "s/" + stand + "/s";
+            /* do the check to increase the performance by avoiding useless network traffic */
+            if (newStrip != strip)
+                radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, newStrip.c_str());
+        }
+        else if (0 != std::strlen(strip)) {
+            /* reset the current annotation */
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, "");
+        }
+        break;
+    }
+    case PlugIn::TagItemFunction::StandControlAutomatic:
+        flightScreen->standControl().removeFlight(flight.callsign());
+        if (0 != std::strlen(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6)))
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, "");
+        break;
+    case PlugIn::TagItemFunction::StandControlManualEvent:
+    {
+        RadarScreen::EuroscopeEvent esEvent = {
+            static_cast<int>(PlugIn::TagItemFunction::StandControlManual),
+            flight.callsign(),
+            "",
+            pt,
+            area
+        };
+        flightScreen->registerEuroscopeEvent(std::move(esEvent));
+        break;
+    }
+    case PlugIn::TagItemFunction::StandControlManual:
+    {
+        auto stands = flightScreen->standControl().allStands();
+        this->OpenPopupList(area, "Stands", 1);
+        for (const auto& stand : std::as_const(stands)) {
+            this->AddPopupListElement(stand.first.c_str(), "", static_cast<int>(PlugIn::TagItemFunction::StandControlManualSelect),
+                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == stand.second, false);
+        }
+        break;
+    }
+    case PlugIn::TagItemFunction::StandControlManualSelect:
+        flightScreen->standControl().assignManually(flight, itemString);
+        if (0 != std::strlen(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6)))
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, "");
         break;
     default:
         break;

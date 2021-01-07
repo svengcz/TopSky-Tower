@@ -204,15 +204,11 @@ surveillance::SectorControl& RadarScreen::sectorControl() {
     return *this->m_sectorControl;
 }
 
-const surveillance::SectorControl& RadarScreen::sectorControl() const {
-    return *this->m_sectorControl;
-}
-
 const system::FlightRegistry& RadarScreen::flightRegistry() const {
     return *this->m_flightRegistry;
 }
 
-const surveillance::StandControl& RadarScreen::standControl() const {
+surveillance::StandControl& RadarScreen::standControl() const {
     return *this->m_standControl;
 }
 

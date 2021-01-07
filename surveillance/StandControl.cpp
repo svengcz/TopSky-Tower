@@ -343,12 +343,29 @@ void StandControl::removeFlight(const std::string& callsign) {
     }
 }
 
+void StandControl::assignManually(const types::Flight& flight, const std::string& stand) {
+    this->removeFlight(flight.callsign());
+
+    auto it = this->m_standTree.stands.find(stand);
+    if (this->m_standTree.stands.end() != it)
+        this->markStandAsOccupied(it, flight);
+}
+
 std::string StandControl::stand(const types::Flight& flight) const {
     auto it = this->m_aircraftStandRelation.find(flight.callsign());
     if (this->m_aircraftStandRelation.cend() != it)
         return it->second;
     else
         return "";
+}
+
+std::list<std::pair<std::string, bool>> StandControl::allStands() const {
+    std::list<std::pair<std::string, bool>> retval;
+
+    for (const auto& stand : std::as_const(this->m_standTree.stands))
+        retval.push_back(std::make_pair(stand.first, 0 != stand.second.occupancyFlights.size()));
+
+    return std::move(retval);
 }
 
 bool StandControl::standIsBlocked(const std::string& stand) const {
