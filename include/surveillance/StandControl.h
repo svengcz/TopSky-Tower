@@ -102,6 +102,7 @@ namespace topskytower {
             /**
              * @brief Returns if the stand is blocked by an other flight
              * @param[in] stand The requested stand
+             * @return True if an other flight is associated to the stand, else false
              */
             bool standIsBlocked(const std::string& stand) const;
         };
