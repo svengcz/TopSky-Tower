@@ -19,7 +19,8 @@ Flight::Flight() :
         m_markedByController(false),
         m_onMissedApproach(false),
         m_irregularFlight(false),
-        m_establishedOnILS(false) { }
+        m_establishedOnILS(false),
+        m_isTrackedByController(false) { }
 
 Flight::Flight(const std::string& callsign) :
         m_flightPlan(),
@@ -107,6 +108,14 @@ void Flight::setEstablishedOnILS(bool value) {
 
 void Flight::setFlightPlan(const FlightPlan& plan) {
     this->m_flightPlan = plan;
+}
+
+bool Flight::isTracked() const {
+    return this->m_isTrackedByController;
+}
+
+void Flight::setTrackedState(bool state) {
+    this->m_isTrackedByController = state;
 }
 
 Position Flight::predict(const Time& duration, const Velocity& minGroundSpeed) const {

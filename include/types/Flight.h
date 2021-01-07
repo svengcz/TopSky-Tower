@@ -37,6 +37,7 @@ namespace topskytower {
             bool            m_onMissedApproach;
             bool            m_irregularFlight;
             bool            m_establishedOnILS;
+            bool            m_isTrackedByController;
 
         public:
             /**
@@ -144,6 +145,16 @@ namespace topskytower {
              * @param[in] plan The flight plan
              */
             void setFlightPlan(const FlightPlan& plan);
+            /**
+             * @brief Returns if the aircraft is tracked
+             * @return True if the aircraft is tracked, else false
+             */
+            bool isTracked() const;
+            /**
+             * @brief Sets the tracking state
+             * @param[in] state The new tracking state
+             */
+            void setTrackedState(bool state);
             /**
              * @brief Predicts the next position based on the kinematics and a constant-velocity model
              * @param[in] duration The time step of the prediction

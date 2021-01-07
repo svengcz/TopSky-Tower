@@ -577,7 +577,9 @@ void SectorControl::updateFlight(const types::Flight& flight) {
     if (nullptr == this->m_sectorsOfFlights[flight.callsign()])
         this->m_sectorsOfFlights.erase(flight.callsign());
 
-    if (false == manuallyChanged && false == handoffDone && true == this->isInOwnSectors(flight, flight.currentPosition())) {
+    if (false == manuallyChanged && false == handoffDone &&
+        (true == this->isInOwnSectors(flight, flight.currentPosition()) || true == flight.isTracked()))
+    {
         auto predicted = flight.predict(20_s, 20_kn);
 
         /* the aircraft remains in own sector */
@@ -641,7 +643,8 @@ bool SectorControl::handoffPossible(const types::Flight& flight) const {
     if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
         return false;
 
-    return this->isInOwnSectors(flight, flight.currentPosition());
+    bool inOwnSector = this->isInOwnSectors(flight, flight.currentPosition());
+    return true == inOwnSector || (false == inOwnSector && true == flight.isTracked());
 }
 
 void SectorControl::handoffPerformed(const types::Flight& flight) {

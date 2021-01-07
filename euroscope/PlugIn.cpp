@@ -578,7 +578,6 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     std::string callsign(radarTarget.GetCallsign());
 
     /* check if we are tracking and search the flight */
-    bool tracked = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerIsMe();
     types::Flight flight;
     auto flightScreen = this->findScreenAndFlight(callsign, flight);
 
@@ -596,14 +595,14 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         {
             this->AddPopupListElement("Transfer", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
                                       false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
-                                      false == flightScreen->sectorControl().handoffRequired(flight.callsign()), false);
+                                      false == flightScreen->sectorControl().handoffRequired(flight), false);
             this->AddPopupListElement("Man. Transfer", "", static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChangeEvent),
                                       false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
-                                      false == flightScreen->sectorControl().handoffPossible(flight.callsign()), false);
+                                      false == flightScreen->sectorControl().handoffPossible(flight), false);
             this->AddPopupListElement("Release", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform));
             this->AddPopupListElement("CTR change", "", static_cast<int>(PlugIn::TagItemFunction::SectorControllerHandover),
                                       false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
-                                      false == flightScreen->sectorControl().sectorHandoverPossible() || false == tracked, false);
+                                      false == flightScreen->sectorControl().sectorHandoverPossible() || false == flight.isTracked(), false);
         }
         else {
             std::string_view ctrCallsign = radarTarget.GetCorrelatedFlightPlan().GetHandoffTargetControllerCallsign();
@@ -621,7 +620,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             }
             this->AddPopupListElement("Handoff", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
                                       false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
-                                      false == flightScreen->sectorControl().handoffRequired(flight.callsign()), false);
+                                      false == flightScreen->sectorControl().handoffRequired(flight), false);
         }
         this->AddPopupListElement("-------------", "-", 0, false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true, false);
 
@@ -669,7 +668,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             radarTarget.GetCorrelatedFlightPlan().RefuseHandoff();
         }
         else {
-            this->handleHandoffPerform(pt, area, callsign, tracked);
+            this->handleHandoffPerform(pt, area, callsign, flight.isTracked());
         }
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelectEvent:
@@ -686,7 +685,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelect:
         if (true == flightScreen->sectorControl().handoffRequired(callsign)) {
-            if (true == tracked)
+            if (true == flight.isTracked())
                 radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
             flightScreen->sectorControl().handoffPerformed(callsign);
         }

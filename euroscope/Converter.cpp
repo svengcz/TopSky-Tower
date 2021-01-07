@@ -198,6 +198,7 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, co
         else if (airport == destination) {
             retval.setType(types::Flight::Type::Arrival);
         }
+        retval.setTrackedState(flightPlan.GetTrackingControllerIsMe());
 
         /* check if the flight is marked by a controller */
         std::string_view annotation(flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(7));
