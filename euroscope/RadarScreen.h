@@ -14,6 +14,7 @@
 #pragma warning(pop)
 
 #include <surveillance/SectorControl.h>
+#include <surveillance/StandControl.h>
 #include <system/FlightRegistry.h>
 
 #include "ui/UiManager.h"
@@ -50,6 +51,7 @@ namespace topskytower {
             UiManager                             m_userInterface;
             system::FlightRegistry*               m_flightRegistry;
             surveillance::SectorControl*          m_sectorControl;
+            surveillance::StandControl*           m_standControl;
             std::mutex                            m_guiEuroscopeEventsLock;
             std::list<EuroscopeEvent>             m_guiEuroscopeEvents;
             std::chrono::system_clock::time_point m_lastRenderingTime;
@@ -145,6 +147,11 @@ namespace topskytower {
              * @return The flight registry
              */
             const system::FlightRegistry& flightRegistry() const;
+            /**
+             * @brief Returns the stand control
+             * @return The stand control
+             */
+            const surveillance::StandControl& standControl() const;
             /**
              * @brief Registers an Euroscope GUI event to trigger the function call during the next rendering step
              * @param[in] entry The new GUI event

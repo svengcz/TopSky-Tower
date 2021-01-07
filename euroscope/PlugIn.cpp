@@ -64,6 +64,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("PDC indicator", static_cast<int>(PlugIn::TagItemElement::PdcIndicator));
     this->RegisterTagItemType("SID step climb indicator", static_cast<int>(PlugIn::TagItemElement::SIDStepClimbIndicator));
     this->RegisterTagItemType("Flight plan check", static_cast<int>(PlugIn::TagItemElement::FlighPlanCheck));
+    this->RegisterTagItemType("Assigned stand", static_cast<int>(PlugIn::TagItemElement::AircraftStand));
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
@@ -374,6 +375,32 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
                 esPlan.GetControllerAssignedData().SetClearedAltitude(clearedFL);
         }
 
+        break;
+    }
+    case PlugIn::TagItemElement::AircraftStand:
+    {
+        auto stand = flightScreen->standControl().stand(flight);
+        if (0 != stand.length()) {
+            std::strcpy(itemString, stand.c_str());
+
+            /* define the color */
+            if (true == flightScreen->standControl().standIsBlocked(stand)) {
+                *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
+            }
+            else if (types::Flight::Type::Arrival == flight.type()) {
+                /* check if we have to publish the stand */
+                auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+                std::string expected = "s/" + stand + "/s";
+
+                if (strip == expected)
+                    *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
+                else
+                    *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
+            }
+            else {
+                *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
+            }
+        }
         break;
     }
     default:

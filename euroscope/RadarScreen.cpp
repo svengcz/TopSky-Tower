@@ -25,6 +25,7 @@ RadarScreen::RadarScreen() :
         m_userInterface(this),
         m_flightRegistry(new system::FlightRegistry()),
         m_sectorControl(nullptr),
+        m_standControl(nullptr),
         m_guiEuroscopeEventsLock(),
         m_guiEuroscopeEvents(),
         m_lastRenderingTime() { }
@@ -32,6 +33,8 @@ RadarScreen::RadarScreen() :
 RadarScreen::~RadarScreen() {
     if (nullptr != this->m_sectorControl)
         delete this->m_sectorControl;
+    if (nullptr != this->m_standControl)
+        delete this->m_standControl;
     if (nullptr != this->m_flightRegistry)
         delete this->m_flightRegistry;
 }
@@ -98,6 +101,9 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
 
     if (nullptr != this->m_sectorControl)
         this->m_sectorControl->updateFlight(flight);
+
+    if (nullptr != this->m_standControl)
+        this->m_standControl->updateFlight(flight);
 }
 
 void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) {
@@ -126,6 +132,9 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
 
 void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) {
     this->m_flightRegistry->removeFlight(flightPlan.GetCallsign());
+
+    if (nullptr != this->m_standControl)
+        this->m_standControl->removeFlight(flightPlan.GetCallsign());
     if (nullptr != this->m_sectorControl)
         this->m_sectorControl->removeFlight(flightPlan.GetCallsign());
 }
@@ -143,6 +152,10 @@ void RadarScreen::initialize() {
         if (nullptr != this->m_sectorControl)
             delete this->m_sectorControl;
         this->m_sectorControl = new surveillance::SectorControl(this->m_airport, file.sectors());
+
+        if (nullptr != this->m_standControl)
+            delete this->m_standControl;
+        this->m_standControl = new surveillance::StandControl(this->m_airport);
 
         this->m_initialized = true;
     }
@@ -197,6 +210,10 @@ const surveillance::SectorControl& RadarScreen::sectorControl() const {
 
 const system::FlightRegistry& RadarScreen::flightRegistry() const {
     return *this->m_flightRegistry;
+}
+
+const surveillance::StandControl& RadarScreen::standControl() const {
+    return *this->m_standControl;
 }
 
 void RadarScreen::registerEuroscopeEvent(RadarScreen::EuroscopeEvent&& entry) {

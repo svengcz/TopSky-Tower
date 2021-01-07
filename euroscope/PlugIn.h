@@ -62,7 +62,8 @@ namespace topskytower {
                 FlightMarker          = 2005,
                 PdcIndicator          = 2006,
                 SIDStepClimbIndicator = 2007,
-                FlighPlanCheck        = 2008
+                FlighPlanCheck        = 2008,
+                AircraftStand         = 2009
             };
 
             std::string                             m_settingsPath;
