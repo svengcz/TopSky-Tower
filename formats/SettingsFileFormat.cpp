@@ -66,7 +66,7 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
             config.flightPlanCheckEvenOdd = '0' != entry[1][0];
         }
         else if ("SYS_DistanceStandAssignment" == entry[0]) {
-            config.standAssociationDistance = static_cast<float>(std::atoi(entry[1].c_str())) * types::metre;
+            config.standAssociationDistance = static_cast<float>(std::atoi(entry[1].c_str())) * types::nauticmile;
         }
         else {
             config.valid = false;
