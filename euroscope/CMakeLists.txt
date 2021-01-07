@@ -5,17 +5,6 @@
 # Brief:
 #   Creates the plug-in which is used by Euroscope
 
-# get the build number
-EXECUTE_PROCESS(
-    COMMAND
-        git rev-parse --short HEAD
-    WORKING_DIRECTORY
-        "${CMAKE_SOURCE_DIR}"
-    OUTPUT_VARIABLE
-        PROJECT_VERSION_BUILD
-)
-STRING(REGEX REPLACE "\n$" "" PROJECT_VERSION_BUILD "${PROJECT_VERSION_BUILD}")
-
 # register all cmake helper to find required modules and find 3rd-party components
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake")
 FIND_PACKAGE(EuroScope REQUIRED)

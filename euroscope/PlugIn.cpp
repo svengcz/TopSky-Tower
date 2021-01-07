@@ -37,7 +37,7 @@ static ULONG_PTR                    __gdiplusToken;
 PlugIn::PlugIn() :
         EuroScopePlugIn::CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE,
                                  PLUGIN_NAME,
-                                 PLUGIN_VERSION_BUILD,
+                                 PLUGIN_VERSION,
                                  PLUGIN_DEVELOPER,
                                  PLUGIN_COPYRIGHT),
         m_settingsPath(),
@@ -46,7 +46,7 @@ PlugIn::PlugIn() :
         m_pdcNotificationSound() {
     Gdiplus::GdiplusStartup(&__gdiplusToken, &__gdiStartupInput, nullptr);
 
-    this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION_BUILD + " loaded").c_str(),
+    this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION + " loaded").c_str(),
                              false, false, false, false, false);
 
     char path[MAX_PATH] = { 0 };
