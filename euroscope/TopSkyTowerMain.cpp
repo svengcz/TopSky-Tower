@@ -7,9 +7,6 @@
 
 #include "stdafx.h"
 
-#define CURL_STATICLIB 1
-#include <curl/curl.h>
-
 #include "PlugIn.h"
 
 using namespace topskytower::euroscope;
@@ -20,11 +17,7 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
 
     switch (reason) {
     case DLL_PROCESS_ATTACH:
-        curl_global_init(CURL_GLOBAL_ALL);
-        break;
     case DLL_PROCESS_DETACH:
-        curl_global_cleanup();
-        break;
     default:
         break;
     }

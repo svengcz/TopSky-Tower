@@ -13,6 +13,9 @@
 #include <Windows.h>
 #include <shlwapi.h>
 
+#define CURL_STATICLIB 1
+#include <curl/curl.h>
+
 #include <helper/String.h>
 #include <surveillance/FlightPlanControl.h>
 #include <surveillance/PdcControl.h>
@@ -48,6 +51,13 @@ PlugIn::PlugIn() :
         m_pdcNotificationSound() {
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION + " loaded").c_str(),
                              false, false, false, false, false);
+
+    if (0 != curl_global_init(CURL_GLOBAL_ALL)) {
+        this->DisplayUserMessage("Message", PLUGIN_NAME, "Unable to initialize the network stack!",
+                                 true, true, true, true, false);
+        this->m_errorMode = true;
+        return;
+    }
 
     /* unable to initialize GDI+ */
     if (Gdiplus::Ok != Gdiplus::GdiplusStartup(&__gdiplusToken, &__gdiStartupInput, nullptr)) {
@@ -92,7 +102,10 @@ PlugIn::PlugIn() :
 PlugIn::~PlugIn() {
     this->m_screens.clear();
 
-    Gdiplus::GdiplusShutdown(__gdiplusToken);
+    if (false == this->m_errorMode) {
+        Gdiplus::GdiplusShutdown(__gdiplusToken);
+        curl_global_cleanup();
+    }
 }
 
 const std::string& PlugIn::settingsPath() const {
