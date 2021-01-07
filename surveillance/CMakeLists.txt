@@ -9,11 +9,13 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/surveillance/FlightPlanControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/PdcControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/SectorControl.h
+    ${CMAKE_SOURCE_DIR}/include/surveillance/StandControl.h
 )
 SET(SOURCE_FILES
     FlightPlanControl.cpp
     PdcControl.cpp
     SectorControl.cpp
+    StandControl.cpp
 )
 
 # define the helper library
@@ -23,7 +25,7 @@ ADD_LIBRARY(
         ${HEADER_FILES}
 )
 TARGET_LINK_LIBRARIES(surveillance types formats system)
-ADD_DEPENDENCIES(surveillance Curl)
+ADD_DEPENDENCIES(surveillance Curl GeographicLib Nanoflann)
 
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
 SOURCE_GROUP("Header Files" FILES ${HEADER_FILES})

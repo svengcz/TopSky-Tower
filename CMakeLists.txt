@@ -61,6 +61,16 @@ ExternalProject_Add(
         -DGEOGRAPHICLIB_PRECISION=1
 )
 ExternalProject_Add(
+    Nanoflann
+    GIT_REPOSITORY https://github.com/jlblancoc/nanoflann.git
+    GIT_TAG v1.3.2
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DBUILD_EXAMPLES=OFF
+        -DBUILD_BENCHMARKS=OFF
+)
+ExternalProject_Add(
     Boost
     URL https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2
     URL_HASH SHA256=953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb
