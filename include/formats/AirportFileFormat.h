@@ -29,6 +29,8 @@ namespace topskytower {
             static bool parseWtc(const std::string& categories, std::list<types::Aircraft::WTC>& list);
             static bool parseEngineType(const std::string& types, std::list<types::Aircraft::EngineType>& list);
             bool parseStands(const std::vector<std::string>& lines);
+            static bool parsePriorities(const std::vector<std::string>& elements, types::StandPriorities& priorities);
+            bool parsePriorities(const std::vector<std::string>& lines);
 
         public:
             /**

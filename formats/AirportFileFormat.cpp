@@ -267,6 +267,71 @@ bool AirportFileFormat::parseStands(const std::vector<std::string>& lines) {
     return true;
 }
 
+bool AirportFileFormat::parsePriorities(const std::vector<std::string>& elements, types::StandPriorities& priorities) {
+    if (2 >= elements.size())
+        return false;
+
+    priorities.priority = std::atoi(elements[1].c_str());
+    for (std::size_t i = 2; i < elements.size(); ++i)
+        priorities.stands.push_back(std::move(elements[i]));
+
+    return true;
+}
+
+bool AirportFileFormat::parsePriorities(const std::vector<std::string>& lines) {
+    std::list<types::StandPriorities> priorities;
+    std::vector<std::string> airlines;
+
+    for (const auto& line : std::as_const(lines)) {
+        auto split = helper::String::splitString(line, ":");
+        if (1 > split.size() && 0 == split[0].size())
+            continue;
+
+        if ("AIRLINES" == split[0]) {
+            /* sort priorities in decending order */
+            priorities.sort([](const types::StandPriorities& prio0, const types::StandPriorities& prio1) {
+                return prio0.priority > prio1.priority;
+            });
+
+            /* create new stand assignments */
+            for (std::size_t i = 1; i < airlines.size(); ++i) {
+                if (0 == airlines[i].length())
+                    return false;
+
+                types::AirlineStandAssignments assignment = {
+                    airlines[i],
+                    priorities
+                };
+                this->m_configuration.airlines.push_back(std::move(assignment));
+            }
+
+            /* prepare a new cycle */
+            priorities.clear();
+            airlines = split;
+        }
+        else if ("STANDS" == split[0]) {
+            types::StandPriorities priorityEntry;
+            if (false == AirportFileFormat::parsePriorities(split, priorityEntry))
+                return false;
+            priorities.push_back(std::move(priorityEntry));
+        }
+        else {
+            return false;
+        }
+    }
+
+    /* create the last cycle */
+    for (std::size_t i = 1; i < airlines.size(); ++i) {
+        types::AirlineStandAssignments assignment = {
+            airlines[i],
+            priorities
+        };
+        this->m_configuration.airlines.push_back(std::move(assignment));
+    }
+
+    return true;
+}
+
 AirportFileFormat::AirportFileFormat(const std::string& filename) :
         m_configuration() {
     IniFileFormat file(filename);
@@ -278,6 +343,10 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
             this->m_configuration.valid &= this->parseDepartures(block.second);
         else if ("[STANDS]" == block.first)
             this->m_configuration.valid &= this->parseStands(block.second);
+        else if ("[PRIORITIES]" == block.first)
+            this->m_configuration.valid &= this->parsePriorities(block.second);
+        else
+            this->m_configuration.valid = false;
     }
 }
 

@@ -61,6 +61,22 @@ namespace topskytower {
         };
 
         /**
+         * @brief Defines the stands for a specific priority
+         */
+        struct StandPriorities {
+            int                    priority; /**< Defines the priority */
+            std::list<std::string> stands;   /**< Defines the stands for this priority */
+        };
+
+        /**
+         * @brief Defines all assigned stands that are used by an airline
+         */
+        struct AirlineStandAssignments {
+            std::string                airlineIcao;     /**< The airline's ICAO code */
+            std::list<StandPriorities> standPriorities; /**< All stand priorities */
+        };
+
+        /**
          * @brief Describes a airport configuration
          * @ingroup types
          */
@@ -69,6 +85,7 @@ namespace topskytower {
             std::map<std::string, StandardInstrumentDeparture> sids;                   /**< The SIDs per airports */
             std::list<DestinationConstraint>                   destinationConstraints; /**< The constraints of specific destinations */
             std::list<Stand>                                   aircraftStands;         /**< The list of all available aircraft stands */
+            std::list<AirlineStandAssignments>                 airlines;               /**< The airline to stand assignments */
 
             /**
              * @brief Creates an empty and unintialized airport configuration
@@ -77,7 +94,8 @@ namespace topskytower {
                     valid(false),
                     sids(),
                     destinationConstraints(),
-                    aircraftStands() { }
+                    aircraftStands(),
+                    airlines() { }
         };
     }
 }
