@@ -634,11 +634,11 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             std::string_view trackedCallsign = radarTarget.GetCorrelatedFlightPlan().GetTrackingControllerCallsign();
 
             if (true == system::ConfigurationRegistry::instance().systemConfiguration().trackingOnGround) {
-                this->AddPopupListElement("Assume", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
-                                          false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, 0 != trackedCallsign.length(), false);
                 this->AddPopupListElement("Accept", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
                                           false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
                                           this->ControllerMyself().GetCallsign() != ctrCallsign, false);
+                this->AddPopupListElement("Assume", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
+                                          false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, 0 != trackedCallsign.length(), false);
                 this->AddPopupListElement("Refuse", "", static_cast<int>(PlugIn::TagItemFunction::HandoffPerform),
                                           false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
                                           this->ControllerMyself().GetCallsign() != ctrCallsign, false);
