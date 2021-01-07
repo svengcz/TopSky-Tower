@@ -41,14 +41,21 @@ PlugIn::PlugIn() :
                                  PLUGIN_VERSION,
                                  PLUGIN_DEVELOPER,
                                  PLUGIN_COPYRIGHT),
+        m_errorMode(false),
         m_settingsPath(),
         m_screens(),
         m_uiCallback(),
         m_pdcNotificationSound() {
-    Gdiplus::GdiplusStartup(&__gdiplusToken, &__gdiStartupInput, nullptr);
-
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION + " loaded").c_str(),
                              false, false, false, false, false);
+
+    /* unable to initialize GDI+ */
+    if (Gdiplus::Ok != Gdiplus::GdiplusStartup(&__gdiplusToken, &__gdiStartupInput, nullptr)) {
+        this->DisplayUserMessage("Message", PLUGIN_NAME, "Unable to initialize the rendering system!",
+                                 true, true, true, true, false);
+        this->m_errorMode = true;
+        return;
+    }
 
     char path[MAX_PATH] = { 0 };
     GetModuleFileNameA((HINSTANCE)&__ImageBase, path, _countof(path));
@@ -100,8 +107,10 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
     (void)canBeCreated;
     (void)displayName;
 
-    this->m_screens.push_back(new RadarScreen());
-    return this->m_screens.back();
+    if (false == this->m_errorMode) {
+        this->m_screens.push_back(new RadarScreen());
+        return this->m_screens.back();
+    }
 }
 
 bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]) {
@@ -239,7 +248,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     (void)fontSize;
 
     /* do not handle invalid radar targets */
-    if (false == radarTarget.IsValid())
+    if (true == this->m_errorMode || false == radarTarget.IsValid())
         return;
 
     /* initialize default values */
@@ -553,6 +562,9 @@ std::string PlugIn::flightPlanCheckResultLog(const std::list<surveillance::Fligh
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
+    if (true == this->m_errorMode)
+        return;
+
     if (PlugIn::TagItemFunction::UiElementIds < static_cast<PlugIn::TagItemFunction>(functionId)) {
         switch (static_cast<PlugIn::TagItemFunction>(functionId)) {
         case PlugIn::TagItemFunction::UiEditTextRequest:

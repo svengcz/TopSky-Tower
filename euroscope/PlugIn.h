@@ -72,6 +72,7 @@ namespace topskytower {
                 AircraftStand         = 2009
             };
 
+            bool                                    m_errorMode;
             std::string                             m_settingsPath;
             std::list<RadarScreen*>                 m_screens;
             std::function<void(const std::string&)> m_uiCallback;
