@@ -54,12 +54,14 @@ namespace topskytower {
             static std::shared_ptr<Node> findSectorInList(const std::list<std::shared_ptr<Node>>& nodes,
                                                           const types::Position& position,
                                                           types::Flight::Type type, bool lowerSectors);
-            std::shared_ptr<Node> findOnlineResponsible(const types::Flight& flight, const types::Position& position) const;
+            std::shared_ptr<Node> findOnlineResponsible(const types::Flight& flight, const types::Position& position,
+                                                        bool ignoreClearanceFlag) const;
             std::list<std::shared_ptr<Node>> findSectorCandidates(const std::shared_ptr<Node>& node) const;
             static std::shared_ptr<SectorControl::Node> findLowestSector(const std::shared_ptr<Node>& node,
                                                                          const types::Flight& flight,
-                                                                         const types::Position& position);
-            bool isInOwnSectors(const types::Flight& flight, const types::Position& position) const;
+                                                                         const types::Position& position,
+                                                                         bool ignoreClearanceFlag);
+            bool isInOwnSectors(const types::Flight& flight, const types::Position& position, bool ignoreClearanceFlag) const;
             void cleanupHandoffList(std::shared_ptr<Node>& node);
 
             std::shared_ptr<Node>                                       m_unicom;
