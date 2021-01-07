@@ -204,7 +204,7 @@ surveillance::SectorControl& RadarScreen::sectorControl() {
     return *this->m_sectorControl;
 }
 
-const system::FlightRegistry& RadarScreen::flightRegistry() const {
+system::FlightRegistry& RadarScreen::flightRegistry() const {
     return *this->m_flightRegistry;
 }
 

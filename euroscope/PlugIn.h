@@ -80,7 +80,7 @@ namespace topskytower {
             void handleHandoffPerform(POINT point, RECT area, const types::Flight& flight, bool tracked);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
-            static void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);
+            void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);
             RadarScreen* findLastActiveScreen();
             static bool summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
                                                  char* itemString, int* colorCode);

@@ -141,7 +141,7 @@ namespace topskytower {
              * @brief Returns the flight registry
              * @return The flight registry
              */
-            const system::FlightRegistry& flightRegistry() const;
+            system::FlightRegistry& flightRegistry() const;
             /**
              * @brief Returns the stand control
              * @return The stand control

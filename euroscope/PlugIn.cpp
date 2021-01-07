@@ -19,6 +19,7 @@
 #include <system/ConfigurationRegistry.h>
 #include <version.h>
 
+#include "Converter.h"
 #include "ui/MessageViewerWindow.h"
 #include "ui/PdcDepartureClearanceWindow.h"
 #include "ui/PdcMessageViewerWindow.h"
@@ -484,6 +485,11 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, int i
         stripEntry += marker;
 
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, stripEntry.c_str());
+
+    for (auto& screen : this->m_screens) {
+        auto updatedFlight = Converter::convert(radarTarget, screen->airportIcao());
+        screen->flightRegistry().updateFlight(updatedFlight);
+    }
 }
 
 RadarScreen* PlugIn::findLastActiveScreen() {
@@ -640,7 +646,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         else if (0 == std::strncmp(itemString, "Est", 3))
             PlugIn::updateManuallyAlerts(radarTarget, "EST_");
         else if (0 == std::strncmp(itemString, "Mark", 4))
-            PlugIn::updateFlightStrip(radarTarget, 7, "K");
+            this->updateFlightStrip(radarTarget, 7, "K");
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
         if (0 == std::strncmp(itemString, "Release", 7)) {
