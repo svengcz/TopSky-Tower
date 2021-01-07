@@ -595,7 +595,7 @@ void SectorControl::updateFlight(const types::Flight& flight) {
         auto nextNode = this->findOnlineResponsible(flight, predicted);
 
         /* no handoff to the controlled sector needed */
-        if (nextNode != this->m_ownSector)
+        if (nullptr != nextNode && nextNode != this->m_ownSector)
             this->m_handoffs[flight.callsign()] = { false, false, flight, nextNode };
     }
     /* check if we have to remove the handoff information */
