@@ -238,6 +238,11 @@ void Toolbar::initialize() {
 
     this->m_toplevel->active = true;
 
+    /* set the systems meny */
+    Toolbar::createElement("SYSTEMS", Toolbar::ClickId::Systems, this->m_toplevel);
+    this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
+    Toolbar::createElement("PDC", Toolbar::ClickId::PDC, this->m_toplevel->elements.back().child);
+
     /* set the settings menu */
     Toolbar::createElement("SETTINGS", Toolbar::ClickId::Settings, this->m_toplevel);
     this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
@@ -245,11 +250,6 @@ void Toolbar::initialize() {
     Toolbar::createElement("RELOAD SYSTEM", Toolbar::ClickId::ReloadSystem, this->m_toplevel->elements.back().child);
     Toolbar::createElement("RELOAD AIRCRAFTS", Toolbar::ClickId::ReloadAircrafts, this->m_toplevel->elements.back().child);
     Toolbar::createElement("RELOAD AIRPORTS", Toolbar::ClickId::ReloadAirports, this->m_toplevel->elements.back().child);
-
-    /* set the systems meny */
-    Toolbar::createElement("SYSTEMS", Toolbar::ClickId::Systems, this->m_toplevel);
-    this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
-    Toolbar::createElement("PDC", Toolbar::ClickId::PDC, this->m_toplevel->elements.back().child);
 }
 
 bool Toolbar::visualize(Gdiplus::Graphics* graphics) {
