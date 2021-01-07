@@ -773,11 +773,12 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::PdcReadMessage:
     {
         auto message = surveillance::PdcControl::instance().nextMessage(flight);
-        auto screen = this->findLastActiveScreen();
+        if (nullptr != message) {
+            auto screen = this->findLastActiveScreen();
 
-        auto viewer = new PdcMessageViewerWindow(screen, message);
-        viewer->setActive(true);
-
+            auto viewer = new PdcMessageViewerWindow(screen, message);
+            viewer->setActive(true);
+        }
         break;
     }
     case PlugIn::TagItemFunction::PdcSendStandby:
