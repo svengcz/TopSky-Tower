@@ -542,8 +542,13 @@ std::shared_ptr<SectorControl::Node> SectorControl::findLowestSector(const std::
     for (const auto& child : std::as_const(node->children)) {
         auto retval = SectorControl::findLowestSector(child, flight, position, ignoreClearanceFlag);
         if (nullptr != retval) {
-            if (types::Sector::Type::Delivery != retval->sector.type() || false == flight.flightPlan().clearanceFlag())
+            /* non-departures do not go to the delivery */
+            if (types::Flight::Type::Departure != flight.type() && types::Sector::Type::Delivery == retval->sector.type())
+                continue;
+            /* Delivery is only allowed if the clearance flag is not set */
+            else if (types::Sector::Type::Delivery != retval->sector.type() || false == flight.flightPlan().clearanceFlag())
                 return retval;
+            /* ingore any contextual information */
             else if (true == ignoreClearanceFlag)
                 return retval;
         }
@@ -582,8 +587,8 @@ void SectorControl::updateFlight(const types::Flight& flight) {
         this->m_sectorsOfFlights.erase(flight.callsign());
 
     bool ignoreClearanceFlag = types::Sector::Type::Delivery == this->m_ownSector->sector.type();
-    if (false == manuallyChanged && false == handoffDone &&
-        (true == this->isInOwnSectors(flight, flight.currentPosition(), ignoreClearanceFlag) || true == flight.isTracked()))
+    bool outsideOwnBorder = this->isInOwnSectors(flight, flight.currentPosition(), ignoreClearanceFlag);
+    if (false == manuallyChanged && false == handoffDone && (true == outsideOwnBorder || true == flight.isTracked()))
     {
         types::Position predicted;
 
@@ -614,7 +619,7 @@ void SectorControl::updateFlight(const types::Flight& flight) {
         auto currentNode = this->findOnlineResponsible(flight, flight.currentPosition(), false);
 
         /* check if an other controller is responsible */
-        if (currentNode != this->m_ownSector)
+        if (currentNode != this->m_ownSector && false == flight.isTracked())
             this->m_handoffs.erase(it);
     }
 }
