@@ -7,8 +7,8 @@
 
 #include <fstream>
 
-#include <helper/String.h>
 #include <formats/SettingsFileFormat.h>
+#include <helper/String.h>
 
 using namespace topskytower;
 using namespace topskytower::formats;
