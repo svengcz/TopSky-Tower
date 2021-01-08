@@ -453,6 +453,11 @@ void PdcControl::removeAirport(const std::string& icao) {
         this->m_airports.erase(it);
 }
 
+bool PdcControl::airportLoggedIn(const std::string& icao) const {
+    auto it = std::find(this->m_airports.cbegin(), this->m_airports.cend(), icao);
+    return this->m_airports.cend() != it;
+}
+
 bool PdcControl::airportOnline(const std::string& icao) const {
     return this->m_airports.cend() != std::find(this->m_airports.cbegin(), this->m_airports.cend(), icao);
 }

@@ -787,12 +787,15 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
         break;
     case PlugIn::TagItemFunction::PdcMenu:
-        this->OpenPopupList(area, "PDC", 1);
-        this->AddPopupListElement("Read", "", static_cast<int>(PlugIn::TagItemFunction::PdcReadMessage), false,
-                                  2, false == surveillance::PdcControl::instance().messagesAvailable(flight), false);
-        this->AddPopupListElement("Send stand-by", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendStandby));
-        this->AddPopupListElement("Send clearance", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendClearance), false,
-                                  EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.flightPlan().clearanceFlag(), false);
+        if (true == surveillance::PdcControl::instance().airportLoggedIn(flightScreen->airportIcao())) {
+            this->OpenPopupList(area, "PDC", 1);
+            this->AddPopupListElement("Read", "", static_cast<int>(PlugIn::TagItemFunction::PdcReadMessage), false,
+                                      EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
+                                      false == surveillance::PdcControl::instance().messagesAvailable(flight), false);
+            this->AddPopupListElement("Send stand-by", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendStandby));
+            this->AddPopupListElement("Send clearance", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendClearance), false,
+                                      EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.flightPlan().clearanceFlag(), false);
+        }
         break;
     case PlugIn::TagItemFunction::PdcReadMessage:
     {

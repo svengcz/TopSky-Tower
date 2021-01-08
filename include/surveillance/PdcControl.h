@@ -212,6 +212,12 @@ namespace topskytower {
              */
             void removeAirport(const std::string& icao);
             /**
+             * @brief Checks if an airport is logged into the system
+             * @param[in] icao The airport's ICAO code
+             * @return True if it is online, else false
+             */
+            bool airportLoggedIn(const std::string& icao) const;
+            /**
              * @brief Checks if an airport is active in Hoppies
              * @param[in] icao The ICAO of the airport
              * @return True if the airport is online, else false
