@@ -679,10 +679,10 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             radarTarget.GetCorrelatedFlightPlan().EndTracking();
 
             /* check if a handoff to UNICOM is ongoing */
-            if (true == flightScreen->sectorControl().handoffRequired(callsign)) {
-                auto controllers = flightScreen->sectorControl().handoffStations(callsign);
+            if (true == flightScreen->sectorControl().handoffRequired(flight)) {
+                auto controllers = flightScreen->sectorControl().handoffStations(flight);
                 if (0 == controllers.front().size())
-                    flightScreen->sectorControl().handoffPerformed(callsign);
+                    flightScreen->sectorControl().handoffPerformed(flight);
             }
         }
         else if (0 == std::strncmp(itemString, "Assume", 6)) {
@@ -699,9 +699,9 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         }
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelectEvent:
-        if (true == flightScreen->sectorControl().handoffRequired(callsign)) {
-            auto controllers = flightScreen->sectorControl().handoffStations(callsign);
-            auto& info = flightScreen->sectorControl().handoffSector(callsign);
+        if (true == flightScreen->sectorControl().handoffRequired(flight)) {
+            auto controllers = flightScreen->sectorControl().handoffStations(flight);
+            auto& info = flightScreen->sectorControl().handoffSector(flight);
             this->OpenPopupList(area, "Handoff To", 2);
 
             for (const auto& controller : std::as_const(controllers)) {
@@ -711,14 +711,14 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         }
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelect:
-        if (true == flightScreen->sectorControl().handoffRequired(callsign)) {
+        if (true == flightScreen->sectorControl().handoffRequired(flight)) {
             if (true == flight.isTracked())
                 radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
-            flightScreen->sectorControl().handoffPerformed(callsign);
+            flightScreen->sectorControl().handoffPerformed(flight);
         }
         break;
     case PlugIn::TagItemFunction::HandoffSectorChangeEvent:
-        if (true == flightScreen->sectorControl().handoffRequired(callsign) || true == flightScreen->sectorControl().handoffPossible(callsign)) {
+        if (true == flightScreen->sectorControl().handoffRequired(flight) || true == flightScreen->sectorControl().handoffPossible(flight)) {
             RadarScreen::EuroscopeEvent eventEntry = {
                 static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChange),
                 callsign,
@@ -730,7 +730,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         }
         break;
     case PlugIn::TagItemFunction::HandoffSectorChange:
-        if (true == flightScreen->sectorControl().handoffRequired(callsign) || true == flightScreen->sectorControl().handoffPossible(callsign)) {
+        if (true == flightScreen->sectorControl().handoffRequired(flight) || true == flightScreen->sectorControl().handoffPossible(flight)) {
             auto sectors = flightScreen->sectorControl().handoffSectors();
 
             this->OpenPopupList(area, "Handoff sectors", 2);
@@ -741,8 +741,8 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         }
         break;
     case PlugIn::TagItemFunction::HandoffSectorSelect:
-        if (true == flightScreen->sectorControl().handoffRequired(callsign) || true == flightScreen->sectorControl().handoffPossible(callsign))
-            flightScreen->sectorControl().handoffSectorSelect(callsign, itemString);
+        if (true == flightScreen->sectorControl().handoffRequired(flight) || true == flightScreen->sectorControl().handoffPossible(flight))
+            flightScreen->sectorControl().handoffSectorSelect(flight, itemString);
         break;
     case PlugIn::TagItemFunction::SectorControllerHandover:
         if (true == flightScreen->sectorControl().sectorHandoverPossible()) {
