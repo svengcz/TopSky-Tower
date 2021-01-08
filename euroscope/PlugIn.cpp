@@ -365,7 +365,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         }
 
         /* check if the flight is controlled by me */
-        if (nullptr == flightScreen || false == flightScreen->sectorControl().isInOwnSector(flight))
+        if (false == flightScreen->sectorControl().isInOwnSector(flight) && false == flight.isTracked())
             finalizeRoute = false;
 
         if (true == finalizeRoute && types::FlightPlan::Type::VFR != flight.flightPlan().type()) {
