@@ -16,6 +16,7 @@
 #include <system/ConfigurationRegistry.h>
 
 #include "Converter.h"
+#include "RadarScreen.h"
 
 using namespace topskytower;
 using namespace topskytower::euroscope;
@@ -174,7 +175,7 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     return retval;
 }
 
-types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, const std::string& airport) {
+types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, const RadarScreen& screen) {
     types::Flight retval(target.GetCallsign());
 
     retval.setGroundSpeed(static_cast<float>(target.GetPosition().GetReportedGS()) * types::knot);
@@ -189,16 +190,23 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, co
         std::string_view origin(flightPlan.GetFlightPlanData().GetOrigin());
         std::string_view destination(flightPlan.GetFlightPlanData().GetDestination());
 
-        if (origin == destination) {
-            /* TODO check if the AC is airborne or not */
-        }
-        else if (airport == origin) {
+        if (screen.airportIcao() == origin) {
             retval.setType(types::Flight::Type::Departure);
         }
-        else if (airport == destination) {
+        else if (screen.airportIcao() == destination) {
             retval.setType(types::Flight::Type::Arrival);
         }
+
         retval.setTrackedState(flightPlan.GetTrackingControllerIsMe());
+        /* an flight was tracked by an other controller and we keep this information */
+        if (EuroScopePlugIn::FLIGHT_PLAN_STATE_TRANSFER_TO_ME_INITIATED == flightPlan.GetState()) {
+            if (nullptr != flightPlan.GetTrackingControllerId() && 0 != std::strlen(flightPlan.GetTrackingControllerId()))
+                retval.setHandoffInitiatedId(flightPlan.GetTrackingControllerId());
+        }
+        /* get the old handoff information */
+        else if (true == screen.flightRegistry().flightExists(retval.callsign()) && true == retval.isTracked()) {
+            retval.setHandoffInitiatedId(screen.flightRegistry().flight(retval.callsign()).handoffInitiatedId());
+        }
 
         /* check if the flight is marked by a controller */
         std::string_view annotation(flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(7));

@@ -124,6 +124,8 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
         this->m_screens.push_back(new RadarScreen());
         return this->m_screens.back();
     }
+
+    return nullptr;
 }
 
 bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]) {
@@ -509,7 +511,7 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, int i
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, stripEntry.c_str());
 
     for (auto& screen : this->m_screens) {
-        auto updatedFlight = Converter::convert(radarTarget, screen->airportIcao());
+        auto updatedFlight = Converter::convert(radarTarget, *screen);
         screen->flightRegistry().updateFlight(updatedFlight);
     }
 }

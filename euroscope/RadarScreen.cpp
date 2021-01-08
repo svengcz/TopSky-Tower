@@ -99,7 +99,7 @@ void RadarScreen::OnControllerDisconnect(EuroScopePlugIn::CController controller
 }
 
 void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) {
-    auto flight = Converter::convert(radarTarget, this->m_airport);
+    auto flight = Converter::convert(radarTarget, *this);
     this->m_flightRegistry->updateFlight(flight);
 
     if (nullptr != this->m_sectorControl)
@@ -113,7 +113,7 @@ void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan 
     if (false == flightPlan.GetCorrelatedRadarTarget().IsValid())
         return;
 
-    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), this->m_airport);
+    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this);
     this->m_flightRegistry->updateFlight(flight);
 }
 
@@ -129,7 +129,7 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
     if (false == flightPlan.GetCorrelatedRadarTarget().IsValid())
         return;
 
-    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), this->m_airport);
+    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this);
     this->m_flightRegistry->updateFlight(flight);
 }
 

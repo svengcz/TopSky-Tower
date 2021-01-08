@@ -17,6 +17,8 @@
 
 namespace topskytower {
     namespace euroscope {
+        class RadarScreen;
+
         /**
          * @brief Defines the different ES converters
          * @ingroup euroscope
@@ -38,10 +40,10 @@ namespace topskytower {
             /**
              * @brief Converts an ES radar target into a TopSky-Tower flight structure
              * @param[in] target The radar target
-             * @param[in] airport The controlled airport to estimate departures and arrivals
+             * @param[in] screen The corresponding RADAR screen
              * @return The converted flight structure
              */
-            static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target, const std::string& airport);
+            static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target, const RadarScreen& screen);
             /**
              * @brief Converts an ES controller structure into a TopSky-Tower controller information
              * @param[in] controller The ES controller
