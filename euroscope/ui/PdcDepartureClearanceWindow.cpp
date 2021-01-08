@@ -11,8 +11,8 @@
 #include <system/ConfigurationRegistry.h>
 
 #include "../RadarScreen.h"
+#include "../PlugIn.h"
 #include "elements/Button.h"
-#include "elements/EditText.h"
 #include "PdcDepartureClearanceWindow.h"
 
 using namespace topskytower;
@@ -41,7 +41,8 @@ public:
 PdcDepartureClearanceWindow::PdcDepartureClearanceWindow(RadarScreen* parent,
                                                          const surveillance::PdcControl::ClearanceMessagePtr& message) :
         InsetWindow("Departure Clearance", parent, Gdiplus::RectF(0, 40, 450, 145), false),
-        m_message(message) {
+        m_message(message),
+        m_nextFrequencyField(nullptr) {
     Gdiplus::RectF dimension;
     ClearanceButton* button;
     EditText* field;
@@ -91,6 +92,7 @@ PdcDepartureClearanceWindow::PdcDepartureClearanceWindow(RadarScreen* parent,
     field = new EditText(this->m_parent, "Next freq.", dimension);
     field->setContent(message->frequency);
     field->setEditable(false);
+    this->m_nextFrequencyField = field;
     this->m_elements.push_back(field);
 
     /* add a non-changable edit-field for the squawk */
@@ -136,6 +138,38 @@ void PdcDepartureClearanceWindow::setActive(bool active) {
     }
 }
 
+bool PdcDepartureClearanceWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
+    /* we are only interested in left clicks */
+    if (UiManager::MouseButton::Left != button)
+        return InsetWindow::click(pt, button);
+
+    /* check if the user clicked on the frequency */
+    if (true == UiElement::isInRectangle(pt, this->m_nextFrequencyField->area())) {
+        POINT point = { static_cast<int>(pt.X), static_cast<int>(pt.Y) };
+        RECT area = {
+            static_cast<int>(this->m_nextFrequencyField->area().GetLeft()),
+            static_cast<int>(this->m_nextFrequencyField->area().GetTop()),
+            static_cast<int>(this->m_nextFrequencyField->area().GetRight()),
+            static_cast<int>(this->m_nextFrequencyField->area().GetBottom())
+        };
+
+        RadarScreen::EuroscopeEvent esEvent = {
+            static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChangeEvent),
+            this->m_message->receiver,
+            "",
+            point,
+            area
+        };
+        this->m_parent->registerEuroscopeEvent(std::move(esEvent));
+
+        return true;
+    }
+    /* forward all other clicks */
+    else {
+        return InsetWindow::click(pt, button);
+    }
+}
+
 void PdcDepartureClearanceWindow::centeredPosition() {
     auto oldWindowPos = Gdiplus::PointF(this->m_contentArea.X, this->m_contentArea.Y);
 
@@ -164,5 +198,19 @@ void PdcDepartureClearanceWindow::sendMessage() {
     std::advance(it, 3);
     this->m_message->message = static_cast<const EditText*>(*it)->content();
 
+    this->m_message->frequency = this->m_nextFrequencyField->content();
+
     surveillance::PdcControl::instance().sendClearanceMessage(this->m_message);
+}
+
+bool PdcDepartureClearanceWindow::visualize(Gdiplus::Graphics* graphics) {
+    if (nullptr != this->m_nextFrequencyField) {
+        /* controller select an other sector */
+        if (true == this->m_parent->sectorControl().handoffRequired(this->m_message->receiver)) {
+            auto& info = this->m_parent->sectorControl().handoffSector(this->m_message->receiver);
+            this->m_nextFrequencyField->setContent(info.primaryFrequency());
+        }
+    }
+
+    return InsetWindow::visualize(graphics);
 }
