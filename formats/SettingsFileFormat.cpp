@@ -9,6 +9,7 @@
 
 #include <formats/SettingsFileFormat.h>
 #include <helper/String.h>
+#include <types/Aircraft.h>
 
 using namespace topskytower;
 using namespace topskytower::formats;
@@ -27,6 +28,7 @@ SettingsFileFormat::SettingsFileFormat(const std::string& filename) :
         m_filename(filename) { }
 
 void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
+    types::Aircraft::WTC defaultWtc = types::Aircraft::WTC::Unknown;
     config.valid = true;
 
     std::ifstream stream(this->m_filename);
@@ -68,9 +70,56 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("SYS_DistanceStandAssignment" == entry[0]) {
             config.standAssociationDistance = static_cast<float>(std::atoi(entry[1].c_str())) * types::nauticmile;
         }
-        else {
-            config.valid = false;
-            return;
+        else if ("SURV_DepartureModelUnknown" == entry[0]) {
+            switch (entry[0][1]) {
+            case 'L':
+                defaultWtc = types::Aircraft::WTC::Light;
+                break;
+            case 'M':
+                defaultWtc = types::Aircraft::WTC::Medium;
+                break;
+            case 'H':
+                defaultWtc = types::Aircraft::WTC::Heavy;
+                break;
+            case 'J':
+                defaultWtc = types::Aircraft::WTC::Super;
+                break;
+            default:
+                config.valid = false;
+                return;
+            }
+        }
+        else if ("SURV_DepartureLightV2" == entry[0]) {
+            config.departureSpeedV2[static_cast<int>(types::Aircraft::WTC::Light)] =
+                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        }
+        else if ("SURV_DepartureMediumV2" == entry[0]) {
+            config.departureSpeedV2[static_cast<int>(types::Aircraft::WTC::Medium)] =
+                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        }
+        else if ("SURV_DepartureHeavyV2" == entry[0]) {
+            config.departureSpeedV2[static_cast<int>(types::Aircraft::WTC::Heavy)] =
+                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        }
+        else if ("SURV_DepartureSuperV2" == entry[0]) {
+            config.departureSpeedV2[static_cast<int>(types::Aircraft::WTC::Super)] =
+                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        }
+        else if ("SURV_DepartureLightCruiseSpeed" == entry[0]) {
+            config.departureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Light)] =
+                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        }
+        else if ("SURV_DepartureMediumCruiseSpeed" == entry[0]) {
+            config.departureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Medium)] =
+                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        }
+        else if ("SURV_DepartureHeavyCruiseSpeed" == entry[0]) {
+            config.departureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Heavy)] =
+                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        }
+        else if ("SURV_DepartureSuperCruiseSpeed" == entry[0]) {
+            config.departureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Super)] =
+                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
         }
     }
 }
