@@ -38,6 +38,7 @@ namespace topskytower {
             bool            m_irregularFlight;
             bool            m_establishedOnILS;
             bool            m_isTrackedByController;
+            std::string     m_handoffReceivedBy;
 
         public:
             /**
@@ -155,6 +156,16 @@ namespace topskytower {
              * @param[in] state The new tracking state
              */
             void setTrackedState(bool state);
+            /**
+             * @brief Sets the ID of the controller who initiated a handoff to this instance
+             * @param[in] id The controllers ID
+             */
+            void setHandoffInitiatedId(const std::string& id);
+            /**
+             * @brief Returns the ID of the controller who initiated a handoff to this instance
+             * @return The controller's ID
+             */
+            const std::string& handoffInitiatedId() const;
             /**
              * @brief Predicts the next position based on the kinematics and a constant-velocity model
              * @param[in] duration The time step of the prediction

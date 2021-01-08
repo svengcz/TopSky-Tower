@@ -20,7 +20,8 @@ Flight::Flight() :
         m_onMissedApproach(false),
         m_irregularFlight(false),
         m_establishedOnILS(false),
-        m_isTrackedByController(false) { }
+        m_isTrackedByController(false),
+        m_handoffReceivedBy() { }
 
 Flight::Flight(const std::string& callsign) :
         m_flightPlan(),
@@ -32,7 +33,8 @@ Flight::Flight(const std::string& callsign) :
         m_markedByController(false),
         m_onMissedApproach(false),
         m_irregularFlight(false),
-        m_establishedOnILS(false) { }
+        m_establishedOnILS(false),
+        m_handoffReceivedBy() { }
 
 Flight::Type Flight::type() const {
     return this->m_type;
@@ -116,6 +118,14 @@ bool Flight::isTracked() const {
 
 void Flight::setTrackedState(bool state) {
     this->m_isTrackedByController = state;
+}
+
+void Flight::setHandoffInitiatedId(const std::string& id) {
+    this->m_handoffReceivedBy = id;
+}
+
+const std::string& Flight::handoffInitiatedId() const {
+    return this->m_handoffReceivedBy;
 }
 
 Position Flight::predict(const Time& duration, const Velocity& minGroundSpeed) const {
