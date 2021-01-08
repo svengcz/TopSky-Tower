@@ -19,7 +19,8 @@ SectorControl::SectorControl() :
         m_rootNode(nullptr),
         m_ownSector(nullptr),
         m_handoffs(),
-        m_sectorsOfFlights() { }
+        m_sectorsOfFlights(),
+        m_handoffOfFlightsToMe() { }
 
 SectorControl::SectorControl(const std::string& airport, const std::list<types::Sector>& sectors) :
         m_unicom(new Node(types::Sector("UNICOM", "", "", "FSS", "122.800"))),
@@ -587,8 +588,8 @@ void SectorControl::updateFlight(const types::Flight& flight) {
         this->m_sectorsOfFlights.erase(flight.callsign());
 
     bool ignoreClearanceFlag = types::Sector::Type::Delivery == this->m_ownSector->sector.type();
-    bool outsideOwnBorder = this->isInOwnSectors(flight, flight.currentPosition(), ignoreClearanceFlag);
-    if (false == manuallyChanged && false == handoffDone && (true == outsideOwnBorder || true == flight.isTracked()))
+    bool insideOwnBorder = this->isInOwnSectors(flight, flight.currentPosition(), ignoreClearanceFlag);
+    if (false == manuallyChanged && false == handoffDone && (true == insideOwnBorder || true == flight.isTracked()))
     {
         types::Position predicted;
 
@@ -596,6 +597,20 @@ void SectorControl::updateFlight(const types::Flight& flight) {
             predicted = flight.currentPosition();
         else
             predicted = flight.predict(20_s, 20_kn);
+
+        /* get the handoff initiator to avoid rehandoffs if we received an early handoff */
+        auto handoffIt = this->m_handoffOfFlightsToMe.find(flight.callsign());
+        if (false == insideOwnBorder) {
+            if (this->m_handoffOfFlightsToMe.end() == handoffIt) {
+                this->m_handoffOfFlightsToMe[flight.callsign()] = flight.handoffInitiatedId();
+                handoffIt = this->m_handoffOfFlightsToMe.find(flight.callsign());
+            }
+        }
+        /* delete the handoff tracker if the flight is in our sector */
+        else if (this->m_handoffOfFlightsToMe.end() != handoffIt) {
+            this->m_handoffOfFlightsToMe.erase(handoffIt);
+            handoffIt = this->m_handoffOfFlightsToMe.end();
+        }
 
         /* the aircraft remains in own sector */
         if (true == this->isInOwnSectors(flight, predicted, false)) {
@@ -609,9 +624,12 @@ void SectorControl::updateFlight(const types::Flight& flight) {
         /* get the next responsible node and the next online station */
         auto nextNode = this->findOnlineResponsible(flight, predicted, false);
 
-        /* no handoff to the controlled sector needed */
-        if (nullptr != nextNode && nextNode != this->m_ownSector)
-            this->m_handoffs[flight.callsign()] = { false, false, flight, nextNode };
+        /* found a possible handoff candidate */
+        if (nullptr != nextNode && nextNode != this->m_ownSector) {
+            /* give the flight to an other sector */
+            if (this->m_handoffOfFlightsToMe.end() == handoffIt || handoffIt->second != nextNode->sector.controllerInfo().identifier())
+                this->m_handoffs[flight.callsign()] = { false, false, flight, nextNode };
+        }
     }
     /* check if we have to remove the handoff information */
     else if (this->m_handoffs.end() != it && true == it->second.handoffPerformed) {
@@ -632,6 +650,10 @@ void SectorControl::removeFlight(const std::string& callsign) {
     auto sit = this->m_sectorsOfFlights.find(callsign);
     if (this->m_sectorsOfFlights.end() != sit)
         this->m_sectorsOfFlights.erase(sit);
+
+    auto hit = this->m_handoffOfFlightsToMe.find(callsign);
+    if (this->m_handoffOfFlightsToMe.end() != hit)
+        this->m_handoffOfFlightsToMe.erase(hit);
 }
 
 bool SectorControl::isInOwnSector(const types::Flight& flight) {
