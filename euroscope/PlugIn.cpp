@@ -340,7 +340,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
                 }
             }
             else {
-                std::strcpy(itemString, "UKN");
+                std::strcpy(itemString, "UNK");
                 *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
             }
         }
