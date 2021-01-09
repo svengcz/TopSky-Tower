@@ -140,6 +140,8 @@ void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan
         this->m_standControl->removeFlight(flightPlan.GetCallsign());
     if (nullptr != this->m_sectorControl)
         this->m_sectorControl->removeFlight(flightPlan.GetCallsign());
+
+    surveillance::FlightPlanControl::instance().removeFlight(flightPlan.GetCallsign());
 }
 
 void RadarScreen::initialize() {

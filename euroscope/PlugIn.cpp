@@ -340,7 +340,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
                 }
             }
             else {
-                std::strcpy(itemString, "UKN");
+                std::strcpy(itemString, "UNK");
                 *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
             }
         }
@@ -389,6 +389,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
                 /* write into the flight plan */
                 radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().SetRoute(newRoute.c_str());
+                radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().AmendFlightPlan();
             }
 
             /* update the initial clearance limit */

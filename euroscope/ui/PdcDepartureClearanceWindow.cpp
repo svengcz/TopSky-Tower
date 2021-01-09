@@ -33,7 +33,7 @@ private:
 public:
     ClearanceButton(RadarScreen* parent, PdcDepartureClearanceWindow* window, bool cancle,
                     const Gdiplus::RectF& dimension) :
-            Button(parent, (true == cancle ? "CANCLE" : "SEND"), dimension),
+            Button(parent, (true == cancle ? "CANCEL" : "SEND"), dimension),
             m_window(window),
             m_cancleButton(cancle) { }
 };

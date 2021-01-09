@@ -29,12 +29,18 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
     }
 
     /* validate the input flight plan */
-    if (0 == flight.flightPlan().destination().length())
+    if (0 == flight.flightPlan().destination().length()) {
+        this->removeFlight(flight.callsign());
         return false;
-    if (0 == flight.flightPlan().departureRoute().length())
+    }
+    if (0 == flight.flightPlan().departureRoute().length()) {
+        this->removeFlight(flight.callsign());
         return false;
-    if (types::FlightPlan::Type::Unknown == flight.flightPlan().type())
+    }
+    if (types::FlightPlan::Type::Unknown == flight.flightPlan().type()) {
+        this->removeFlight(flight.callsign());
         return false;
+    }
 
     auto it = this->m_flightChecks.find(flight.callsign());
 
