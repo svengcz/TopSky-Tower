@@ -633,8 +633,8 @@ void SectorControl::updateFlight(const types::Flight& flight) {
     }
     /* check if we have to remove the handoff information */
     else if (this->m_handoffs.end() != it && true == it->second.handoffPerformed) {
-        /* find the current online controller */
-        auto currentNode = this->findOnlineResponsible(flight, flight.currentPosition(), false);
+        /* find the current online controller but ignore the clearance flag to avoid too early deletions, if Delivery is online */
+        auto currentNode = this->findOnlineResponsible(flight, flight.currentPosition(), ignoreClearanceFlag);
 
         /* check if an other controller is responsible */
         if (currentNode != this->m_ownSector && false == flight.isTracked())
