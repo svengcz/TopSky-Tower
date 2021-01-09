@@ -88,53 +88,14 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
                 break;
             }
         }
-        else if ("MTCA_DepartureLightV2" == entry[0]) {
-            config.departureSpeedV2[static_cast<int>(types::Aircraft::WTC::Light)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        else if ("MTCA_DepartureSpeedV2" == entry[0]) {
+            SettingsFileFormat::parseDepartureModelParameters(entry[1], config.departureSpeedV2, types::knot);
         }
-        else if ("MTCA_DepartureMediumV2" == entry[0]) {
-            config.departureSpeedV2[static_cast<int>(types::Aircraft::WTC::Medium)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        else if ("MTCA_DepartureCruiseSpeed" == entry[0]) {
+            SettingsFileFormat::parseDepartureModelParameters(entry[1], config.departureCruiseTAS, types::knot);
         }
-        else if ("MTCA_DepartureHeavyV2" == entry[0]) {
-            config.departureSpeedV2[static_cast<int>(types::Aircraft::WTC::Heavy)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
-        }
-        else if ("MTCA_DepartureSuperV2" == entry[0]) {
-            config.departureSpeedV2[static_cast<int>(types::Aircraft::WTC::Super)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
-        }
-        else if ("MTCA_DepartureLightCruiseSpeed" == entry[0]) {
-            config.departureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Light)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
-        }
-        else if ("MTCA_DepartureMediumCruiseSpeed" == entry[0]) {
-            config.departureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Medium)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
-        }
-        else if ("MTCA_DepartureHeavyCruiseSpeed" == entry[0]) {
-            config.departureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Heavy)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
-        }
-        else if ("MTCA_DepartureSuperCruiseSpeed" == entry[0]) {
-            config.departureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Super)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
-        }
-        else if ("MTCA_DepartureLightClimbRate" == entry[0]) {
-            config.departureClimbRates[static_cast<int>(types::Aircraft::WTC::Light)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * (types::feet / types::minute);
-        }
-        else if ("MTCA_DepartureMediumClimbRate" == entry[0]) {
-            config.departureClimbRates[static_cast<int>(types::Aircraft::WTC::Medium)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * (types::feet / types::minute);
-        }
-        else if ("MTCA_DepartureHeavyClimbRate" == entry[0]) {
-            config.departureClimbRates[static_cast<int>(types::Aircraft::WTC::Heavy)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * (types::feet / types::minute);
-        }
-        else if ("MTCA_DepartureSuperClimbRate" == entry[0]) {
-            config.departureClimbRates[static_cast<int>(types::Aircraft::WTC::Super)] =
-                static_cast<float>(std::atoi(entry[1].c_str())) * (types::feet / types::minute);
+        else if ("MTCA_DepartureClimbRate" == entry[0]) {
+            SettingsFileFormat::parseDepartureModelParameters(entry[1], config.departureClimbRates, types::feet / types::minute);
         }
         else if ("MTCA_DepartureAccelerationAlt" == entry[0]) {
             config.departureAccelerationAlt = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
@@ -144,8 +105,7 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
                 static_cast<float>(std::atof(entry[1].c_str())) * (types::metre / (types::second * types::second));
         }
         else if ("MTCA_DepartureSpeedBelowFL100" == entry[0]) {
-            config.departureSpeedBelowFL100 =
-                static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+            config.departureSpeedBelowFL100 = static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
         }
     }
 

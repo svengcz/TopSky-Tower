@@ -65,6 +65,18 @@ namespace topskytower {
             std::string m_filename;
 
             static void parseColor(const std::string& block, std::uint8_t color[3]);
+            template <typename T>
+            static void parseDepartureModelParameters(const std::string& block, T parameters[5], const T& unit) {
+                auto split = helper::String::splitString(block, ",");
+                /* all WTC categories need values */
+                if (4 != split.size())
+                    return;
+
+                parameters[static_cast<int>(types::Aircraft::WTC::Light)] = static_cast<float>(std::atof(split[0].c_str())) * unit;
+                parameters[static_cast<int>(types::Aircraft::WTC::Medium)] = static_cast<float>(std::atof(split[1].c_str())) * unit;
+                parameters[static_cast<int>(types::Aircraft::WTC::Heavy)] = static_cast<float>(std::atof(split[2].c_str())) * unit;
+                parameters[static_cast<int>(types::Aircraft::WTC::Super)] = static_cast<float>(std::atof(split[3].c_str())) * unit;
+            }
 
         public:
             /**
