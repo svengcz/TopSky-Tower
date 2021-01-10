@@ -239,6 +239,8 @@ bool PlugIn::summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanCo
 }
 
 RadarScreen* PlugIn::findScreenAndFlight(const std::string& callsign, types::Flight& flight) const {
+    std::list<RadarScreen*> candidates;
+
     /* test which screen is relevant */
     for (const auto& screen : std::as_const(this->m_screens)) {
         if (true == screen->flightRegistry().flightExists(callsign)) {
@@ -247,11 +249,23 @@ RadarScreen* PlugIn::findScreenAndFlight(const std::string& callsign, types::Fli
                 flight = screen->flightRegistry().flight(callsign);
 
             if (true == screen->isInitialized() && true == screen->sectorControl().isInSector(flight))
-                return screen;
+                candidates.push_back(screen);
         }
     }
 
-    return nullptr;
+    /* use the newest screen, if we have more than one candidate */
+    if (1 <= candidates.size()) {
+        candidates.sort([](RadarScreen* screen0, RadarScreen* screen1) {
+            return screen0->lastRenderingTime() > screen1->lastRenderingTime();
+        });
+
+        flight = candidates.front()->flightRegistry().flight(callsign);
+        RadarScreen* retval = candidates.front();
+        return retval;
+    }
+    else {
+        return nullptr;
+    }
 }
 
 void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlugIn::CRadarTarget radarTarget,
