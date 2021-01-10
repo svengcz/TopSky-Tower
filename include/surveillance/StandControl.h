@@ -34,7 +34,7 @@ namespace topskytower {
                     return stands.size();
                 }
                 inline float kdtree_get_pt(const std::size_t idx, const std::size_t dimension) const {
-                    auto it = stands.cbegin();
+                    auto it = this->stands.cbegin();
                     std::advance(it, idx);
                     return it->second.cartesianPosition[dimension];
                 }
