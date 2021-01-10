@@ -145,10 +145,10 @@ void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan
 }
 
 void RadarScreen::initialize() {
-    if (0 == this->m_airport.length())
+    if (true == this->m_initialized)
         return;
 
-    if (true == this->m_initialized)
+    if (0 == this->m_airport.length())
         return;
 
     auto sctFilename = this->GetPlugIn()->ControllerMyself().GetSectorFileName();
