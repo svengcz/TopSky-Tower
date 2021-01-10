@@ -1,6 +1,6 @@
 /*
  * @brief Defines the base for all other configuration files in the EuroScope format
- * @file configuration/EseFileFormat.h
+ * @file formats/EseFileFormat.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 

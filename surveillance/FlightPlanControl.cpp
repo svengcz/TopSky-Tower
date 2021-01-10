@@ -2,7 +2,7 @@
  * Author:
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
- *   Implements the sector control system
+ *   Implements the flight plan check system
  */
 
 #include <algorithm>

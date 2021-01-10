@@ -1,6 +1,6 @@
 /*
  * @brief Defines the system file format
- * @file configuration/SystemConfiguration.h
+ * @file formats/SettingsFileFormat.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 

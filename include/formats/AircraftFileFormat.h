@@ -1,6 +1,6 @@
 /*
  * @brief Defines the aircraft file format
- * @file configuration/AircraftFileFormat.h
+ * @file formats/AircraftFileFormat.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 
