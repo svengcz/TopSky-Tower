@@ -155,8 +155,16 @@ void EseFileFormat::parseSectors(const std::vector<std::string>& positions, cons
 
         auto elements = helper::String::splitString(line, ":");
 
-        types::Sector sector(std::move(elements[3]), std::move(elements[5]), std::move(elements[4]),
-                             std::move(elements[6]), std::move(elements[2]));
+        types::Sector sector;
+
+        /* found a position with a center */
+        if (13 == elements.size())
+            sector = std::move(types::Sector(std::move(elements[3]), std::move(elements[5]), std::move(elements[4]),
+                                             std::move(elements[6]), std::move(elements[2]), elements[11], elements[12]));
+        else
+            sector = std::move(types::Sector(std::move(elements[3]), std::move(elements[5]), std::move(elements[4]),
+                                             std::move(elements[6]), std::move(elements[2])));
+
         /* found an invalid sector */
         if (types::Sector::Type::Undefined == sector.type())
             continue;
