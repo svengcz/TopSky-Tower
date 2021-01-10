@@ -1,6 +1,6 @@
 /*
  * @brief Defines a controller information
- * @file types/Position.h
+ * @file types/ControllerInfo.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 
