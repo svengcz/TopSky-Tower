@@ -7,6 +7,7 @@
 
 #include <types/ControllerInfo.h>
 
+using namespace topskytower;
 using namespace topskytower::types;
 
 ControllerInfo::ControllerInfo() :
@@ -15,7 +16,8 @@ ControllerInfo::ControllerInfo() :
         m_midfix(),
         m_suffix(),
         m_primaryFrequency(),
-        m_controllerName() { }
+        m_controllerName(),
+        m_center() { }
 
 ControllerInfo::ControllerInfo(const std::string& identifier, const std::string& prefix, const std::string& midfix,
                                const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName) :
@@ -24,7 +26,19 @@ ControllerInfo::ControllerInfo(const std::string& identifier, const std::string&
         m_midfix(midfix),
         m_suffix(suffix),
         m_primaryFrequency(primaryFrequency),
-        m_controllerName(fullName) { }
+        m_controllerName(fullName),
+        m_center() { }
+
+ControllerInfo::ControllerInfo(const std::string& identifier, const std::string& prefix, const std::string& midfix,
+                               const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName,
+                               const std::string& latitude, const std::string& longitude) :
+        m_identifier(identifier),
+        m_prefix(prefix),
+        m_midfix(midfix),
+        m_suffix(suffix),
+        m_primaryFrequency(primaryFrequency),
+        m_controllerName(fullName),
+        m_center(longitude, latitude) { }
 
 const std::string& ControllerInfo::identifier() const {
     return this->m_identifier;
@@ -48,4 +62,8 @@ const std::string& ControllerInfo::primaryFrequency() const {
 
 const std::string& ControllerInfo::controllerName() const {
     return this->m_controllerName;
+}
+
+const types::Coordinate& ControllerInfo::centerPoint() const {
+    return this->m_center;
 }

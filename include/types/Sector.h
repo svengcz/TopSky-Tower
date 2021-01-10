@@ -40,6 +40,8 @@ namespace topskytower {
             Type                    m_type;
             std::list<SectorBorder> m_borders;
 
+            void parseSectorType();
+
         public:
             /**
              * @brief Creates an unintialized sector
@@ -55,6 +57,19 @@ namespace topskytower {
              */
             Sector(std::string&& identifier, std::string&& prefix, std::string&& midfix,
                    std::string&& suffix, std::string&& frequency);
+            /**
+             * @brief Creates a new sector
+             * @param[in] identifier The controller's identifier
+             * @param[in] prefix The controller's prefix
+             * @param[in] midfix The controller's midfix
+             * @param[in] suffix The controller's suffix
+             * @param[in] frequency The controller's frequency
+             * @param[in] latitude The sector's latitude of the center point
+             * @param[in] longitude The sector's longitude of the center point
+             */
+            Sector(std::string&& identifier, std::string&& prefix, std::string&& midfix,
+                   std::string&& suffix, std::string&& frequency, const std::string& latitude,
+                   const std::string& longitude);
             /**
              * @brief Moves one sector into the other
              * @param[in] other The source sector

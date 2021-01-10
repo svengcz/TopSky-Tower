@@ -16,11 +16,7 @@ Sector::Sector() :
         m_type(Type::Undefined),
         m_borders() { }
 
-Sector::Sector(std::string&& identifier, std::string&& prefix, std::string&& midfix,
-               std::string&& suffix, std::string&& frequency) :
-        m_info(identifier, prefix, midfix, suffix, frequency, ""),
-        m_type(Type::Undefined),
-        m_borders() {
+void Sector::parseSectorType() {
     if ("DEL" == this->m_info.suffix())
         this->m_type = Type::Delivery;
     else if ("GND" == this->m_info.suffix())
@@ -39,6 +35,23 @@ Sector::Sector(std::string&& identifier, std::string&& prefix, std::string&& mid
         this->m_type = Type::FlightService;
     else
         throw helper::Exception("Sector", "Unknown station suffix (" + this->m_info.suffix() + ") for " + this->m_info.identifier());
+}
+
+Sector::Sector(std::string&& identifier, std::string&& prefix, std::string&& midfix,
+               std::string&& suffix, std::string&& frequency) :
+        m_info(identifier, prefix, midfix, suffix, frequency, ""),
+        m_type(Type::Undefined),
+        m_borders() {
+    this->parseSectorType();
+}
+
+Sector::Sector(std::string&& identifier, std::string&& prefix, std::string&& midfix,
+               std::string&& suffix, std::string&& frequency, const std::string& latitude,
+               const std::string& longitude) :
+        m_info(identifier, prefix, midfix, suffix, frequency, "", latitude, longitude),
+        m_type(Type::Undefined),
+        m_borders() {
+    this->parseSectorType();
 }
 
 Sector::Sector(const Sector& other) noexcept :

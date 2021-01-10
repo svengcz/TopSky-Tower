@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <types/Position.h>
+#include <types/Coordinate.h>
 
 namespace topskytower {
     namespace types {
@@ -16,12 +16,13 @@ namespace topskytower {
          */
         class ControllerInfo {
         private:
-            std::string m_identifier;
-            std::string m_prefix;
-            std::string m_midfix;
-            std::string m_suffix;
-            std::string m_primaryFrequency;
-            std::string m_controllerName;
+            std::string       m_identifier;
+            std::string       m_prefix;
+            std::string       m_midfix;
+            std::string       m_suffix;
+            std::string       m_primaryFrequency;
+            std::string       m_controllerName;
+            types::Coordinate m_center;
 
         public:
             /**
@@ -39,6 +40,20 @@ namespace topskytower {
              */
             ControllerInfo(const std::string& identifier, const std::string& prefix, const std::string& midfix,
                            const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName);
+            /**
+             * @brief Creates a controller information
+             * @param[in] identifier The controller's identifier
+             * @param[in] prefix The controller's callsign prefix
+             * @param[in] midfix The controller's callsign midfix
+             * @param[in] suffix The controller's callsign suffix
+             * @param[in] primaryFrequency The controller's primary frequency
+             * @param[in] fullName The controller's full name
+             * @param[in] latitude The sector's latitude of the center point
+             * @param[in] longitude The sector's longitude of the center point
+             */
+            ControllerInfo(const std::string& identifier, const std::string& prefix, const std::string& midfix,
+                           const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName,
+                           const std::string& latitude, const std::string& longitude);
 
             /**
              * @brief Returns the identifier
@@ -70,6 +85,11 @@ namespace topskytower {
              * @return The controller's full name
              */
             const std::string& controllerName() const;
+            /**
+             * @brief Returns the center point of the sector
+             * @return The sector's center point
+             */
+            const types::Coordinate& centerPoint() const;
         };
     }
 }
