@@ -77,6 +77,26 @@ namespace topskytower {
         };
 
         /**
+         * @brief Defines the ILS category
+         */
+        enum class ILSCategory {
+            Unknown = 0, /**< The ILS category is unknonw */
+            CAT1    = 1, /**< Describes CAT1 */
+            CAT2    = 2, /**< Describes CAT2 */
+            CAT3    = 3  /**< Describes CAT3 */
+        };
+
+        /**
+         * @brief Defines a holding point to enter a runway
+         */
+        struct HoldingPoint {
+            std::string       runway;       /**< Defines the active runway for this holding point */
+            ILSCategory       category;     /**< Defines the ILS category of the holding point */
+            types::Coordinate holdingPoint; /**< Defines the center position of the holding point */
+            types::Angle      heading;      /**< Defines the heading to the runway */
+        };
+
+        /**
          * @brief Describes a airport configuration
          * @ingroup types
          */
@@ -86,6 +106,7 @@ namespace topskytower {
             std::list<DestinationConstraint>                   destinationConstraints; /**< The constraints of specific destinations */
             std::list<Stand>                                   aircraftStands;         /**< The list of all available aircraft stands */
             std::list<AirlineStandAssignments>                 airlines;               /**< The airline to stand assignments */
+            std::list<HoldingPoint>                            holdingPoints;          /**< The holding points of the airport */
 
             /**
              * @brief Creates an empty and unintialized airport configuration

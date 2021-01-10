@@ -23,6 +23,7 @@ namespace topskytower {
          * - [DEPARTURES] Defines all SIDs and the destination constraints
          * - [STANDS] Defines all stands with generic constraint definitions
          * - [PRIORITIES] Defines the airline to stand assignment priorities
+         * - [TAXIWAYS] Defines all taxiway configuration components
          *
          * The departures-block contains two different entries.
          * The first entry is the definition of the SID.
@@ -216,6 +217,49 @@ namespace topskytower {
          *     <td></td><td>Stand names</td>
          *   </tr>
          * </table>
+         *
+         * The taxiways block defines the taxiway structure of the airport.
+         * It is used to configure the safety net functions for the ground
+         * @code{.xml}
+         * HOLD:ILSCAT:RUNWAY:HOLDINGPOINT_LAT:HOLDINGPOINT_LON:RUNWAYDIRECTION_LAT:RUNWAYDIRECTION_LON
+         * @endcode
+         *
+         * <table>
+         *   <caption id="multi_row">Setting entries</caption>
+         *   <tr>
+         *     <th>Name</th><th>Description</th><th>Default value</th><th>Unit</th>
+         *   </tr>
+         *   <tr>
+         *     <td>ILSCAT</td>
+         *     <td>The ILS category that activates the holding point</td>
+         *     <td></td><td>1, 2, 3</td>
+         *   </tr>
+         *   <tr>
+         *     <td>RUNWAY</td>
+         *     <td>The runway's name that activates the holding point</td>
+         *     <td></td><td></td>
+         *   </tr>
+         *   <tr>
+         *     <td>HOLDINGPOINT_LAT</td>
+         *     <td>The latitude coordinate  of the holding point's center position</td>
+         *     <td></td><td>ES-formatted coordinate string</td>
+         *   </tr>
+         *   <tr>
+         *     <td>HOLDINGPOINT_LON</td>
+         *     <td>The longitude coordinate of the holding point's center position</td>
+         *     <td></td><td>ES-formatted coordinate string</td>
+         *   </tr>
+         *   <tr>
+         *     <td>RUNWAYDIRECTION_LAT</td>
+         *     <td>The latitude coordinate of the next point close to the runway to describe the heading of the taxiway</td>
+         *     <td></td><td>ES-formatted coordinate string</td>
+         *   </tr>
+         *   <tr>
+         *     <td>RUNWAYDIRECTION_LON</td>
+         *     <td>The longitude coordinate of the next point close to the runway to describe the heading of the taxiway</td>
+         *     <td></td><td>ES-formatted coordinate string</td>
+         *   </tr>
+         * </table>
          */
         class AirportFileFormat {
         private:
@@ -233,6 +277,8 @@ namespace topskytower {
             bool parseStands(const std::vector<std::string>& lines);
             static bool parsePriorities(const std::vector<std::string>& elements, types::StandPriorities& priorities);
             bool parsePriorities(const std::vector<std::string>& lines);
+            static bool parseHoldingPoint(const std::vector<std::string>& elements, types::HoldingPoint& holdingPoint);
+            bool parseTaxiways(const std::vector<std::string>& lines);
 
         public:
             /**
