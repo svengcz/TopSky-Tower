@@ -65,8 +65,9 @@ namespace topskytower {
             /**
              * @brief Creates a new stand control based on the current configuration
              * @param[in] airport The airport's ICAO code
+             * @param[in] center The airport's center
              */
-            StandControl(const std::string& airport);
+            StandControl(const std::string& airport, const types::Coordinate& center);
             /**
              * @brief Deletes all internal structures
              */

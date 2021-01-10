@@ -163,9 +163,18 @@ void RadarScreen::initialize() {
             delete this->m_sectorControl;
         this->m_sectorControl = new surveillance::SectorControl(this->m_airport, file.sectors());
 
+        /* find the center of the airport */
+        types::Coordinate center;
+        for (const auto& sector : std::as_const(file.sectors())) {
+            if (sector.controllerInfo().prefix() == this->m_airport) {
+                center = sector.controllerInfo().centerPoint();
+                break;
+            }
+        }
+
         if (nullptr != this->m_standControl)
             delete this->m_standControl;
-        this->m_standControl = new surveillance::StandControl(this->m_airport);
+        this->m_standControl = new surveillance::StandControl(this->m_airport, center);
 
         this->m_initialized = true;
     }

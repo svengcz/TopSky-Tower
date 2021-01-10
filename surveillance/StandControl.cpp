@@ -17,12 +17,12 @@ using namespace topskytower;
 using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
-StandControl::StandControl(const std::string& airport) :
+StandControl::StandControl(const std::string& airport, const types::Coordinate& center) :
         m_airportIcao(airport),
         m_standTree(),
         m_standTreeAdaptor(nullptr),
         m_aircraftStandRelation(),
-        m_centerPosition() {
+        m_centerPosition(center) {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &StandControl::reinitialize);
 
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
@@ -73,28 +73,20 @@ void StandControl::reinitialize(system::ConfigurationRegistry::UpdateType type) 
     if (false == config.valid || 0 == config.aircraftStands.size())
         return;
 
-    /* copy the stand data into */
-    float avgLongitude = 0.0f, avgLatitude = 0.0f;
+    /* copy the stand data into the new structure and convert the coordinate to Cartesian coordinates */
+    GeographicLib::Gnomonic projection(GeographicLib::Geodesic::WGS84());
     for (const auto& stand : std::as_const(config.aircraftStands)) {
         StandData data;
         StandControl::copyStandData(stand, data);
 
-        avgLongitude += stand.position.longitude().convert(types::degree);
-        avgLatitude += stand.position.latitude().convert(types::degree);
+        projection.Forward(this->m_centerPosition.latitude().convert(types::degree),
+                           this->m_centerPosition.longitude().convert(types::degree),
+                           data.position.latitude().convert(types::degree),
+                           data.position.longitude().convert(types::degree),
+                           data.cartesianPosition[0],
+                           data.cartesianPosition[1]);
 
         this->m_standTree.stands[data.name] = data;
-    }
-
-    avgLongitude /= config.aircraftStands.size();
-    avgLatitude /= config.aircraftStands.size();
-    this->m_centerPosition = types::Coordinate(avgLongitude * types::degree, avgLatitude * types::degree);
-
-    /* convert to Cartesian coordinates */
-    GeographicLib::Gnomonic projection(GeographicLib::Geodesic::WGS84());
-    for (auto it = this->m_standTree.stands.begin(); this->m_standTree.stands.end() != it; ++it) {
-        projection.Forward(avgLatitude, avgLongitude, it->second.position.latitude().convert(types::degree),
-                           it->second.position.longitude().convert(types::degree), it->second.cartesianPosition[0],
-                           it->second.cartesianPosition[1]);
     }
 
 #pragma warning(disable: 4127)
