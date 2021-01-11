@@ -13,7 +13,7 @@
 namespace topskytower {
     namespace types {
         /**
-         * @brief Describes a controller information
+         * @brief Describes the system-wide configuration
          * @ingroup types
          */
         struct SystemConfiguration {
