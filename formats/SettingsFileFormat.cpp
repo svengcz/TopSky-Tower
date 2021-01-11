@@ -76,6 +76,9 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("SURV_ARIWS_DistanceDeadband" == entry[0]) {
             config.ariwsDistanceDeadband = static_cast<float>(std::atoi(entry[1].c_str())) * types::metre;
         }
+        else if ("SURV_ARIWS_MaxDistance" == entry[0]) {
+            config.ariwsMaximumDistance = static_cast<float>(std::atoi(entry[1].c_str())) * types::metre;
+        }
         else if ("SURV_MTCA_DepartureModelUnknown" == entry[0]) {
             switch (entry[1][0]) {
             case 'L':

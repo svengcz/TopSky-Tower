@@ -19,6 +19,7 @@ using namespace topskytower::system;
 
 ConfigurationRegistry::ConfigurationRegistry() :
         m_systemConfig(),
+        m_runtimeConfig(),
         m_airportConfigurations(),
         m_aircraftConfiguration(nullptr) { }
 
@@ -85,6 +86,14 @@ void ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
 
 const types::SystemConfiguration& ConfigurationRegistry::systemConfiguration() const {
     return this->m_systemConfig;
+}
+
+types::RuntimeConfiguration& ConfigurationRegistry::runtimeConfiguration() {
+    return this->m_runtimeConfig;
+}
+
+const types::RuntimeConfiguration& ConfigurationRegistry::runtimeConfiguration() const {
+    return this->m_runtimeConfig;
 }
 
 const types::AirportConfiguration& ConfigurationRegistry::airportConfiguration(const std::string& icao) const {

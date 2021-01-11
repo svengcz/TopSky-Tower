@@ -6,13 +6,17 @@
 #   Creates the surveillance library
 
 SET(HEADER_FILES
+    ${CMAKE_SOURCE_DIR}/include/surveillance/ARIWSControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/FlightPlanControl.h
+    ${CMAKE_SOURCE_DIR}/include/surveillance/MTCAControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/PdcControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/SectorControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/StandControl.h
 )
 SET(SOURCE_FILES
+    ARIWSControl.cpp
     FlightPlanControl.cpp
+    MTCAControl.cpp
     PdcControl.cpp
     SectorControl.cpp
     StandControl.cpp

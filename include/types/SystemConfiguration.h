@@ -34,6 +34,7 @@ namespace topskytower {
             types::Velocity     departureClimbRates[5];   /**< Defines the climb rates for all WTCs */
             bool                ariwsActive;              /**< Defines if ARIWS is active or not */
             types::Length       ariwsDistanceDeadband;    /**< Defines the distance in which the RIW is suppressed around the holding point */
+            types::Length       ariwsMaximumDistance;     /**< Defines the maximum distance to check if the flight is on the runway */
 
             /**
              * @brief Creates an empty and uninitialized system configuration
@@ -55,7 +56,8 @@ namespace topskytower {
                     departureCruiseTAS{ 270_kn, 120_kn, 270_kn, 290_kn, 290_kn },
                     departureClimbRates{ 2000_ftpmin, 1000_ftpmin, 2000_ftpmin, 2000_ftpmin, 2000_ftpmin },
                     ariwsActive(true),
-                    ariwsDistanceDeadband(50_m) { }
+                    ariwsDistanceDeadband(50_m),
+                    ariwsMaximumDistance(100_m) { }
         };
     }
 }

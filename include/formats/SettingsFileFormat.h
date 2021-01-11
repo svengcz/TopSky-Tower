@@ -69,6 +69,11 @@ namespace topskytower {
          *     <td>50</td><td>Metres</td>
          *   </tr>
          *   <tr>
+         *     <td>SURV_ARIWS_MaxDistance</td>
+         *     <td>Defines the maximum distance between the flight and the holding point to check if RIW is valid.</td>
+         *     <td>50</td><td>Metres</td>
+         *   </tr>
+         *   <tr>
          *     <td>SURV_MTCA_DepartureModelUnknown</td>
          *     <td>Defines which model is used if the WTC category of a flight is unknown.</td>
          *     <td>M</td><td>WTC</td>

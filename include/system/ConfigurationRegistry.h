@@ -11,6 +11,7 @@
 
 #include <formats/AircraftFileFormat.h>
 #include <formats/AirportFileFormat.h>
+#include <types/RuntimeConfiguration.h>
 #include <types/SystemConfiguration.h>
 
 namespace topskytower {
@@ -33,6 +34,7 @@ namespace topskytower {
 
         private:
             types::SystemConfiguration                         m_systemConfig;
+            types::RuntimeConfiguration                        m_runtimeConfig;
             std::map<std::string, formats::AirportFileFormat*> m_airportConfigurations;
             formats::AircraftFileFormat*                       m_aircraftConfiguration;
             std::map<void*, std::function<void(UpdateType)>>   m_notificationCallbacks;
@@ -63,6 +65,16 @@ namespace topskytower {
              * @return The constant reference to the system configuration
              */
             const types::SystemConfiguration& systemConfiguration() const;
+            /**
+             * @brief Returns the runtime configuration
+             * @return The reference to the runtime configuration
+             */
+            types::RuntimeConfiguration& runtimeConfiguration();
+            /**
+             * @brief Returns the runtime configuration
+             * @return The constant reference to the runtime configuration
+             */
+            const types::RuntimeConfiguration& runtimeConfiguration() const;
             /**
              * @brief Returns an airport configuration
              * @param[in] icao The airport's ICAO code

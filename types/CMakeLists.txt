@@ -15,6 +15,7 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/types/Position.h
     ${CMAKE_SOURCE_DIR}/include/types/Quantity.hpp
     ${CMAKE_SOURCE_DIR}/include/types/Route.h
+    ${CMAKE_SOURCE_DIR}/include/types/RuntimeConfiguration.h
     ${CMAKE_SOURCE_DIR}/include/types/Sector.h
     ${CMAKE_SOURCE_DIR}/include/types/SectorBorder.h
     ${CMAKE_SOURCE_DIR}/include/types/SystemConfiguration.h
