@@ -70,7 +70,13 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("SYS_DistanceStandAssignment" == entry[0]) {
             config.standAssociationDistance = static_cast<float>(std::atoi(entry[1].c_str())) * types::nauticmile;
         }
-        else if ("MTCA_DepartureModelUnknown" == entry[0]) {
+        else if ("SURV_ARIWS_Active" == entry[0]) {
+            config.ariwsActive = '0' != entry[1][0];
+        }
+        else if ("SURV_ARIWS_DistanceDeadband" == entry[0]) {
+            config.ariwsDistanceDeadband = static_cast<float>(std::atoi(entry[1].c_str())) * types::metre;
+        }
+        else if ("SURV_MTCA_DepartureModelUnknown" == entry[0]) {
             switch (entry[1][0]) {
             case 'L':
                 defaultWtc = types::Aircraft::WTC::Light;
