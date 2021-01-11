@@ -85,6 +85,17 @@ static __inline types::Aircraft __translate(const std::string& code, char wtc) {
     return retval;
 }
 
+static __inline void __convertEuroScopeAtcStatus(const std::string_view& sts, types::FlightPlan& plan) {
+    if ("ST-UP" == sts)
+        plan.setFlag(types::FlightPlan::AtcCommand::StartUp);
+    else if ("PUSH" == sts)
+        plan.setFlag(types::FlightPlan::AtcCommand::Pushback);
+    else if ("TAXI" == sts)
+        plan.setFlag(types::FlightPlan::AtcCommand::TaxiOut);
+    else if ("DEPA" == sts)
+        plan.setFlag(types::FlightPlan::AtcCommand::Departure);
+}
+
 types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     types::FlightPlan retval;
 
@@ -160,6 +171,32 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     retval.setArrivalRoute(plan.GetFlightPlanData().GetStarName());
     retval.setClearanceLimit(static_cast<float>(plan.GetControllerAssignedData().GetClearedAltitude()) * types::feet);
     retval.setClearanceFlag(plan.GetClearenceFlag());
+
+    /* get the ground status and check if this or an other TopSky-Tower set something */
+    std::string annotation(plan.GetControllerAssignedData().GetFlightStripAnnotation(4));
+    auto split = helper::String::splitString(annotation, "/");
+    if (3 == split.size() && 'a' == split[0][0] && 'a' == split[2][0]) {
+        int mask = std::atoi(split[1].c_str());
+        std::uint8_t departure = (static_cast<std::uint8_t>(mask & 0x0f));
+        std::uint8_t arrival = (static_cast<std::uint8_t>(mask & 0xf0));
+
+        /* validate the values to avoid buffer overruns */
+        if (departure > static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Departure)) {
+            __convertEuroScopeAtcStatus(plan.GetGroundState(), retval);
+        }
+        else if (arrival > static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::TaxiIn)) {
+            __convertEuroScopeAtcStatus(plan.GetGroundState(), retval);
+        }
+        else {
+            retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
+            if (0 != arrival)
+                retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
+        }
+    }
+    /* use the native ES flags */
+    else {
+        __convertEuroScopeAtcStatus(plan.GetGroundState(), retval);
+    }
 
     /* convert the route */
     std::vector<types::Waypoint> waypoints;

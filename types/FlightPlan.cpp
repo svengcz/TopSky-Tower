@@ -13,6 +13,7 @@ using namespace topskytower::types;
 FlightPlan::FlightPlan() :
         m_type(FlightPlan::Type::Unknown),
         m_aircraft(),
+        m_atcCommand(),
         m_origin(),
         m_departureRoute(),
         m_departureRunway(),
@@ -145,4 +146,27 @@ void FlightPlan::setArrivalRunway(const std::string& runway) {
 
 const std::string& FlightPlan::arrivalRunway() const {
     return this->m_arrivalRunway;
+}
+
+void FlightPlan::setFlag(FlightPlan::AtcCommand command) {
+    std::uint8_t mask = static_cast<std::uint8_t>(command);
+
+    /* arrival-command given */
+    if (0 != (mask & 0xf0)) {
+        this->m_atcCommand &= 0x0f;
+        this->m_atcCommand |= mask;
+    }
+    /* departure-command given */
+    else {
+        this->m_atcCommand &= 0xf0;
+        this->m_atcCommand |= mask;
+    }
+}
+
+FlightPlan::AtcCommand FlightPlan::departureFlag() const {
+    return static_cast<FlightPlan::AtcCommand>(this->m_atcCommand & 0x0f);
+}
+
+FlightPlan::AtcCommand FlightPlan::arrivalFlag() const {
+    return static_cast<FlightPlan::AtcCommand>(this->m_atcCommand & 0xf0);
 }

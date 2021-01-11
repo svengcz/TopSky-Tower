@@ -83,11 +83,15 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("SID step climb indicator", static_cast<int>(PlugIn::TagItemElement::SIDStepClimbIndicator));
     this->RegisterTagItemType("Flight plan check", static_cast<int>(PlugIn::TagItemElement::FlighPlanCheck));
     this->RegisterTagItemType("Assigned stand", static_cast<int>(PlugIn::TagItemElement::AircraftStand));
+    this->RegisterTagItemType("Departure Ground status", static_cast<int>(PlugIn::TagItemElement::DepartureGroundStatus));
+    this->RegisterTagItemType("Arrival Ground status", static_cast<int>(PlugIn::TagItemElement::ArrivalGroundStatus));
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
     this->RegisterTagItemFunction("FP check menu", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckMenu));
     this->RegisterTagItemFunction("Stand menu", static_cast<int>(PlugIn::TagItemFunction::StandControlMenu));
+    this->RegisterTagItemFunction("Departure Ground status menu", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusMenu));
+    this->RegisterTagItemFunction("Arrival Ground status menu", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusMenu));
 
     /* search for the sound file and register the PDC sound callback */
     for (auto& entry : fs::recursive_directory_iterator(path)) {
@@ -458,6 +462,50 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         }
         break;
     }
+    case PlugIn::TagItemElement::DepartureGroundStatus:
+        *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
+        switch (flight.flightPlan().departureFlag()) {
+        case types::FlightPlan::AtcCommand::StartUp:
+            std::strcpy(itemString, "ST-UP");
+            break;
+        case types::FlightPlan::AtcCommand::Deicing:
+            std::strcpy(itemString, "DEICE");
+            break;
+        case types::FlightPlan::AtcCommand::Pushback:
+            std::strcpy(itemString, "PUSH");
+            break;
+        case types::FlightPlan::AtcCommand::TaxiOut:
+            std::strcpy(itemString, "TAXI");
+            break;
+        case types::FlightPlan::AtcCommand::LineUp:
+            std::strcpy(itemString, "LI-UP");
+            break;
+        case types::FlightPlan::AtcCommand::Departure:
+            std::strcpy(itemString, "DEPA");
+            break;
+        default:
+            break;
+        }
+        break;
+    case PlugIn::TagItemElement::ArrivalGroundStatus:
+        *colorCode = EuroScopePlugIn::TAG_COLOR_DEFAULT;
+        switch (flight.flightPlan().arrivalFlag()) {
+        case types::FlightPlan::AtcCommand::Approach:
+            std::strcpy(itemString, "APPR");
+            break;
+        case types::FlightPlan::AtcCommand::Land:
+            std::strcpy(itemString, "LAND");
+            break;
+        case types::FlightPlan::AtcCommand::TaxiIn:
+            std::strcpy(itemString, "TAXI");
+            break;
+        case types::FlightPlan::AtcCommand::GoAround:
+            std::strcpy(itemString, "GO-AR");
+            break;
+        default:
+            break;
+        }
+        break;
     default:
         break;
     }
@@ -589,6 +637,65 @@ std::string PlugIn::flightPlanCheckResultLog(const std::list<surveillance::Fligh
     }
 
     return retval;
+}
+
+void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
+                                const types::Flight& flight, bool arrival) {
+    std::uint8_t mask;
+
+    if (false == arrival) {
+        mask = static_cast<std::uint8_t>(flight.flightPlan().arrivalFlag());
+
+        if ("ST-UP" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::StartUp);
+            target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("ST-UP");
+        }
+        else if ("PUSH" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Pushback);
+            target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("PUSH");
+        }
+        else if ("TAXI" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::TaxiOut);
+            target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("TAXI");
+        }
+        else if ("DEICE" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Deicing);
+        }
+        else if ("LI-UP" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::LineUp);
+        }
+        else if ("DEPA" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Departure);
+            target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("DEPA");
+        }
+    }
+    else {
+        mask = static_cast<std::uint8_t>(flight.flightPlan().departureFlag());
+
+        if ("APPR" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Approach);
+            if (true == flight.onMissedApproach())
+                PlugIn::updateManuallyAlerts(target, "MISAP_");
+        }
+        else if ("LAND" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Land);
+            if (true == flight.onMissedApproach())
+                PlugIn::updateManuallyAlerts(target, "MISAP_");
+        }
+        else if ("TAXI" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::TaxiIn);
+            if (true == flight.onMissedApproach())
+                PlugIn::updateManuallyAlerts(target, "MISAP_");
+        }
+        else if ("GO-AR" == view) {
+            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::GoAround);
+            if (false == flight.onMissedApproach())
+                PlugIn::updateManuallyAlerts(target, "MISAP_");
+        }
+    }
+
+    std::string annotation = "a/" + std::to_string(mask) + "/a";
+    target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(4, annotation.c_str());
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
@@ -944,6 +1051,30 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         flightScreen->standControl().assignManually(flight, itemString);
         if (0 != std::strlen(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6)))
             radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, "");
+        break;
+    case PlugIn::TagItemFunction::DepartureGroundStatusMenu:
+        this->OpenPopupList(area, "Status", 1);
+        this->AddPopupListElement("ST-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+        this->AddPopupListElement("DEICE", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+        this->AddPopupListElement("PUSH", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+        this->AddPopupListElement("TAXI", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+        this->AddPopupListElement("LI-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+        this->AddPopupListElement("DEPA", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+        break;
+    case PlugIn::TagItemFunction::DepartureGroundStatusSelect:
+        PlugIn::updateGroundStatus(radarTarget, itemString, flight, false);
+        flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
+        break;
+    case PlugIn::TagItemFunction::ArrivalGroundStatusMenu:
+        this->OpenPopupList(area, "Status", 1);
+        this->AddPopupListElement("APPR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
+        this->AddPopupListElement("LAND", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
+        this->AddPopupListElement("TAXI", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
+        this->AddPopupListElement("GO-AR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
+        break;
+    case PlugIn::TagItemFunction::ArrivalGroundStatusSelect:
+        PlugIn::updateGroundStatus(radarTarget, itemString, flight, true);
+        flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
         break;
     default:
         break;

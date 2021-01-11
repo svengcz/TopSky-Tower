@@ -54,6 +54,10 @@ namespace topskytower {
                 StandControlManualEvent             = 3021, /**< Triggers the stand selection event */
                 StandControlManual                  = 3022, /**< Opens the selection menu */
                 StandControlManualSelect            = 3023, /**< Selects the final stand */
+                DepartureGroundStatusMenu           = 3024, /**< Opens the departure ground status menu */
+                DepartureGroundStatusSelect         = 3025, /**< Sets the new status of the departure status */
+                ArrivalGroundStatusMenu             = 3026, /**< Opens the arrival ground status menu */
+                ArrivalGroundStatusSelect           = 3027, /**< Sets the new status of the arrival status */
                 UiElementIds                        = 4000, /**< Elements of the UI entries */
                 UiEditTextRequest                   = 4001, /**< Request an edit-field */
                 UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */
@@ -69,7 +73,9 @@ namespace topskytower {
                 PdcIndicator          = 2006,
                 SIDStepClimbIndicator = 2007,
                 FlighPlanCheck        = 2008,
-                AircraftStand         = 2009
+                AircraftStand         = 2009,
+                DepartureGroundStatus = 2010,
+                ArrivalGroundStatus   = 2011
             };
 
             bool                                    m_errorMode;
@@ -88,6 +94,8 @@ namespace topskytower {
             static std::string flightPlanCheckResultLog(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes);
             void pdcMessageReceived();
             RadarScreen* findScreenAndFlight(const std::string& callsign, types::Flight& flight) const;
+            static void updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
+                                           const types::Flight& flight, bool arrival);
 
         public:
             /**
