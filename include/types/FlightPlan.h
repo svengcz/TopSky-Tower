@@ -34,7 +34,9 @@ namespace topskytower {
             types::Aircraft m_aircraft;
             std::string     m_origin;
             std::string     m_departureRoute;
+            std::string     m_departureRunway;
             std::string     m_destination;
+            std::string     m_arrivalRunway;
             types::Length   m_flightLevel;
             std::string     m_arrivalRoute;
             std::uint16_t   m_assignedSquawk;
@@ -180,6 +182,26 @@ namespace topskytower {
              * @return The route
              */
             const Route& route() const;
+            /**
+             * @brief Sets the new departure runway
+             * @param[in] runway The departure runway
+             */
+            void setDepartureRunway(const std::string& runway);
+            /**
+             * @brief Returns the departure runway
+             * @return The departure runway
+             */
+            const std::string& departureRunway() const;
+            /**
+             * @brief Sets the new arrival runway
+             * @param[in] runway The arrival runway
+             */
+            void setArrivalRunway(const std::string& runway);
+            /**
+             * @brief Returns the arrival runway
+             * @return The arrival runway
+             */
+            const std::string& arrivalRunway() const;
         };
     }
 }
