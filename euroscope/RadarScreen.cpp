@@ -226,31 +226,6 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     if (0 != positionId.length() && "XX" != positionId)
         this->m_sectorControl->setOwnSector(Converter::convert(plugin->ControllerMyself()));
 
-#if 0
-    /* example code to visualize the tracked routes */
-    if (true == this->flightRegistry().flightExists("EJU42XQ")) {
-        auto flight = this->flightRegistry().flight("EJU42XQ");
-
-        auto route = this->extractPredictedSID("EJU42XQ", flight.flightPlan().route().waypoints()[3].position());
-        if (0 != route.size()) {
-            Gdiplus::Pen pen(Gdiplus::Color(255, 0, 0), 3.0f);
-
-            for (std::size_t i = 0; i < route.size() - 1; ++i) {
-                EuroScopePlugIn::CPosition p0, p1;
-                p0.m_Latitude = route[i].latitude().convert(types::degree);
-                p0.m_Longitude = route[i].longitude().convert(types::degree);
-                p1.m_Latitude = route[i + 1].latitude().convert(types::degree);
-                p1.m_Longitude = route[i + 1].longitude().convert(types::degree);
-
-                auto pt0 = this->ConvertCoordFromPositionToPixel(p0);
-                auto pt1 = this->ConvertCoordFromPositionToPixel(p1);
-
-                graphics.DrawLine(&pen, Gdiplus::Point(pt0.x, pt0.y), Gdiplus::Point(pt1.x, pt1.y));
-            }
-        }
-    }
-#endif
-
     this->m_lastRenderingTime = std::chrono::system_clock::now();
 }
 
