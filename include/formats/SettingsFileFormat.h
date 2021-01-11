@@ -55,16 +55,26 @@ namespace topskytower {
          *   </tr>
          *   <tr>
          *     <td>SURV_FlightPlanCheckEvenOdd</td>
-         *     <td>Defines if the flight plan checker needs to check the destination independent even/odd-rule</td>
+         *     <td>Defines if the flight plan checker needs to check the destination independent even/odd-rule.</td>
          *     <td>1</td><td>Boolean</td>
          *   </tr>
          *   <tr>
-         *     <td>MTCA_DepartureModelUnknown</td>
+         *     <td>SURV_ARIWS_Active</td>
+         *     <td>Defines if ARIWS is active.</td>
+         *     <td>1</td><td>Boolean</td>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_ARIWS_DistanceDeadband</td>
+         *     <td>Defines the distance between the flight and the holding point in which the RIW is suppressed.</td>
+         *     <td>50</td><td>Metres</td>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_MTCA_DepartureModelUnknown</td>
          *     <td>Defines which model is used if the WTC category of a flight is unknown.</td>
          *     <td>M</td><td>WTC</td>
          *   </tr>
          *   <tr>
-         *     <td>MTCA_DepartureSpeedV2</td>
+         *     <td>SURV_MTCA_DepartureSpeedV2</td>
          *     <td>
          *       Defines the average V2 speeds of departing aircrafts based on WTC categories.
          *       The speeds for the categories are seperated by ',' and four values (L, M, H, J) are required.
@@ -72,7 +82,7 @@ namespace topskytower {
          *     <td>90, 160, 180, 190</td><td>Knot</td>
          *   </tr>
          *   <tr>
-         *     <td>MTCA_DepartureCruiseSpeed</td>
+         *     <td>SURV_MTCA_DepartureCruiseSpeed</td>
          *     <td>
          *       Defines the average cruise speeds of departing aircrafts based on WTC categories that are above FL100.
          *       The speeds for the categories are seperated by ',' and four values (L, M, H, J) are required.
@@ -80,7 +90,7 @@ namespace topskytower {
          *     <td>120, 270, 290, 290</td><td>Knot</td>
          *   </tr>
          *   <tr>
-         *     <td>MTCA_DepartureClimbRate</td>
+         *     <td>SURV_MTCA_DepartureClimbRate</td>
          *     <td>
          *       Defines the average climb rates of departing aircrafts based on WTC categories that are above the acceleration altitude.
          *       The climb rates for the categories are seperated by ',' and four values (L, M, H, J) are required.
@@ -88,17 +98,17 @@ namespace topskytower {
          *     <td>1000, 2000, 2000, 2000</td><td>Feet per minute</td>
          *   </tr>
          *   <tr>
-         *     <td>MTCA_DepartureAccelerationAlt</td>
+         *     <td>SURV_MTCA_DepartureAccelerationAlt</td>
          *     <td>Defines the acceleration altitude above which the aircraft climbs with the defined climb rate.</td>
          *     <td>2000</td><td>Feet</td>
          *   </tr>
          *   <tr>
-         *     <td>MTCA_DepartureAcceleration</td>
+         *     <td>SURV_MTCA_DepartureAcceleration</td>
          *     <td>Defines the acceleration of all aircrafts with which the speed increases.</td>
          *     <td>1.8</td><td>Meter per square-second</td>
          *   </tr>
          *   <tr>
-         *     <td>MTCA_DepartureSpeedBelowFL100</td>
+         *     <td>SURV_MTCA_DepartureSpeedBelowFL100</td>
          *     <td>Defines the maximum speed below FL100.</td>
          *     <td>250</td><td>Knot</td>
          *   </tr>

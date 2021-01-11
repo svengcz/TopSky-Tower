@@ -94,23 +94,23 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
                 break;
             }
         }
-        else if ("MTCA_DepartureSpeedV2" == entry[0]) {
+        else if ("SURV_MTCA_DepartureSpeedV2" == entry[0]) {
             SettingsFileFormat::parseDepartureModelParameters(entry[1], config.departureSpeedV2, types::knot);
         }
-        else if ("MTCA_DepartureCruiseSpeed" == entry[0]) {
+        else if ("SURV_MTCA_DepartureCruiseSpeed" == entry[0]) {
             SettingsFileFormat::parseDepartureModelParameters(entry[1], config.departureCruiseTAS, types::knot);
         }
-        else if ("MTCA_DepartureClimbRate" == entry[0]) {
+        else if ("SURV_MTCA_DepartureClimbRate" == entry[0]) {
             SettingsFileFormat::parseDepartureModelParameters(entry[1], config.departureClimbRates, types::feet / types::minute);
         }
-        else if ("MTCA_DepartureAccelerationAlt" == entry[0]) {
+        else if ("SURV_MTCA_DepartureAccelerationAlt" == entry[0]) {
             config.departureAccelerationAlt = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
         }
-        else if ("MTCA_DepartureAcceleration" == entry[0]) {
+        else if ("SURV_MTCA_DepartureAcceleration" == entry[0]) {
             config.departureAcceleration =
                 static_cast<float>(std::atof(entry[1].c_str())) * (types::metre / (types::second * types::second));
         }
-        else if ("MTCA_DepartureSpeedBelowFL100" == entry[0]) {
+        else if ("SURV_MTCA_DepartureSpeedBelowFL100" == entry[0]) {
             config.departureSpeedBelowFL100 = static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
         }
     }
