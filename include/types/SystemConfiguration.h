@@ -32,6 +32,8 @@ namespace topskytower {
             types::Velocity     departureSpeedBelowFL100; /**< Defines the velocity below FL100 */
             types::Velocity     departureCruiseTAS[5];    /**< Defines the true air speed during cruise for all WTCs */
             types::Velocity     departureClimbRates[5];   /**< Defines the climb rates for all WTCs */
+            bool                ariwsActive;              /**< Defines if ARIWS is active or not */
+            types::Length       ariwsDistanceDeadband;    /**< Defines the distance in which the RIW is suppressed around the holding point */
 
             /**
              * @brief Creates an empty and uninitialized system configuration
@@ -51,7 +53,9 @@ namespace topskytower {
                     departureAcceleration(1.8_mps2),
                     departureSpeedBelowFL100(250_kn),
                     departureCruiseTAS{ 270_kn, 120_kn, 270_kn, 290_kn, 290_kn },
-                    departureClimbRates{ 2000_ftpmin, 1000_ftpmin, 2000_ftpmin, 2000_ftpmin, 2000_ftpmin } { }
+                    departureClimbRates{ 2000_ftpmin, 1000_ftpmin, 2000_ftpmin, 2000_ftpmin, 2000_ftpmin },
+                    ariwsActive(true),
+                    ariwsDistanceDeadband(50_m) { }
         };
     }
 }
