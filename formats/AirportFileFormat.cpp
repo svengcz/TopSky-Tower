@@ -333,24 +333,10 @@ bool AirportFileFormat::parsePriorities(const std::vector<std::string>& lines) {
 }
 
 bool AirportFileFormat::parseHoldingPoint(const std::vector<std::string>& elements, types::HoldingPoint& holdingPoint) {
-    switch (elements[1][0]) {
-    case '1':
-        holdingPoint.category = ILSCategory::CAT1;
-        break;
-    case '2':
-        holdingPoint.category = ILSCategory::CAT2;
-        break;
-    case '3':
-        holdingPoint.category = ILSCategory::CAT3;
-        break;
-    default:
-        return false;
-    }
-
+    holdingPoint.lowVisibility = elements[1][0] == 'L';
     holdingPoint.runway = elements[2];
     holdingPoint.holdingPoint = types::Coordinate(elements[4], elements[3]);
     holdingPoint.heading = holdingPoint.holdingPoint.bearingTo(types::Coordinate(elements[6], elements[5]));
-
     return true;
 }
 

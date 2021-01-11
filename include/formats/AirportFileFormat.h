@@ -221,7 +221,7 @@ namespace topskytower {
          * The taxiways block defines the taxiway structure of the airport.
          * It is used to configure the safety net functions for the ground
          * @code{.xml}
-         * HOLD:ILSCAT:RUNWAY:HOLDINGPOINT_LAT:HOLDINGPOINT_LON:RUNWAYDIRECTION_LAT:RUNWAYDIRECTION_LON
+         * HOLD:LVP:RUNWAY:HOLDINGPOINT_LAT:HOLDINGPOINT_LON:RUNWAYDIRECTION_LAT:RUNWAYDIRECTION_LON
          * @endcode
          *
          * <table>
@@ -230,9 +230,9 @@ namespace topskytower {
          *     <th>Name</th><th>Description</th><th>Default value</th><th>Unit</th>
          *   </tr>
          *   <tr>
-         *     <td>ILSCAT</td>
-         *     <td>The ILS category that activates the holding point</td>
-         *     <td></td><td>1, 2, 3</td>
+         *     <td>LVP</td>
+         *     <td>Indicates if the holding point is used during low visibility procedures are active</td>
+         *     <td>N</td><td>L (for LVP),N (for Normal)</td>
          *   </tr>
          *   <tr>
          *     <td>RUNWAY</td>
