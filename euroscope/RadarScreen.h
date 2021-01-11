@@ -13,6 +13,7 @@
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
 
+#include <surveillance/ARIWSControl.h>
 #include <surveillance/SectorControl.h>
 #include <surveillance/StandControl.h>
 #include <system/FlightRegistry.h>
@@ -52,11 +53,13 @@ namespace topskytower {
             system::FlightRegistry*               m_flightRegistry;
             surveillance::SectorControl*          m_sectorControl;
             surveillance::StandControl*           m_standControl;
+            surveillance::ARIWSControl*           m_ariwsControl;
             std::mutex                            m_guiEuroscopeEventsLock;
             std::list<EuroscopeEvent>             m_guiEuroscopeEvents;
             std::chrono::system_clock::time_point m_lastRenderingTime;
 
             void initialize();
+            std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign, const types::Coordinate& sidExit);
 
         public:
             /**
@@ -147,6 +150,11 @@ namespace topskytower {
              * @return The stand control
              */
             surveillance::StandControl& standControl() const;
+            /**
+             * @brief Returns the ARIWS control
+             * @return The ARIWS control
+             */
+            surveillance::ARIWSControl& ariwsControl() const;
             /**
              * @brief Registers an Euroscope GUI event to trigger the function call during the next rendering step
              * @param[in] entry The new GUI event

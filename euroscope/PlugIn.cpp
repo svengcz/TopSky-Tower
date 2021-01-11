@@ -85,6 +85,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("Assigned stand", static_cast<int>(PlugIn::TagItemElement::AircraftStand));
     this->RegisterTagItemType("Departure Ground status", static_cast<int>(PlugIn::TagItemElement::DepartureGroundStatus));
     this->RegisterTagItemType("Arrival Ground status", static_cast<int>(PlugIn::TagItemElement::ArrivalGroundStatus));
+    this->RegisterTagItemType("Surveillance alerts", static_cast<int>(PlugIn::TagItemElement::SurveillanceAlerts));
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
@@ -504,6 +505,14 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             break;
         default:
             break;
+        }
+        break;
+    case PlugIn::TagItemElement::SurveillanceAlerts:
+        itemString[0] = '\0';
+
+        if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight)) {
+            *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
+            std::strcat(itemString, "RIW ");
         }
         break;
     default:

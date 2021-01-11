@@ -75,7 +75,8 @@ namespace topskytower {
                 FlighPlanCheck        = 2008,
                 AircraftStand         = 2009,
                 DepartureGroundStatus = 2010,
-                ArrivalGroundStatus   = 2011
+                ArrivalGroundStatus   = 2011,
+                SurveillanceAlerts    = 2012
             };
 
             bool                                    m_errorMode;
