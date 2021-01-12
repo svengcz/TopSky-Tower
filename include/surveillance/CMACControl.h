@@ -15,6 +15,16 @@ namespace topskytower {
         /**
          * @brief Describes a Conformance Monitoring Alerts for Controllers System
          * @ingroup surveillance
+         *
+         * This module controls all kind of ground movements.
+         * It tracks the different flights and estimates based on the position updates which kind of movement is performed.
+         * If the aircraft moves backwards, indicated by the position and the aircraft's heading, it expects the PUSH-clearance to be set
+         * or if the aircraft taxies forward, a TAXI-, LI-UP- or DEPA-clearance is expected.
+         *
+         * If the set ground status command does not fit to the expected one, the CMA is triggered and the "TopSky-Tower / Surveillance alerts"-tag
+         * is extended by the CMA message.
+         *
+         * ![Conformance Monitoring Alert](doc/imgs/ConformanceMonitoringAlert.png)
          */
         class CMACControl {
         private:
