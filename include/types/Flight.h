@@ -49,7 +49,7 @@ namespace topskytower {
              * @brief Creates a flight with a defined callsign
              * @param[in] callsign The flight's callsign
              */
-            Flight(const std::string& callsign);
+            explicit Flight(const std::string& callsign);
 
             /**
              * @brief Returns the flight's type
