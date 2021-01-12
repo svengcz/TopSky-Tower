@@ -103,7 +103,7 @@ void ARIWSControl::reinitialize(system::ConfigurationRegistry::UpdateType type) 
 void ARIWSControl::updateFlight(const types::Flight& flight) {
     /* check if the system is active */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().ariwsActive ||
-        false == system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsOnline)
+        false == system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsActive)
     {
         return;
     }
@@ -181,7 +181,7 @@ void ARIWSControl::removeFlight(const std::string& callsign) {
 bool ARIWSControl::runwayIncursionWarning(const types::Flight& flight) const {
     /* check if the system is active */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().ariwsActive ||
-        false == system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsOnline)
+        false == system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsActive)
     {
         return false;
     }

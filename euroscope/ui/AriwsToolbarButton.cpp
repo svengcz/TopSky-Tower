@@ -20,12 +20,12 @@ AriwsToolbarButton::AriwsToolbarButton(RadarScreen* parent) :
 
 void AriwsToolbarButton::clicked() {
     bool isActive = this->active();
-    system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsOnline = !isActive;
+    system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsActive = !isActive;
 }
 
 bool AriwsToolbarButton::active() {
     bool isActive = system::ConfigurationRegistry::instance().systemConfiguration().ariwsActive;
-    isActive &= system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsOnline;
+    isActive &= system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsActive;
     return isActive;
 }
 
