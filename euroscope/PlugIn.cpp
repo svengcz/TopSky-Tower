@@ -513,7 +513,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
         if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
             std::strcat(itemString, "RIW ");
-        if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight))
+        else if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight))
             std::strcat(itemString, "CMA ");
 
         break;
