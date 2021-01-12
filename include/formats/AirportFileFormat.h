@@ -263,6 +263,7 @@ namespace topskytower {
          */
         class AirportFileFormat {
         private:
+#ifndef DOXYGEN_IGNORE
             types::AirportConfiguration m_configuration;
 
             static bool parseSid(const std::vector<std::string>& elements, types::StandardInstrumentDeparture& sid);
@@ -293,6 +294,7 @@ namespace topskytower {
              * @return The airport configuration
              */
             const types::AirportConfiguration& configuration() const;
+#endif
         };
     }
 }

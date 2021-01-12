@@ -28,6 +28,7 @@ namespace topskytower {
          */
         class CMACControl {
         private:
+#ifndef DOXYGEN_IGNORE
             struct FlightHistory {
                 std::size_t                   cycleCounter;
                 types::Coordinate             referencePosition;
@@ -58,6 +59,7 @@ namespace topskytower {
              * @return True if CMA is valid, else false
              */
             bool conformanceMonitoringAlert(const types::Flight& flight) const;
+#endif
         };
     }
 }

@@ -33,6 +33,7 @@ namespace topskytower {
          */
         class AircraftFileFormat {
         private:
+#ifndef DOXYGEN_IGNORE
             std::map<std::string, types::Aircraft> m_aircrafts;
 
             void parseAircraft(const std::string& line);
@@ -50,6 +51,7 @@ namespace topskytower {
              * @return The aircrafts
              */
             const std::map<std::string, types::Aircraft>& aircrafts() const;
+#endif
         };
     }
 }

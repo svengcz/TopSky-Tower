@@ -871,6 +871,12 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = @PROJECT_BINARY_DIR@
+EXCLUDE               += @PROJECT_SOURCE_DIR@/include/formats/EseFileFormat.h
+EXCLUDE               += @PROJECT_SOURCE_DIR@/include/helper
+EXCLUDE               += @PROJECT_SOURCE_DIR@/include/system
+EXCLUDE               += @PROJECT_SOURCE_DIR@/include/types
+EXCLUDE               += @PROJECT_SOURCE_DIR@/include/surveillance/MTCAControl.h
+EXCLUDE               += @PROJECT_SOURCE_DIR@/include/management/DepartureOrderControl.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -2163,7 +2169,7 @@ INCLUDE_FILE_PATTERNS  =
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-PREDEFINED             =
+PREDEFINED             = DOXYGEN_IGNORE
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

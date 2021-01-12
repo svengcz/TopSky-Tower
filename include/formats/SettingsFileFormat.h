@@ -146,6 +146,7 @@ namespace topskytower {
          */
         class SettingsFileFormat {
         private:
+#ifndef DOXYGEN_IGNORE
             std::string m_filename;
 
             static void parseColor(const std::string& block, std::uint8_t color[3]);
@@ -175,6 +176,7 @@ namespace topskytower {
              * @param[out] config The resulting configuration
              */
             void parse(types::SystemConfiguration& config) const;
+#endif
         };
     }
 }

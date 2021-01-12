@@ -1,7 +1,0 @@
-/**
- * @defgroup system System
- * Contains all system relevant components that are used by other modules
- *
- * The system does not provide algorithmical functions or visualization components,
- * but defines components that provide relevant information.
- */

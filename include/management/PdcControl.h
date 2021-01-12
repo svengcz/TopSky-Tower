@@ -50,6 +50,7 @@ namespace topskytower {
          */
         class PdcControl {
         public:
+#ifndef DOXYGEN_IGNORE
             /**
              * @brief Defines the different message types of the system
              */
@@ -258,6 +259,7 @@ namespace topskytower {
              * @return The PDC control system
              */
             static PdcControl& instance();
+#endif
         };
     }
 }

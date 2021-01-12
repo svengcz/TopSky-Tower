@@ -51,6 +51,7 @@ namespace topskytower {
          */
         class FlightPlanControl {
         public:
+#ifndef DOXYGEN_IGNORE
             /**
              * @brief Define sthe error codes after a flight plan validation
              */
@@ -122,6 +123,7 @@ namespace topskytower {
              * @return The flight plan control
              */
             static FlightPlanControl& instance();
+#endif
         };
     }
 }

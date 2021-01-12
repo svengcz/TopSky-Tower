@@ -34,6 +34,7 @@ namespace topskytower {
          */
         class ARIWSControl {
         private:
+#ifndef DOXYGEN_IGNORE
             struct HoldingPointData : public types::HoldingPoint {
                 float cartesianPosition[2];
             };
@@ -93,6 +94,7 @@ namespace topskytower {
              * @return True if RIW is valid, else false
              */
             bool runwayIncursionWarning(const types::Flight& flight) const;
+#endif
         };
     }
 }

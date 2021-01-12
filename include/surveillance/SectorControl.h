@@ -20,6 +20,7 @@ namespace topskytower {
          * @ingroup surveillance
          */
         class SectorControl {
+#ifndef DOXYGEN_IGNORE
         private:
             struct Node {
                 std::list<std::shared_ptr<Node>> parents;
@@ -180,6 +181,7 @@ namespace topskytower {
              * @return True if it is in the sector tree, else false
              */
             bool isInSector(const types::Flight& flight) const;
+#endif
         };
     }
 }

@@ -35,6 +35,7 @@ namespace topskytower {
          */
         class StandControl {
         private:
+#ifndef DOXYGEN_IGNORE
             struct StandData : public types::Stand {
                 float                    cartesianPosition[2];
                 std::list<types::Flight> occupancyFlights;
@@ -118,6 +119,7 @@ namespace topskytower {
              * @return True if an other flight is associated to the stand, else false
              */
             bool standIsBlocked(const std::string& stand) const;
+#endif
         };
     }
 }
