@@ -11,7 +11,6 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/surveillance/MTCAControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/PdcControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/SectorControl.h
-    ${CMAKE_SOURCE_DIR}/include/surveillance/StandControl.h
 )
 SET(SOURCE_FILES
     ARIWSControl.cpp
@@ -19,7 +18,6 @@ SET(SOURCE_FILES
     MTCAControl.cpp
     PdcControl.cpp
     SectorControl.cpp
-    StandControl.cpp
 )
 
 # define the helper library

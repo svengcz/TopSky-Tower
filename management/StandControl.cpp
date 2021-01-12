@@ -9,12 +9,12 @@
 
 #include <GeographicLib/Gnomonic.hpp>
 
-#include <surveillance/StandControl.h>
+#include <management/StandControl.h>
 #include <system/ConfigurationRegistry.h>
 #include <types/Quantity.hpp>
 
 using namespace topskytower;
-using namespace topskytower::surveillance;
+using namespace topskytower::management;
 using namespace topskytower::types;
 
 StandControl::StandControl(const std::string& airport, const types::Coordinate& center) :

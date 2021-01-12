@@ -13,9 +13,9 @@
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
 
+#include <management/StandControl.h>
 #include <surveillance/ARIWSControl.h>
 #include <surveillance/SectorControl.h>
-#include <surveillance/StandControl.h>
 #include <system/FlightRegistry.h>
 
 #include "ui/UiManager.h"
@@ -52,7 +52,7 @@ namespace topskytower {
             UiManager                             m_userInterface;
             system::FlightRegistry*               m_flightRegistry;
             surveillance::SectorControl*          m_sectorControl;
-            surveillance::StandControl*           m_standControl;
+            management::StandControl*             m_standControl;
             surveillance::ARIWSControl*           m_ariwsControl;
             std::mutex                            m_guiEuroscopeEventsLock;
             std::list<EuroscopeEvent>             m_guiEuroscopeEvents;
@@ -149,7 +149,7 @@ namespace topskytower {
              * @brief Returns the stand control
              * @return The stand control
              */
-            surveillance::StandControl& standControl() const;
+            management::StandControl& standControl() const;
             /**
              * @brief Returns the ARIWS control
              * @return The ARIWS control

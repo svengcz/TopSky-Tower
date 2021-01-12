@@ -180,7 +180,7 @@ void RadarScreen::initialize() {
 
         if (nullptr != this->m_standControl)
             delete this->m_standControl;
-        this->m_standControl = new surveillance::StandControl(this->m_airport, center);
+        this->m_standControl = new management::StandControl(this->m_airport, center);
 
         if (nullptr != this->m_ariwsControl)
             delete this->m_ariwsControl;
@@ -237,7 +237,7 @@ system::FlightRegistry& RadarScreen::flightRegistry() const {
     return *this->m_flightRegistry;
 }
 
-surveillance::StandControl& RadarScreen::standControl() const {
+management::StandControl& RadarScreen::standControl() const {
     return *this->m_standControl;
 }
 

@@ -1,6 +1,6 @@
 /*
  * @brief Defines a stand control system
- * @file surveillance/StandControl.h
+ * @file management/StandControl.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 
@@ -16,10 +16,10 @@
 #include <types/Flight.h>
 
 namespace topskytower {
-    namespace surveillance {
+    namespace management {
         /**
          * @brief Describes a stand control system
-         * @ingroup surveillance
+         * @ingroup management
          */
         class StandControl {
         private:
