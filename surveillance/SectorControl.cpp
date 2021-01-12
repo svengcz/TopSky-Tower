@@ -596,7 +596,7 @@ void SectorControl::updateFlight(const types::Flight& flight) {
         if (types::Sector::Type::Delivery == this->m_ownSector->sector.type())
             predicted = flight.currentPosition();
         else
-            predicted = flight.predict(20_s, 20_kn);
+            predicted = flight.predict(10_s, 20_kn);
 
         /* get the handoff initiator to avoid rehandoffs if we received an early handoff */
         auto handoffIt = this->m_handoffOfFlightsToMe.find(flight.callsign());
