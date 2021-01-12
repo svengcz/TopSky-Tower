@@ -1,0 +1,70 @@
+/**
+ * @defgroup euroscope Euroscope
+ * Contains all Euroscope specific components and documentation
+ *
+ * # Handoff management
+ *
+ * TopSky-Tower provides an handoff-management system that is optimized for ground controllers.
+ * It parses the used sector files, creates a sector hierarchy out of it and assigns aircrafts to specific sectors.
+ * As soon as an aircraft switches the sector is supposed to leave, it assigns the aircraft to the new sector and
+ * provides handoff information.
+ *
+ * The information includes the next sector and the corresponding frequency.
+ * If Euroscope's tracking functionalities are used, it is possible to directly transfer the aircraft to the next controller.
+ *
+ * ![Handoff](doc/imgs/StationHandoff.png)
+ *
+ * # TopSky-Alerts
+ *
+ * TopSky-Tower uses the same tags for manual aircraft markings as TopSky.
+ * This enables the ground- and upper-airspace controllers to communicate directly through the tags.
+ * The image below shows the missed-approach entry, that is also visible in TopSky.
+ *
+ * ![Missed-Approach](doc/imgs/TagAlert.png)
+ *
+ * # Ground status
+ *
+ * TopSky-Tower introduces the tag element "TopSky-Tower / Departure Ground status" which is supposed to replace the integrates EuroScope GroundStatus-flag.
+ * TopSky-Tower is designed to be compatible with EuroScope, but extends or replaces existing features.
+ * The "TopSky-Tower / Departure Ground status" flags are published to normal EuroScope users for the existing flags:
+ *  - ST-UP
+ *  - PUSH
+ *  - TAXI
+ *  - DEPA
+ *
+ * The new flags (DEICE, LI-UP) are published via the tags to the other TopSky-Tower controllers.
+ * This allows the most flexible combination without breaking normal EuroScope-features.
+ *
+ * "TopSky-Tower / Arrival Ground status" is a complete new ground status field for arriving flights.
+ * It allows the following entries:
+ *  - APPR
+ *  - LAND
+ *  - TAXI
+ *  - GO-AR
+ *
+ * The "APPR" flag is used to mark that the initial contact by the pilot happened, but no landing clearance was given.
+ * "LAND" marks a given landing clearance, "TAXI" indicates that the flight is taxiing on the ground and "GO-AR"
+ * defines that the flight is going around. The "GO-AR" flag sets the M/A-flag in the manually alerts automatically.
+ * This allows a single-click communication with TopSky for the upper airspaces.
+ *
+ * The arrival flags are also shared with all other TopSky-Tower controllers, but is hidden for the default EuroScope-users.
+ *
+ * The controller menu is defined on top of the RADAR screen as a toolbar.
+ * It is possible to reload single configuration files and activate or deactivate single functions or components of the system.
+ *
+ * # Controller toolbar
+ *
+ * ![Toolbar](doc/imgs/Toolbar.png)
+ *
+ * The Settings-menu is a drop-down menu to reload single configuration files.
+ *
+ * A PDC-button activates or deactivates the PDC system. It is deactivated after a system start.
+ *
+ * The ARIWS-button enables or disables ARIWS including the warnings in the flight's tags.
+ *
+ * The CMAC-button toggles the CMAC system to track aircrafts on the ground.
+ *
+ * An other button is the LVP-button which activates or deactivates the Low-Visibility-Procedures.
+ * The normal procedure mode is activated after a system startup. This flag is i.e. used by ARIWS to select the correct
+ * holding points to analyise the runway incursions per aircraft.
+ */

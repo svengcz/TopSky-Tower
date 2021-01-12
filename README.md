@@ -11,68 +11,29 @@ The plug-in is designed to interact with TopSky, an other EuroScope plug-in.
 
 ## Concept
 TopSky-Tower extends the standard functionalities of EuroScope.
-It provides a new menu for tags that allows marking of flights and an extended tracking- and handoff-management.
-The handoff-management is also optimized for ground-to-ground handoffs and predicts the next sector of a tag.
-Tracking on the ground is more usable by this technique.
-Due to the prediction is most of the time no manual selection of the next sector required.
+It is generally designed to be compatible with GRPlugin and TopSky.
 
-![Handoff](doc/imgs/StationHandoff.png)
+More details about the Euroscope-integration is documented here: \ref euroscope
 
-The marking-system is equal to the marking-system of TopSky.
-It allows the highlighting of tags, the tagging of missed-approaches or irregular departures.
+### Management systems
 
-![Missed-Approach](doc/imgs/TagAlert.png)
+TopSky-Tower provides multiple management systems that are optimized to control aircrafts on the ground
+during high-traffic situations.
 
-
-### Flight plan checks and stand management
-
-### Ground status
-
-TopSky-Tower introduces the tag element "TopSky-Tower / Departure Ground status" which is supposed to replace the integrates EuroScope GroundStatus-flag.
-TopSky-Tower is designed to be compatible with EuroScope, but extends or replaces existing features.
-The "TopSky-Tower / Departure Ground status" flags are published to normal EuroScope users for the existing flags:
- - ST-UP
- - PUSH
- - TAXI
- - DEPA
-
-The new flags (DEICE, LI-UP) are published via the tags to the other TopSky-Tower controllers.
-This allows the most flexible combination without breaking normal EuroScope-features.
-
-"TopSky-Tower / Arrival Ground status" is a complete new ground status field for arriving flights.
-It allows the following entries:
- - APPR
- - LAND
- - TAXI
- - GO-AR
-
-The "APPR" flag is used to mark that the initial contact by the pilot happened, but no landing clearance was given.
-"LAND" marks a given landing clearance, "TAXI" indicates that the flight is taxiing on the ground and "GO-AR"
-defines that the flight is going around. The "GO-AR" flag sets the M/A-flag in the manually alerts automatically.
-This allows a single-click communication with TopSky for the upper airspaces.
-
-The arrival flags are also shared with all other TopSky-Tower controllers, but is hidden for the default EuroScope-users.
-
-### PDC communication
+The following management systems are integrated and are documented in the corresponding areas:
+- Stand managment: \ref topskytower::management::StandControl
+- PDC system: \ref topskytower::management::PdcControl
+- Sector relation: \ref topskytower::management::SectorControl
 
 ### Surveillance systems
 
-### Controller menu
+TopSky-Tower provides multiple surveillance systems that are inspired by the real world and helps
+to control that aircrafts are moving as expected and cleared by the controller.
 
-The controller menu is defined on top of the RADAR screen as a toolbar.
-It is possible to reload single configuration files and activate or deactivate single functions or components of the system.
-
-![Toolbar](doc/imgs/Toolbar.png)
-
-The Settings-menu is a drop-down menu to reload single configuration files.
-
-A PDC-button activates or deactivates the PDC system. It is deactivated after a system start.
-
-The ARIWS-button enables or disables ARIWS including the warnings in the flight's tags.
-
-An other button is the LVP-button which activates or deactivates the Low-Visibility-Procedures.
-The normal procedure mode is activated after a system startup. This flag is i.e. used by ARIWS to select the correct
-holding points to analyise the runway incursions per aircraft.
+The following surveillance systems are integrated and are documented in the corresponding areas:
+- Flight plan check: \ref topskytower::surveillance::FlightPlanControl
+- Conformance Monitoring Alerts for Controllers: \ref topskytower::surveillance::CMACControl
+- Autonomous Runway Incursion Warning System: \ref topskytower::surveillance::ARIWSControl
 
 ## Setup
 The setup describes two different ways of installation.
