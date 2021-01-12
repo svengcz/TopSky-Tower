@@ -229,13 +229,6 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, co
         std::string_view origin(flightPlan.GetFlightPlanData().GetOrigin());
         std::string_view destination(flightPlan.GetFlightPlanData().GetDestination());
 
-        if (screen.airportIcao() == origin) {
-            retval.setType(types::Flight::Type::Departure);
-        }
-        else if (screen.airportIcao() == destination) {
-            retval.setType(types::Flight::Type::Arrival);
-        }
-
         retval.setTrackedState(flightPlan.GetTrackingControllerIsMe());
         /* an flight was tracked by an other controller and we keep this information */
         if (EuroScopePlugIn::FLIGHT_PLAN_STATE_TRANSFER_TO_ME_INITIATED == flightPlan.GetState()) {
@@ -258,6 +251,19 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, co
 
         /* create the flight plan */
         retval.setFlightPlan(Converter::convert(flightPlan));
+
+        if (origin == destination) {
+            if (retval.flightPlan().departureFlag() == types::FlightPlan::AtcCommand::Departure)
+                retval.setType(types::Flight::Type::Arrival);
+            else
+                retval.setType(types::Flight::Type::Departure);
+        }
+        else if (screen.airportIcao() == origin) {
+            retval.setType(types::Flight::Type::Departure);
+        }
+        else if (screen.airportIcao() == destination) {
+            retval.setType(types::Flight::Type::Arrival);
+        }
     }
 
     return retval;
