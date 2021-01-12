@@ -826,7 +826,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             radarTarget.GetCorrelatedFlightPlan().RefuseHandoff();
         }
         else {
-            this->handleHandoffPerform(pt, area, callsign, flight.isTracked());
+            this->handleHandoffPerform(pt, area, flight, flight.isTracked());
         }
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelectEvent:
@@ -874,7 +874,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::HandoffSectorSelect:
         if (true == flightScreen->sectorControl().handoffRequired(flight) || true == flightScreen->sectorControl().handoffPossible(flight)) {
             flightScreen->sectorControl().handoffSectorSelect(flight, itemString);
-            this->handleHandoffPerform(pt, area, callsign, flight.isTracked());
+            this->handleHandoffPerform(pt, area, flight, flight.isTracked());
         }
         break;
     case PlugIn::TagItemFunction::SectorControllerHandover:
