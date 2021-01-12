@@ -36,6 +36,8 @@ SET(SOURCE_FILES
 SET(SOURCE_FILES_UI
     ui/AriwsToolbarButton.cpp
     ui/AriwsToolbarButton.h
+    ui/CmacToolbarButton.cpp
+    ui/CmacToolbarButton.h
     ui/HoppiesLogonWindow.cpp
     ui/HoppiesLogonWindow.h
     ui/InsetWindow.cpp

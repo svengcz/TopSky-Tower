@@ -15,6 +15,7 @@
 
 #include <management/StandControl.h>
 #include <surveillance/ARIWSControl.h>
+#include <surveillance/CMACControl.h>
 #include <surveillance/SectorControl.h>
 #include <system/FlightRegistry.h>
 
@@ -54,6 +55,7 @@ namespace topskytower {
             surveillance::SectorControl*          m_sectorControl;
             management::StandControl*             m_standControl;
             surveillance::ARIWSControl*           m_ariwsControl;
+            surveillance::CMACControl*            m_cmacControl;
             std::mutex                            m_guiEuroscopeEventsLock;
             std::list<EuroscopeEvent>             m_guiEuroscopeEvents;
             std::chrono::system_clock::time_point m_lastRenderingTime;
@@ -155,6 +157,11 @@ namespace topskytower {
              * @return The ARIWS control
              */
             surveillance::ARIWSControl& ariwsControl() const;
+            /**
+             * @brief Returns the CMAC control
+             * @return The CMAC control
+             */
+            surveillance::CMACControl& cmacControl() const;
             /**
              * @brief Registers an Euroscope GUI event to trigger the function call during the next rendering step
              * @param[in] entry The new GUI event

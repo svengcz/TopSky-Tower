@@ -508,12 +508,14 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         }
         break;
     case PlugIn::TagItemElement::SurveillanceAlerts:
+        *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
         itemString[0] = '\0';
 
-        if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight)) {
-            *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
+        if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
             std::strcat(itemString, "RIW ");
-        }
+        if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight))
+            std::strcat(itemString, "CMA ");
+
         break;
     default:
         break;

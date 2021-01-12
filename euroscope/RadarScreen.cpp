@@ -27,6 +27,7 @@ RadarScreen::RadarScreen() :
         m_sectorControl(nullptr),
         m_standControl(nullptr),
         m_ariwsControl(nullptr),
+        m_cmacControl(nullptr),
         m_guiEuroscopeEventsLock(),
         m_guiEuroscopeEvents(),
         m_lastRenderingTime() { }
@@ -34,6 +35,8 @@ RadarScreen::RadarScreen() :
 RadarScreen::~RadarScreen() {
     if (nullptr != this->m_ariwsControl)
         delete this->m_ariwsControl;
+    if (nullptr != this->m_cmacControl)
+        delete this->m_cmacControl;
     if (nullptr != this->m_sectorControl)
         delete this->m_sectorControl;
     if (nullptr != this->m_standControl)
@@ -111,6 +114,8 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
         this->m_standControl->updateFlight(flight);
     if (nullptr != this->m_ariwsControl)
         this->m_ariwsControl->updateFlight(flight);
+    if (nullptr != this->m_cmacControl)
+        this->m_cmacControl->updateFlight(flight);
 }
 
 void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) {
@@ -146,6 +151,8 @@ void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan
         this->m_sectorControl->removeFlight(flightPlan.GetCallsign());
     if (nullptr != this->m_ariwsControl)
         this->m_ariwsControl->removeFlight(flightPlan.GetCallsign());
+    if (nullptr != this->m_cmacControl)
+        this->m_cmacControl->removeFlight(flightPlan.GetCallsign());
 
     surveillance::FlightPlanControl::instance().removeFlight(flightPlan.GetCallsign());
 }
@@ -185,6 +192,10 @@ void RadarScreen::initialize() {
         if (nullptr != this->m_ariwsControl)
             delete this->m_ariwsControl;
         this->m_ariwsControl = new surveillance::ARIWSControl(this->m_airport, center);
+
+        if (nullptr != this->m_cmacControl)
+            delete this->m_cmacControl;
+        this->m_cmacControl = new surveillance::CMACControl();
 
         this->m_initialized = true;
     }
@@ -243,6 +254,10 @@ management::StandControl& RadarScreen::standControl() const {
 
 surveillance::ARIWSControl& RadarScreen::ariwsControl() const {
     return *this->m_ariwsControl;
+}
+
+surveillance::CMACControl& RadarScreen::cmacControl() const {
+    return *this->m_cmacControl;
 }
 
 void RadarScreen::registerEuroscopeEvent(RadarScreen::EuroscopeEvent&& entry) {
