@@ -131,6 +131,12 @@ namespace topskytower {
              */
             bool handoffRequired(const types::Flight& flight) const;
             /**
+             * @brief Checks if an handoff is required for a specific callsign
+             * @param[in] callsign The requested callsign
+             * @return True if an handoff is required, else false
+             */
+            bool handoffRequired(const std::string& callsign) const;
+            /**
              * @brief Checks if the aircraft is in the area sector and a handoff is possible
              * @param[in] flight The requested flight
              * @return Trie if an handoff is possible, else false
@@ -144,9 +150,15 @@ namespace topskytower {
             /**
              * @brief Returns the next frequency of a specific callsign
              * @param[in] flight The requested flight
-             * @return The next frequency
+             * @return The next controller info
              */
             const types::ControllerInfo& handoffSector(const types::Flight& flight) const;
+            /**
+             * @brief Returns the next frequency of a specific callsign
+             * @param[in] callsign The requested callsign
+             * @return The next controller info
+             */
+            const types::ControllerInfo& handoffSector(const std::string& callsign) const;
             /**
              * @brief Returns the next sector controllers of a specific callsign
              * @param[in] flight The requested flight

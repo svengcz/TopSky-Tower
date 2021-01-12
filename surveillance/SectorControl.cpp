@@ -688,6 +688,13 @@ bool SectorControl::handoffRequired(const types::Flight& flight) const {
     return false;
 }
 
+bool SectorControl::handoffRequired(const std::string& callsign) const {
+    auto it = this->m_handoffs.find(callsign);
+    if (this->m_handoffs.cend() != it)
+        return false == it->second.handoffPerformed;
+    return false;
+}
+
 bool SectorControl::handoffPossible(const types::Flight& flight) const {
     if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
         return false;
@@ -704,6 +711,14 @@ void SectorControl::handoffPerformed(const types::Flight& flight) {
 
 const types::ControllerInfo& SectorControl::handoffSector(const types::Flight& flight) const {
     auto it = this->m_handoffs.find(flight.callsign());
+    if (this->m_handoffs.cend() == it)
+        return this->m_unicom->sector.controllerInfo();
+
+    return it->second.nextSector->sector.controllerInfo();
+}
+
+const types::ControllerInfo& SectorControl::handoffSector(const std::string& callsign) const {
+    auto it = this->m_handoffs.find(callsign);
     if (this->m_handoffs.cend() == it)
         return this->m_unicom->sector.controllerInfo();
 
