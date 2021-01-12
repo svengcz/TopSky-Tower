@@ -58,16 +58,6 @@ SID with the departure runway is added to the flight plan.
 The flight plan checker provides a marker if the SID contains climb constraints and the phraseology requires
 the "climb via SID" call.
 
-An other component is the stand management system.
-It assigns flights to stands and performs this on an extended configuration.
-A stand defines constraints which kind of aircrafts are allowed to occupy the stand.
-An airline reserves some stands with specific priorities and the system tries to assign the most important stand
-to an arriving aircraft. The departing aircrafts are automatically assigned to the stand at which they are parked.
-The assigned stands are colorized in a way that indicates if a stand needs to be published, is already blocked or is
-correctly assigned to the aircraft.
-
-![Stand assignments](doc/imgs/StandControl.png)
-
 ### Ground status
 
 TopSky-Tower introduces the tag element "TopSky-Tower / Departure Ground status" which is supposed to replace the integrates EuroScope GroundStatus-flag.
@@ -97,42 +87,7 @@ The arrival flags are also shared with all other TopSky-Tower controllers, but i
 
 ### PDC communication
 
-A menu allows to automatically assign a new stand, manually assign a stand and publish the stand to other controllers.
-The publish-function is compatible to GRplugin.
-
-Additionally is a PDC-system included that uses the Hoppies-backend.
-It is designed in that way that it can handle CPDLC and TELEX messages.
-Due to the PDC-definition does it reject LOGIN-calls of aircrafts.
-It provides an indicator and a sound-ping as soon as new messages are received.
-
-![PDC indicator](doc/imgs/PdcIndicator.png)
-
-A reader is available that shows the oldest, received message.
-If multiple messages are received is it required to open multiple viewer.
-
-![PDC reader](doc/imgs/PdcReader.png)
-
-It is possible to send CPDLC stand-by messages by one click or send the departure clearance.
-The clearance opens a window that allows a review of the clearance and add a custom message.
-In the end does it send a CPDLC-message to the aircraft.
-
-![PDC departure clearance](doc/imgs/PdcClearance.png)
-
 ### Surveillance systems
-
-#### ARIWS (Autonomous Runway Incursion Warning System)
-
-The ARIWS is used to identify flights that are joining a runway without any clearance.
-The system uses the extended Ground status flags to check if the flight is departing or lining up.
-
-The system is designed in that way that it is a bit more relaxed than the realworld application.
-It defines some dead area around a holding point where an aircraft can hold position without a RIW trigger.
-This is used to reduce the number of false-positives due to inaccurate taxiings or scenery mismatches.
-
-If an aircraft is behind a configured holding point, facing into the runway's direction and does not have
-a line-up or departure clearance, the RIW is triggered and visualized in the "TopSky-Tower / Surveillance alerts" tag element.
-
-![Runway Incursion Warning](doc/imgs/RunwayIncursionWarning.png)
 
 ### Controller menu
 

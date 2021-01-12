@@ -20,6 +20,18 @@ namespace topskytower {
         /**
          * @brief Describes a stand control system
          * @ingroup management
+         *
+         * The stand control assigns flights to stands and performs this on an extended configuration.
+         * A stand defines constraints which kind of aircrafts are allowed to occupy the stand.
+         * An airline reserves some stands with specific priorities and the system tries to assign the most important stand
+         * to an arriving aircraft. The departing aircrafts are automatically assigned to the stand at which they are parked.
+         * The assigned stands are colorized in a way that indicates if a stand needs to be published, is already blocked or is
+         * correctly assigned to the aircraft.
+         *
+         * ![Stand assignments](doc/imgs/StandControl.png)
+         *
+         * A menu allows to automatically assign a new stand, manually assign a stand and publish the stand to other controllers.
+         * The publish-function is compatible to GRplugin.
          */
         class StandControl {
         private:

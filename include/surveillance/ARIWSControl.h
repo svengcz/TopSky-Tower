@@ -19,6 +19,18 @@ namespace topskytower {
         /**
          * @brief Describes an Autonomous Runway Incursion Warning System
          * @ingroup surveillance
+         *
+         * The ARIWS is used to identify flights that are joining a runway without any clearance.
+         * The system uses the extended Ground status flags to check if the flight is departing or lining up.
+         *
+         * The system is designed in that way that it is a bit more relaxed than the realworld application.
+         * It defines some dead area around a holding point where an aircraft can hold position without a RIW trigger.
+         * This is used to reduce the number of false-positives due to inaccurate taxiings or scenery mismatches.
+         *
+         * If an aircraft is behind a configured holding point, facing into the runway's direction and does not have
+         * a line-up or departure clearance, the RIW is triggered and visualized in the "TopSky-Tower / Surveillance alerts" tag element.
+         *
+         * ![Runway Incursion Warning](doc/imgs/RunwayIncursionWarning.png)
          */
         class ARIWSControl {
         private:
