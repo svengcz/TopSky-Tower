@@ -45,6 +45,11 @@ Gdiplus::Color UiElement::backgroundColor() {
     return Gdiplus::Color(255, color[0], color[1], color[2]);
 }
 
+Gdiplus::Color UiElement::activeBackgroundColor() {
+    const auto& color = system::ConfigurationRegistry::instance().systemConfiguration().uiBackgroundActiveColor;
+    return Gdiplus::Color(255, color[0], color[1], color[2]);
+}
+
 Gdiplus::Color UiElement::foregroundColor() {
     const auto& color = system::ConfigurationRegistry::instance().systemConfiguration().uiForegroundColor;
     return Gdiplus::Color(255, color[0], color[1], color[2]);

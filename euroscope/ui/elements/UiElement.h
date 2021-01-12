@@ -36,6 +36,11 @@ namespace topskytower {
              */
             static Gdiplus::Color backgroundColor();
             /**
+             * @brief Returns the active background color based on the configuration
+             * @return The active background color
+             */
+            static Gdiplus::Color activeBackgroundColor();
+            /**
              * @brief Returns the foreground color based on the configuration
              * @return The foreground color
              */

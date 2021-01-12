@@ -17,24 +17,25 @@ namespace topskytower {
          * @ingroup types
          */
         struct SystemConfiguration {
-            bool                valid;                    /**< Marks if the configuration is valid */
-            std::string         hoppiesCode;              /**< Defines Hoppie's logon-code */
-            std::uint8_t        uiBackgroundColor[3];     /**< Defines the background color of the UI elements */
-            std::uint8_t        uiForegroundColor[3];     /**< Defines the foreground color of the UI elements */
-            std::string         fontFamily;               /**< Defines the font family of the visualizations */
-            float               fontSize;                 /**< Defines the font size of the visualizations */
-            bool                trackingOnGround;         /**< Defines if the ground controllers track flights */
-            bool                flightPlanCheckEvenOdd;   /**< Defines if the generic even-odd checks are performed */
-            types::Length       standAssociationDistance; /**< Defines the maximum distance to assign automatically an aircraft to a stand */
-            types::Velocity     departureSpeedV2[5];      /**< Defines the V2 speeds for all WTCs */
-            types::Length       departureAccelerationAlt; /**< Defines the acceleration altitude */
-            types::Acceleration departureAcceleration;    /**< Defines the average aircrafts acceleration */
-            types::Velocity     departureSpeedBelowFL100; /**< Defines the velocity below FL100 */
-            types::Velocity     departureCruiseTAS[5];    /**< Defines the true air speed during cruise for all WTCs */
-            types::Velocity     departureClimbRates[5];   /**< Defines the climb rates for all WTCs */
-            bool                ariwsActive;              /**< Defines if ARIWS is active or not */
-            types::Length       ariwsDistanceDeadband;    /**< Defines the distance in which the RIW is suppressed around the holding point */
-            types::Length       ariwsMaximumDistance;     /**< Defines the maximum distance to check if the flight is on the runway */
+            bool                valid;                      /**< Marks if the configuration is valid */
+            std::string         hoppiesCode;                /**< Defines Hoppie's logon-code */
+            std::uint8_t        uiBackgroundColor[3];       /**< Defines the background color of the UI elements */
+            std::uint8_t        uiForegroundColor[3];       /**< Defines the foreground color of the UI elements */
+            std::uint8_t        uiBackgroundActiveColor[3]; /**< Defines the background color of active UI elements */
+            std::string         fontFamily;                 /**< Defines the font family of the visualizations */
+            float               fontSize;                   /**< Defines the font size of the visualizations */
+            bool                trackingOnGround;           /**< Defines if the ground controllers track flights */
+            bool                flightPlanCheckEvenOdd;     /**< Defines if the generic even-odd checks are performed */
+            types::Length       standAssociationDistance;   /**< Defines the maximum distance to assign automatically an aircraft to a stand */
+            types::Velocity     departureSpeedV2[5];        /**< Defines the V2 speeds for all WTCs */
+            types::Length       departureAccelerationAlt;   /**< Defines the acceleration altitude */
+            types::Acceleration departureAcceleration;      /**< Defines the average aircrafts acceleration */
+            types::Velocity     departureSpeedBelowFL100;   /**< Defines the velocity below FL100 */
+            types::Velocity     departureCruiseTAS[5];      /**< Defines the true air speed during cruise for all WTCs */
+            types::Velocity     departureClimbRates[5];     /**< Defines the climb rates for all WTCs */
+            bool                ariwsActive;                /**< Defines if ARIWS is active or not */
+            types::Length       ariwsDistanceDeadband;      /**< Defines the distance in which the RIW is suppressed around the holding point */
+            types::Length       ariwsMaximumDistance;       /**< Defines the maximum distance to check if the flight is on the runway */
 
             /**
              * @brief Creates an empty and uninitialized system configuration
@@ -43,6 +44,7 @@ namespace topskytower {
                     valid(false),
                     hoppiesCode(),
                     uiBackgroundColor{ 50, 50, 50 },
+                    uiBackgroundActiveColor{ 0, 150, 0 },
                     uiForegroundColor{ 150, 150, 150, },
                     fontFamily(),
                     fontSize(3.2f),
