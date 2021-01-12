@@ -174,7 +174,7 @@ void RadarScreen::initialize() {
 
         if (nullptr != this->m_sectorControl)
             delete this->m_sectorControl;
-        this->m_sectorControl = new surveillance::SectorControl(this->m_airport, file.sectors());
+        this->m_sectorControl = new management::SectorControl(this->m_airport, file.sectors());
 
         /* find the center of the airport */
         types::Coordinate center;
@@ -240,7 +240,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     this->m_lastRenderingTime = std::chrono::system_clock::now();
 }
 
-surveillance::SectorControl& RadarScreen::sectorControl() {
+management::SectorControl& RadarScreen::sectorControl() {
     return *this->m_sectorControl;
 }
 

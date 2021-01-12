@@ -6,12 +6,14 @@
 #   Creates the management library
 
 SET(HEADER_FILES
-    ${CMAKE_SOURCE_DIR}/include/management/StandControl.h
     ${CMAKE_SOURCE_DIR}/include/management/PdcControl.h
+    ${CMAKE_SOURCE_DIR}/include/management/SectorControl.h
+    ${CMAKE_SOURCE_DIR}/include/management/StandControl.h
 )
 SET(SOURCE_FILES
-    StandControl.cpp
     PdcControl.cpp
+    SectorControl.cpp
+    StandControl.cpp
 )
 
 # define the helper library

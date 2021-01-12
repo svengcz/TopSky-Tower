@@ -7,11 +7,11 @@
 
 #include <algorithm>
 
-#include <surveillance/SectorControl.h>
+#include <management/SectorControl.h>
 #include <system/FlightRegistry.h>
 
 using namespace topskytower;
-using namespace topskytower::surveillance;
+using namespace topskytower::management;
 using namespace topskytower::types;
 
 SectorControl::SectorControl() :

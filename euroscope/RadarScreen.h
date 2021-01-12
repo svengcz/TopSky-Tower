@@ -13,10 +13,10 @@
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
 
+#include <management/SectorControl.h>
 #include <management/StandControl.h>
 #include <surveillance/ARIWSControl.h>
 #include <surveillance/CMACControl.h>
-#include <surveillance/SectorControl.h>
 #include <system/FlightRegistry.h>
 
 #include "ui/UiManager.h"
@@ -52,7 +52,7 @@ namespace topskytower {
             std::string                           m_airport;
             UiManager                             m_userInterface;
             system::FlightRegistry*               m_flightRegistry;
-            surveillance::SectorControl*          m_sectorControl;
+            management::SectorControl*            m_sectorControl;
             management::StandControl*             m_standControl;
             surveillance::ARIWSControl*           m_ariwsControl;
             surveillance::CMACControl*            m_cmacControl;
@@ -141,7 +141,7 @@ namespace topskytower {
              * @brief Returns the changable controller manager
              * @return The controller manager
              */
-            surveillance::SectorControl& sectorControl();
+            management::SectorControl& sectorControl();
             /**
              * @brief Returns the flight registry
              * @return The flight registry

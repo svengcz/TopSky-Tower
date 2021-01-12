@@ -1,6 +1,6 @@
 /*
  * @brief Defines a sector control system
- * @file surveillance/SectorControl.h
+ * @file management/SectorControl.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 
@@ -14,10 +14,10 @@
 #include <types/Sector.h>
 
 namespace topskytower {
-    namespace surveillance {
+    namespace management {
         /**
          * @brief Describes a sector control system
-         * @ingroup surveillance
+         * @ingroup management
          */
         class SectorControl {
 #ifndef DOXYGEN_IGNORE
