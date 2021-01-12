@@ -97,8 +97,10 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
         }
 
         /* RNAV is required */
-        if (true == sit->second.requiresRnav && false == flight.flightPlan().rnavCapable())
-            it->second.errorCodes.push_back(ErrorCode::Navigation);
+        if (true == system::ConfigurationRegistry::instance().systemConfiguration().flightPlanCheckNavigation) {
+            if (true == sit->second.requiresRnav && false == flight.flightPlan().rnavCapable())
+                it->second.errorCodes.push_back(ErrorCode::Navigation);
+        }
 
         /* transponder is required */
         if (true == sit->second.requiresTransponder && false == flight.flightPlan().transponderExists())

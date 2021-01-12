@@ -69,6 +69,11 @@ namespace topskytower {
          *     <td>1</td><td>Boolean</td>
          *   </tr>
          *   <tr>
+         *     <td>SURV_FlightPlanCheckNav</td>
+         *     <td>Defines if the flight plan checker needs to check the RNAV-capabilities.</td>
+         *     <td>1</td><td>Boolean</td>
+         *   </tr>
+         *   <tr>
          *     <td>SURV_ARIWS_Active</td>
          *     <td>Defines if ARIWS is active.</td>
          *     <td>1</td><td>Boolean</td>
