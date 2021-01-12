@@ -10,6 +10,7 @@
 
 #include "elements/UiElement.h"
 #include "elements/Text.h"
+#include "elements/ToolbarButton.h"
 
 namespace topskytower {
     namespace euroscope {
@@ -34,9 +35,7 @@ namespace topskytower {
                 Reload          = 3,
                 ReloadSystem    = 4,
                 ReloadAircrafts = 5,
-                ReloadAirports  = 6,
-                Systems         = 31,
-                PDC             = 32
+                ReloadAirports  = 6
             };
 
             struct Element {
@@ -55,13 +54,14 @@ namespace topskytower {
                 Level();
             };
 
-            UiManager*             m_manager;
-            std::shared_ptr<Level> m_toplevel;
+            UiManager*                m_manager;
+            std::shared_ptr<Level>    m_toplevel;
+            std::list<ToolbarButton*> m_buttons;
 
             static void createElement(const std::string& text, ClickId uid, std::shared_ptr<Level>& parent);
             static ClickId findClickedElement(const std::shared_ptr<Level>& level, const Gdiplus::PointF& pt);
             static void deactivate(std::shared_ptr<Level>& level);
-            void drawLevel(Gdiplus::Graphics* graphics, std::shared_ptr<Level>& level, int startX, int startY, bool horizontal);
+            int drawLevel(Gdiplus::Graphics* graphics, std::shared_ptr<Level>& level, int startX, int startY, bool horizontal);
             void draw(Gdiplus::Graphics* graphics, std::shared_ptr<Level>& level, int startX, int startY, bool horizontal);
             void setPosition(const Gdiplus::PointF& position) override;
             void move(const Gdiplus::PointF& direction) override;
@@ -74,6 +74,10 @@ namespace topskytower {
              * @param[in] manager The window manager
              */
             Toolbar(RadarScreen* parent, UiManager* manager);
+            /**
+             * @brief Destroys all internal elements
+             */
+            ~Toolbar();
 
             /**
              * @brief Handles the click events

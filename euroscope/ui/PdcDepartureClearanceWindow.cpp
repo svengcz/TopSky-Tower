@@ -40,7 +40,7 @@ public:
 
 PdcDepartureClearanceWindow::PdcDepartureClearanceWindow(RadarScreen* parent,
                                                          const surveillance::PdcControl::ClearanceMessagePtr& message) :
-        InsetWindow("Departure Clearance", parent, Gdiplus::RectF(0, 40, 450, 145), false),
+        InsetWindow("Departure Clearance", parent, Gdiplus::RectF(0, 40, 450, 145), false, true),
         m_message(message),
         m_nextFrequencyField(nullptr) {
     Gdiplus::RectF dimension;
@@ -123,19 +123,6 @@ PdcDepartureClearanceWindow::~PdcDepartureClearanceWindow() {
     for (auto it = this->m_elements.begin(); this->m_elements.end() != it; ++it)
         delete* it;
     this->m_elements.clear();
-}
-
-void PdcDepartureClearanceWindow::setActive(bool active) {
-    InsetWindow::setActive(active);
-
-    if (false == active) {
-        this->m_parent->uiManager().removeCustomWindow(this);
-        delete this;
-    }
-    else {
-        this->centeredPosition();
-        this->m_parent->uiManager().addCustomWindow(this);
-    }
 }
 
 bool PdcDepartureClearanceWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {

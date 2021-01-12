@@ -37,11 +37,6 @@ namespace topskytower {
             ~PdcDepartureClearanceWindow();
 
             /**
-             * @brief Marks the window as active or not
-             * @param[in] active True if the window needs to be shown, else false
-             */
-            void setActive(bool active) override;
-            /**
              * @brief Handles the click events
              * @param[in] pt The position of the mouse
              * @param[in] button The clicked mouse button

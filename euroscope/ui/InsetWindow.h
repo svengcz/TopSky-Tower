@@ -25,6 +25,7 @@ namespace topskytower {
             bool            m_active;
             bool            m_resizable;
             bool            m_resizeActive;
+            bool            m_registerInManager;
             std::string     m_title;
             Gdiplus::RectF  m_headlineRectangle;
             Gdiplus::RectF  m_crossRectangle;
@@ -45,8 +46,10 @@ namespace topskytower {
              * @param[in] parent The parent RADAR screen
              * @param[in] rectangle The position and dimension of the window
              * @param[in] resizable Marks if the window is resizable or not
+             * @param[in] registerInManager Marks if the window needs to be registered and removed in the UI manager
              */
-            InsetWindow(const std::string& title, RadarScreen* parent, const Gdiplus::RectF& rectangle, bool resizable);
+            InsetWindow(const std::string& title, RadarScreen* parent, const Gdiplus::RectF& rectangle, bool resizable,
+                        bool registerInManager);
 
             /**
              * @brief Sets the content area's size

@@ -13,7 +13,6 @@
 namespace topskytower {
     namespace euroscope {
         class InsetWindow;
-        class HoppiesLogonWindow;
         class RadarScreen;
         class Toolbar;
 
@@ -38,14 +37,12 @@ namespace topskytower {
              * @brief Defines the different window IDs
              */
             enum class WindowId {
-                Undefined = 0, /**< An undefined window ID */
-                PdcLogon = 1   /**< The PDC logon window is requested */
+                Undefined = 0 /**< An undefined window ID */
             };
 
         private:
             RadarScreen*                        m_parent;
             Toolbar*                            m_toolbar;
-            HoppiesLogonWindow*                 m_hoppies;
             std::map<std::string, InsetWindow*> m_customWindows;
             std::list<InsetWindow*>             m_renderQueue;
 

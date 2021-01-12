@@ -17,7 +17,7 @@ using namespace topskytower;
 using namespace topskytower::euroscope;
 
 MessageViewerWindow::MessageViewerWindow(RadarScreen* parent, const std::string& title, const std::string& message) :
-        InsetWindow(title, parent, Gdiplus::RectF(0, 40, 400, 300), false),
+        InsetWindow(title, parent, Gdiplus::RectF(0, 40, 400, 300), false, true),
         m_firstRendering(true) {
     /* add the message viewer */
     this->m_elements.push_back(new TextViewer(this->m_parent, message, this->m_contentArea));
@@ -27,18 +27,6 @@ MessageViewerWindow::~MessageViewerWindow() {
     if (0 != this->m_elements.size())
         delete this->m_elements.front();
     this->m_elements.clear();
-}
-
-void MessageViewerWindow::setActive(bool active) {
-    InsetWindow::setActive(active);
-
-    if (false == active) {
-        this->m_parent->uiManager().removeCustomWindow(this);
-        delete this;
-    }
-    else {
-        this->m_parent->uiManager().addCustomWindow(this);
-    }
 }
 
 void MessageViewerWindow::centeredPosition() {

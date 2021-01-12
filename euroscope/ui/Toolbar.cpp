@@ -11,6 +11,9 @@
 
 #include "../PlugIn.h"
 #include "../RadarScreen.h"
+#include "AriwsToolbarButton.h"
+#include "LvpToolbarButton.h"
+#include "PdcToolbarButton.h"
 #include "Toolbar.h"
 #include "UiManager.h"
 
@@ -25,7 +28,13 @@ Toolbar::Level::Level() :
 Toolbar::Toolbar(RadarScreen* parent, UiManager* manager) :
         UiElement(parent, Gdiplus::RectF()),
         m_toplevel(nullptr),
-        m_manager(manager) {
+        m_manager(manager),
+        m_buttons() { }
+
+Toolbar::~Toolbar() {
+    for (auto& button : this->m_buttons)
+        delete button;
+    this->m_buttons.clear();
 }
 
 void Toolbar::createElement(const std::string& text, Toolbar::ClickId uid, std::shared_ptr<Toolbar::Level>& parent) {
@@ -104,7 +113,6 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
 
     switch (Toolbar::findClickedElement(this->m_toplevel, pt)) {
     case Toolbar::ClickId::Settings:
-    case Toolbar::ClickId::Systems:
         resetUi = false;
         break;
     case Toolbar::ClickId::Reload:
@@ -123,11 +131,7 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
                                                             system::ConfigurationRegistry::UpdateType::Aircrafts);
         break;
-    case Toolbar::ClickId::PDC:
-        this->m_manager->activateUi(UiManager::WindowId::PdcLogon);
-        break;
     case Toolbar::ClickId::Group:
-        break;
     case Toolbar::ClickId::Undefined:
     default:
         retval = false;
@@ -138,6 +142,16 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     if (true == resetUi)
         this->resetClickStates();
 
+    /* check if one of the buttons is clicked */
+    if (false == retval) {
+        for (auto& entry : this->m_buttons) {
+            if (true == entry->click(pt, button)) {
+                retval = true;
+                break;
+            }
+        }
+    }
+
     return retval;
 }
 
@@ -146,12 +160,12 @@ void Toolbar::resetClickStates() {
         Toolbar::deactivate(element.child);
 }
 
-void Toolbar::drawLevel(Gdiplus::Graphics* graphics, std::shared_ptr<Toolbar::Level>& level, int startX, int startY, bool horizontal) {
+int Toolbar::drawLevel(Gdiplus::Graphics* graphics, std::shared_ptr<Toolbar::Level>& level, int startX, int startY, bool horizontal) {
     float maxHeight = 0.0f, maxWidth = 0.0f, offsetX, offsetY;
 
     /* do not visualize it */
     if (nullptr == level || false == level->active)
-        return;
+        return 0;
 
     /* prepare the texts */
     for (auto& element : level->elements) {
@@ -205,6 +219,11 @@ void Toolbar::drawLevel(Gdiplus::Graphics* graphics, std::shared_ptr<Toolbar::Le
         position.X += offsetX;
         position.Y += offsetY;
     }
+
+    if (true == horizontal)
+        return static_cast<int>(position.X);
+    else
+        return static_cast<int>(position.Y);
 }
 
 void Toolbar::draw(Gdiplus::Graphics* graphics, std::shared_ptr<Level>& level, int startX, int startY, bool horizontal) {
@@ -213,7 +232,7 @@ void Toolbar::draw(Gdiplus::Graphics* graphics, std::shared_ptr<Level>& level, i
         return;
 
     /* draw the level */
-    this->drawLevel(graphics, level, startX, startY, horizontal);
+    int offset = this->drawLevel(graphics, level, startX, startY, horizontal);
 
     /* check the children */
     if (false == horizontal) {
@@ -221,6 +240,21 @@ void Toolbar::draw(Gdiplus::Graphics* graphics, std::shared_ptr<Level>& level, i
             if (nullptr != element.child && true == element.child->active)
                 this->drawLevel(graphics, element.child, static_cast<int>(element.visualization.rectangle().GetRight() + 0.5f) - 10,
                                 static_cast<int>(element.visualization.rectangle().GetTop() + 0.5f) - 2, false);
+        }
+    }
+    /* draw the buttons */
+    else {
+        for (auto& button : this->m_buttons) {
+            offset += 10;
+
+            auto area = button->area();
+            area.X = static_cast<float>(offset);
+            area.Y = static_cast<float>(startY) + 2.0f;
+            area.Height = level->rectangle.Height - 4.0f;
+            button->setArea(area);
+            button->visualize(graphics);
+
+            offset += static_cast<int>(area.Width + 0.5f);
         }
     }
 }
@@ -238,11 +272,6 @@ void Toolbar::initialize() {
 
     this->m_toplevel->active = true;
 
-    /* set the systems meny */
-    Toolbar::createElement("SYSTEMS", Toolbar::ClickId::Systems, this->m_toplevel);
-    this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
-    Toolbar::createElement("PDC", Toolbar::ClickId::PDC, this->m_toplevel->elements.back().child);
-
     /* set the settings menu */
     Toolbar::createElement("SETTINGS", Toolbar::ClickId::Settings, this->m_toplevel);
     this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
@@ -250,6 +279,11 @@ void Toolbar::initialize() {
     Toolbar::createElement("RELOAD SYSTEM", Toolbar::ClickId::ReloadSystem, this->m_toplevel->elements.back().child);
     Toolbar::createElement("RELOAD AIRCRAFTS", Toolbar::ClickId::ReloadAircrafts, this->m_toplevel->elements.back().child);
     Toolbar::createElement("RELOAD AIRPORTS", Toolbar::ClickId::ReloadAirports, this->m_toplevel->elements.back().child);
+
+    /* add the buttons */
+    this->m_buttons.push_back(new PdcToolbarButton(this->m_parent));
+    this->m_buttons.push_back(new AriwsToolbarButton(this->m_parent));
+    this->m_buttons.push_back(new LvpToolbarButton(this->m_parent));
 }
 
 bool Toolbar::visualize(Gdiplus::Graphics* graphics) {

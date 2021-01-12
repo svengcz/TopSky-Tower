@@ -34,16 +34,22 @@ SET(SOURCE_FILES
     TopSkyTowerMain.cpp
 )
 SET(SOURCE_FILES_UI
+    ui/AriwsToolbarButton.cpp
+    ui/AriwsToolbarButton.h
     ui/HoppiesLogonWindow.cpp
     ui/HoppiesLogonWindow.h
     ui/InsetWindow.cpp
     ui/InsetWindow.h
+    ui/LvpToolbarButton.cpp
+    ui/LvpToolbarButton.h
     ui/MessageViewerWindow.cpp
     ui/MessageViewerWindow.h
     ui/PdcDepartureClearanceWindow.cpp
     ui/PdcDepartureClearanceWindow.h
     ui/PdcMessageViewerWindow.cpp
     ui/PdcMessageViewerWindow.h
+    ui/PdcToolbarButton.cpp
+    ui/PdcToolbarButton.h
     ui/Toolbar.cpp
     ui/Toolbar.h
     ui/UiManager.cpp
@@ -58,6 +64,8 @@ SET(SOURCE_FILES_UI_ELEMENTS
     ui/elements/Text.h
     ui/elements/TextViewer.cpp
     ui/elements/TextViewer.h
+    ui/elements/ToolbarButton.cpp
+    ui/elements/ToolbarButton.h
     ui/elements/UiElement.cpp
     ui/elements/UiElement.h
 )

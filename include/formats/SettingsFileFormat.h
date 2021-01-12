@@ -39,14 +39,19 @@ namespace topskytower {
          *     <td>50, 50, 50</td><td>R,G,B</td>
          *   </tr>
          *   <tr>
+         *     <td>UI_ForegroundColor</td>
+         *     <td>Defines the foreground color of TopSky-Tower windows.</td>
+         *     <td>150, 150, 150</td><td>R,G,B</td>
+         *   </tr>
+         *   <tr>
          *     <td>UI_BackgroundActiveColor</td>
          *     <td>Defines the background color of TopSky-Tower windows for active elements.</td>
          *     <td>0, 150, 0</td><td>R,G,B</td>
          *   </tr>
          *   <tr>
-         *     <td>UI_ForegroundColor</td>
-         *     <td>Defines the foreground color of TopSky-Tower windows.</td>
-         *     <td>150, 150, 150</td><td>R,G,B</td>
+         *     <td>UI_ForegroundActiveColor</td>
+         *     <td>Defines the foreground color of TopSky-Tower windows for active elements.</td>
+         *     <td>100, 100, 100</td><td>R,G,B</td>
          *   </tr>
          *   <tr>
          *     <td>SYS_TrackingOnGround</td>

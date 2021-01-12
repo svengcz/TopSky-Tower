@@ -17,7 +17,6 @@ using namespace topskytower::euroscope;
 UiManager::UiManager(RadarScreen* parent) :
         m_parent(parent),
         m_toolbar(nullptr),
-        m_hoppies(nullptr),
         m_customWindows(),
         m_renderQueue() { }
 
@@ -28,27 +27,12 @@ UiManager::~UiManager() {
         delete this->m_toolbar;
         this->m_toolbar = nullptr;
     }
-
-    if (nullptr != this->m_hoppies) {
-        delete this->m_hoppies;
-        this->m_hoppies = nullptr;
-    }
 }
 
 void UiManager::activateUi(UiManager::WindowId id) {
+    (void)id;
     if (nullptr == this->m_parent)
         return;
-
-    switch (id) {
-    case UiManager::WindowId::PdcLogon:
-        if (nullptr == this->m_hoppies)
-            this->m_hoppies = new HoppiesLogonWindow(this->m_parent);
-        this->m_hoppies->setActive(true);
-        this->m_renderQueue.push_back(this->m_hoppies);
-        break;
-    default:
-        break;
-    }
 }
 
 void UiManager::updateRenderQueue(InsetWindow* element) {
@@ -73,9 +57,6 @@ bool UiManager::click(const std::string_view& objectName, const Gdiplus::PointF&
     if ("Toolbar" == objectName) {
         return this->m_toolbar->click(pt, button);
     }
-    else if ("PDC" == objectName) {
-        return this->click(this->m_hoppies, pt, button);
-    }
     else {
         auto it = this->m_customWindows.find(std::string(objectName));
         if (this->m_customWindows.end() != it)
@@ -96,14 +77,9 @@ bool UiManager::move(const std::string_view& objectName, const Gdiplus::PointF& 
     if (nullptr == this->m_parent)
         return false;
 
-    if ("PDC" == objectName) {
-        return this->move(this->m_hoppies, pt, released);
-    }
-    else {
-        auto it = this->m_customWindows.find(std::string(objectName));
-        if (this->m_customWindows.end() != it)
-            return this->move(it->second, pt, released);
-    }
+    auto it = this->m_customWindows.find(std::string(objectName));
+    if (this->m_customWindows.end() != it)
+        return this->move(it->second, pt, released);
 
     return false;
 }

@@ -19,11 +19,13 @@ using namespace topskytower::euroscope;
 #define CLICK_ROI_SPACING 10.0f
 #define RESIZE_BTN_SIZE   5.0f
 
-InsetWindow::InsetWindow(const std::string& title, RadarScreen* parent, const Gdiplus::RectF& rectangle, bool resizable) :
+InsetWindow::InsetWindow(const std::string& title, RadarScreen* parent, const Gdiplus::RectF& rectangle,
+                         bool resizable, bool registerInManager) :
         UiElement(parent, rectangle),
         m_active(false),
         m_resizable(resizable),
         m_resizeActive(false),
+        m_registerInManager(registerInManager),
         m_title(title),
         m_titleVisualization(),
         m_headlineRectangle(),
@@ -72,6 +74,16 @@ void InsetWindow::resize() { }
 
 void InsetWindow::setActive(bool active) {
     this->m_active = active;
+
+    if (true == this->m_registerInManager) {
+        if (false == active) {
+            this->m_parent->uiManager().removeCustomWindow(this);
+            delete this;
+        }
+        else {
+            this->m_parent->uiManager().addCustomWindow(this);
+        }
+    }
 }
 
 bool InsetWindow::isActive() const {

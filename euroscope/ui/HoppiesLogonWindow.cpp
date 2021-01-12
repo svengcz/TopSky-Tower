@@ -40,7 +40,7 @@ public:
 };
 
 HoppiesLogonWindow::HoppiesLogonWindow(RadarScreen* parent) :
-        InsetWindow("PDC", parent, Gdiplus::RectF(0, 40, 200, 105), false) {
+        InsetWindow("PDC", parent, Gdiplus::RectF(0, 40, 200, 105), false, true) {
     this->centeredPosition();
 
     /* add an edit text for the station */

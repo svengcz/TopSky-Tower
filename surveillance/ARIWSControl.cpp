@@ -102,8 +102,11 @@ void ARIWSControl::reinitialize(system::ConfigurationRegistry::UpdateType type) 
 
 void ARIWSControl::updateFlight(const types::Flight& flight) {
     /* check if the system is active */
-    if (false == system::ConfigurationRegistry::instance().systemConfiguration().ariwsActive)
+    if (false == system::ConfigurationRegistry::instance().systemConfiguration().ariwsActive ||
+        false == system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsOnline)
+    {
         return;
+    }
 
     /* ignore departing or lining up flights */
     auto aIt = std::find(this->m_incursionWarnings.begin(), this->m_incursionWarnings.end(), flight.callsign());
@@ -177,8 +180,11 @@ void ARIWSControl::removeFlight(const std::string& callsign) {
 
 bool ARIWSControl::runwayIncursionWarning(const types::Flight& flight) const {
     /* check if the system is active */
-    if (false == system::ConfigurationRegistry::instance().systemConfiguration().ariwsActive)
+    if (false == system::ConfigurationRegistry::instance().systemConfiguration().ariwsActive ||
+        false == system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsOnline)
+    {
         return false;
+    }
 
     auto aIt = std::find(this->m_incursionWarnings.begin(), this->m_incursionWarnings.end(), flight.callsign());
     return this->m_incursionWarnings.end() != aIt;

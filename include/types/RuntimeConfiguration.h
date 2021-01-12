@@ -17,9 +17,11 @@ namespace topskytower {
          * @ingroup types
          */
         struct RuntimeConfiguration {
+            bool ariwsOnline;
             bool lowVisibilityProcedures;
 
             RuntimeConfiguration() :
+                    ariwsOnline(true),
                     lowVisibilityProcedures(false) { }
         };
     }

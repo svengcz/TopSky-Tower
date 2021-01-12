@@ -22,6 +22,7 @@ namespace topskytower {
             std::uint8_t        uiBackgroundColor[3];       /**< Defines the background color of the UI elements */
             std::uint8_t        uiForegroundColor[3];       /**< Defines the foreground color of the UI elements */
             std::uint8_t        uiBackgroundActiveColor[3]; /**< Defines the background color of active UI elements */
+            std::uint8_t        uiForegroundActiveColor[3]; /**< Defines the foreground color of active UI elements */
             std::string         fontFamily;                 /**< Defines the font family of the visualizations */
             float               fontSize;                   /**< Defines the font size of the visualizations */
             bool                trackingOnGround;           /**< Defines if the ground controllers track flights */
@@ -44,8 +45,9 @@ namespace topskytower {
                     valid(false),
                     hoppiesCode(),
                     uiBackgroundColor{ 50, 50, 50 },
-                    uiBackgroundActiveColor{ 0, 150, 0 },
                     uiForegroundColor{ 150, 150, 150, },
+                    uiBackgroundActiveColor{ 0, 150, 0 },
+                    uiForegroundActiveColor{ 100, 100, 100 },
                     fontFamily(),
                     fontSize(3.2f),
                     trackingOnGround(false),

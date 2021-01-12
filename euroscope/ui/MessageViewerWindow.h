@@ -34,11 +34,6 @@ namespace topskytower {
             ~MessageViewerWindow();
 
             /**
-             * @brief Marks the window as active or not
-             * @param[in] active True if the window needs to be shown, else false
-             */
-            void setActive(bool active) override;
-            /**
              * @brief Visualizes the toolbar with all active sub-menus
              * @param[in] graphics The graphics container
              * @return True if the element was visualized, else false
