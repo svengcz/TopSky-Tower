@@ -23,6 +23,9 @@ It allows the highlighting of tags, the tagging of missed-approaches or irregula
 
 ![Missed-Approach](doc/imgs/TagAlert.png)
 
+
+### Flight plan checks and stand management
+
 An other system is the flight plan checking tool.
 It checks the flight plan based on flight levels, the even-odd-rule, navigation capabilities and engine types.
 Additionally is the definition of destination constraints possible.
@@ -65,6 +68,35 @@ correctly assigned to the aircraft.
 
 ![Stand assignments](doc/imgs/StandControl.png)
 
+### Ground status
+
+TopSky-Tower introduces the tag element "TopSky-Tower / Departure Ground status" which is supposed to replace the integrates EuroScope GroundStatus-flag.
+TopSky-Tower is designed to be compatible with EuroScope, but extends or replaces existing features.
+The "TopSky-Tower / Departure Ground status" flags are published to normal EuroScope users for the existing flags:
+ - ST-UP
+ - PUSH
+ - TAXI
+ - DEPA
+
+The new flags (DEICE, LI-UP) are published via the tags to the other TopSky-Tower controllers.
+This allows the most flexible combination without breaking normal EuroScope-features.
+
+"TopSky-Tower / Arrival Ground status" is a complete new ground status field for arriving flights.
+It allows the following entries:
+ - APPR
+ - LAND
+ - TAXI
+ - GO-AR
+
+The "APPR" flag is used to mark that the initial contact by the pilot happened, but no landing clearance was given.
+"LAND" marks a given landing clearance, "TAXI" indicates that the flight is taxiing on the ground and "GO-AR"
+defines that the flight is going around. The "GO-AR" flag sets the M/A-flag in the manually alerts automatically.
+This allows a single-click communication with TopSky for the upper airspaces.
+
+The arrival flags are also shared with all other TopSky-Tower controllers, but is hidden for the default EuroScope-users.
+
+### PDC communication
+
 A menu allows to automatically assign a new stand, manually assign a stand and publish the stand to other controllers.
 The publish-function is compatible to GRplugin.
 
@@ -85,6 +117,39 @@ The clearance opens a window that allows a review of the clearance and add a cus
 In the end does it send a CPDLC-message to the aircraft.
 
 ![PDC departure clearance](doc/imgs/PdcClearance.png)
+
+### Surveillance systems
+
+#### ARIWS (Autonomous Runway Incursion Warning System)
+
+The ARIWS is used to identify flights that are joining a runway without any clearance.
+The system uses the extended Ground status flags to check if the flight is departing or lining up.
+
+The system is designed in that way that it is a bit more relaxed than the realworld application.
+It defines some dead area around a holding point where an aircraft can hold position without a RIW trigger.
+This is used to reduce the number of false-positives due to inaccurate taxiings or scenery mismatches.
+
+If an aircraft is behind a configured holding point, facing into the runway's direction and does not have
+a line-up or departure clearance, the RIW is triggered and visualized in the "TopSky-Tower / Surveillance alerts" tag element.
+
+![Runway Incursion Warning](doc/imgs/RunwayIncursionWarning.png)
+
+### Controller menu
+
+The controller menu is defined on top of the RADAR screen as a toolbar.
+It is possible to reload single configuration files and activate or deactivate single functions or components of the system.
+
+![Toolbar](doc/imgs/Toolbar.png)
+
+The Settings-menu is a drop-down menu to reload single configuration files.
+
+A PDC-button activates or deactivates the PDC system. It is deactivated after a system start.
+
+The ARIWS-button enables or disables ARIWS including the warnings in the flight's tags.
+
+An other button is the LVP-button which activates or deactivates the Low-Visibility-Procedures.
+The normal procedure mode is activated after a system startup. This flag is i.e. used by ARIWS to select the correct
+holding points to analyise the runway incursions per aircraft.
 
 ## Setup
 The setup describes two different ways of installation.
@@ -117,13 +182,18 @@ It makes sense to integrate the following entries to the departure list:
   - Right button: TopSky-Tower / FP check menu
 - TopSky-Tower / PDC indicator
   - Right button: TopSky-Tower / PDC menu bar
+- TopSky-Tower / Departure Ground status
+  - Right button: TopSky-Tower / Departure Ground status menu
 
 The arrival list should have the following entries:
 - TopSky-Tower / Assigned stand
   - Right button: TopSky-Tower / Stand menu
+- TopSky-Tower / Arrival Ground status
+  - Right button: TopSky-Tower / Arrival Ground status menu
 
 The tag extension should have the following entries for the Correlated A+C mode, Correlated S mode in all three entries:
 - In one single line:
+  - TopSky-Tower / Surveillance alerts
   - TopSky-Tower / Manually alerts 0
   - TopSky-Tower / Manually alerts 1
   - TopSky-Tower / Manually alerts 1

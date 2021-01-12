@@ -1,0 +1,7 @@
+/**
+ * @defgroup management Management
+ * Contains all components that are used for a management of the airports or between the controllers
+ *
+ * The management modules are support modules for the controllers to synchronize with each other
+ * and plan actions in high-traffic situations.
+ */

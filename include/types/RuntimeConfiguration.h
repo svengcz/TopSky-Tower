@@ -17,8 +17,8 @@ namespace topskytower {
          * @ingroup types
          */
         struct RuntimeConfiguration {
-            bool ariwsOnline;
-            bool lowVisibilityProcedures;
+            bool ariwsOnline;             /**< Marks if ARIWS is active */
+            bool lowVisibilityProcedures; /**< Marks if LVP are active */
 
             RuntimeConfiguration() :
                     ariwsOnline(true),
