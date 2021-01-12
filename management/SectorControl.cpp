@@ -593,10 +593,15 @@ void SectorControl::updateFlight(const types::Flight& flight) {
     {
         types::Position predicted;
 
+        /* use the exactly same position, but change the evaluation of the clearance flag */
         if (types::Sector::Type::Delivery == this->m_ownSector->sector.type())
             predicted = flight.currentPosition();
-        else
+        /* the flight is moving on the ground -> predict only 10 seconds */
+        else if (40_kn > flight.groundSpeed())
             predicted = flight.predict(10_s, 20_kn);
+        /* the flight is assumed to be in the air */
+        else
+            predicted = flight.predict(20_s, flight.groundSpeed());
 
         /* get the handoff initiator to avoid rehandoffs if we received an early handoff */
         auto handoffIt = this->m_handoffOfFlightsToMe.find(flight.callsign());
@@ -683,12 +688,19 @@ bool SectorControl::handoffRequired(const types::Flight& flight) const {
     return false;
 }
 
+bool SectorControl::handoffRequired(const std::string& callsign) const {
+    auto it = this->m_handoffs.find(callsign);
+    if (this->m_handoffs.cend() != it)
+        return false == it->second.handoffPerformed;
+    return false;
+}
+
 bool SectorControl::handoffPossible(const types::Flight& flight) const {
     if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
         return false;
 
     bool inOwnSector = this->isInOwnSectors(flight, flight.currentPosition(), false);
-    return true == inOwnSector || (false == inOwnSector && true == flight.isTracked());
+    return true == inOwnSector || true == flight.isTracked();
 }
 
 void SectorControl::handoffPerformed(const types::Flight& flight) {
@@ -699,6 +711,14 @@ void SectorControl::handoffPerformed(const types::Flight& flight) {
 
 const types::ControllerInfo& SectorControl::handoffSector(const types::Flight& flight) const {
     auto it = this->m_handoffs.find(flight.callsign());
+    if (this->m_handoffs.cend() == it)
+        return this->m_unicom->sector.controllerInfo();
+
+    return it->second.nextSector->sector.controllerInfo();
+}
+
+const types::ControllerInfo& SectorControl::handoffSector(const std::string& callsign) const {
+    auto it = this->m_handoffs.find(callsign);
     if (this->m_handoffs.cend() == it)
         return this->m_unicom->sector.controllerInfo();
 

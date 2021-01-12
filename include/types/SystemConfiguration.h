@@ -27,6 +27,7 @@ namespace topskytower {
             float               fontSize;                   /**< Defines the font size of the visualizations */
             bool                trackingOnGround;           /**< Defines if the ground controllers track flights */
             bool                flightPlanCheckEvenOdd;     /**< Defines if the generic even-odd checks are performed */
+            bool                flightPlanCheckNavigation;  /**< Defines if the flight plan checker tests for RNAV-capabilities */
             types::Length       standAssociationDistance;   /**< Defines the maximum distance to assign automatically an aircraft to a stand */
             types::Velocity     departureSpeedV2[5];        /**< Defines the V2 speeds for all WTCs */
             types::Length       departureAccelerationAlt;   /**< Defines the acceleration altitude */
@@ -55,6 +56,7 @@ namespace topskytower {
                     fontSize(3.2f),
                     trackingOnGround(false),
                     flightPlanCheckEvenOdd(true),
+                    flightPlanCheckNavigation(true),
                     standAssociationDistance(10_nm),
                     departureSpeedV2{ 160_kn, 90_kn, 160_kn, 180_kn, 190_kn },
                     departureAccelerationAlt(2000_ft),
