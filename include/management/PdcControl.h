@@ -16,10 +16,10 @@
 #include <types/SystemConfiguration.h>
 
 namespace topskytower {
-    namespace surveillance {
+    namespace management {
         /**
          * @brief The PDC control is responsible to handle the communication with the pilots via PDC.
-         * @ingroup surveillance
+         * @ingroup management
          *
          * It uses <a href="https://www.hoppie.nl/acars/">Hoppies system</a> as the backend for the PDC-communication with the pilots.
          * The PDC control rejects logon-calls, etc. and is only used for clearances and normal text messages.
@@ -28,29 +28,25 @@ namespace topskytower {
          * If it receives an incoming message it performs a message validation and checks if automated response is required.
          * The system automatically rejects LOGON messages, because ground stations do not allow logons for clearances.
          *
-         * On the other hand does it check if the incoming message is a response for an earlier sent message.
-         * This is only done for CPDLC messages which required answers (flags are Y, WU, AN and R).
-         * It marks the received messages as positive or negative which can be used by the visualization.
-         * An positive answer is marked in the PDC-visualization in green and a negative answer in red.
-         *
-         * A second stage is that it analysis if the received message requires an response and marks the aircraft configuration
-         * for a required response. This is used by the visualization and marks the PDC-entry as white which indicates that
-         * the pilot expects an answer.
-         *
-         * If the controller sends a message that requires an answer, does the system automatically track all incoming messages
-         * and the visualization indicates a pending answer as yellow.
-         *
-         * And it contains all received messages which is visualized by indicating the number of unread messages.
-         *
-         * The control supports the following outgoing messages:
+         * The PDC system supports the following outgoing messages:
          * - Standby: Sends the AC a stand-by message that does not require an answer
          * - Clearance: Sends the clearance with the initial climb, etc.
-         * - Send TELEX: Sends a generic telex message to communicate with the pilot
-         * - Affirm: Sends an acknowledgment if the last incoming message requires it
-         * - Negative: Sends an negative to the aircraft if the last incoming messages requires an answer
          *
-         * If something gets stuck in the communication, is a reset possible which deletes all messages, etc.
-         * and resets the system to the initial state.
+         * It is designed in that way that it can handle CPDLC and TELEX messages.
+         * It provides an indicator and a sound-ping as soon as new messages are received.
+         * 
+         * ![PDC indicator](doc/imgs/PdcIndicator.png)
+         * 
+         * A reader is available that shows the oldest, received message.
+         * If multiple messages are received is it required to open multiple viewer.
+         * 
+         * ![PDC reader](doc/imgs/PdcReader.png)
+         * 
+         * It is possible to send CPDLC stand-by messages by one click or send the departure clearance.
+         * The clearance opens a window that allows a review of the clearance and add a custom message.
+         * In the end does it send a CPDLC-message to the aircraft.
+         * 
+         * ![PDC departure clearance](doc/imgs/PdcClearance.png)
          */
         class PdcControl {
         public:

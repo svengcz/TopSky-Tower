@@ -7,7 +7,7 @@
 
 #include "stdafx.h"
 
-#include <surveillance/PdcControl.h>
+#include <management/PdcControl.h>
 #include <system/ConfigurationRegistry.h>
 
 #include "../RadarScreen.h"
@@ -17,14 +17,14 @@
 using namespace topskytower;
 using namespace topskytower::euroscope;
 
-static __inline std::string __title(const surveillance::PdcControl::MessagePtr& message) {
+static __inline std::string __title(const management::PdcControl::MessagePtr& message) {
     std::string retval = message->sender + ": ";
 
     switch (message->type) {
-    case surveillance::PdcControl::MessageType::Telex:
+    case management::PdcControl::MessageType::Telex:
         retval += "TELEX";
         break;
-    case surveillance::PdcControl::MessageType::CPDLC:
+    case management::PdcControl::MessageType::CPDLC:
         retval += "CPDLC";
         break;
     default:
@@ -35,5 +35,5 @@ static __inline std::string __title(const surveillance::PdcControl::MessagePtr& 
     return retval;
 }
 
-PdcMessageViewerWindow::PdcMessageViewerWindow(RadarScreen* parent, const surveillance::PdcControl::MessagePtr& message) :
+PdcMessageViewerWindow::PdcMessageViewerWindow(RadarScreen* parent, const management::PdcControl::MessagePtr& message) :
         MessageViewerWindow(parent, __title(message), message->message) { }

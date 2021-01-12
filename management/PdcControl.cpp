@@ -14,13 +14,13 @@
 #include <curl/curl.h>
 
 #include <helper/String.h>
-#include <surveillance/PdcControl.h>
+#include <management/PdcControl.h>
 #include <system/ConfigurationRegistry.h>
 #include <system/FlightRegistry.h>
 
 using namespace std::chrono;
 using namespace topskytower;
-using namespace topskytower::surveillance;
+using namespace topskytower::management;
 
 static std::string __datalink = "http://www.hoppie.nl/acars/system/connect.html?logon=%LOGON%&from=%SENDER%";
 static std::string __receivedData;

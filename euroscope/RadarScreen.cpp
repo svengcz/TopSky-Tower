@@ -9,7 +9,7 @@
 
 #include <formats/AirportFileFormat.h>
 #include <formats/EseFileFormat.h>
-#include <surveillance/PdcControl.h>
+#include <management/PdcControl.h>
 
 #include "Converter.h"
 #include "PlugIn.h"

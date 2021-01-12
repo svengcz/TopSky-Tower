@@ -7,7 +7,7 @@
 
 #include "stdafx.h"
 
-#include <surveillance/PdcControl.h>
+#include <management/PdcControl.h>
 #include <system/ConfigurationRegistry.h>
 
 #include "../RadarScreen.h"
@@ -39,7 +39,7 @@ public:
 };
 
 PdcDepartureClearanceWindow::PdcDepartureClearanceWindow(RadarScreen* parent,
-                                                         const surveillance::PdcControl::ClearanceMessagePtr& message) :
+                                                         const management::PdcControl::ClearanceMessagePtr& message) :
         InsetWindow("Departure Clearance", parent, Gdiplus::RectF(0, 40, 450, 145), false, true),
         m_message(message),
         m_nextFrequencyField(nullptr) {
@@ -187,7 +187,7 @@ void PdcDepartureClearanceWindow::sendMessage() {
 
     this->m_message->frequency = this->m_nextFrequencyField->content();
 
-    surveillance::PdcControl::instance().sendClearanceMessage(this->m_message);
+    management::PdcControl::instance().sendClearanceMessage(this->m_message);
 }
 
 bool PdcDepartureClearanceWindow::visualize(Gdiplus::Graphics* graphics) {

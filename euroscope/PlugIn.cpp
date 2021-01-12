@@ -17,8 +17,8 @@
 #include <curl/curl.h>
 
 #include <helper/String.h>
+#include <management/PdcControl.h>
 #include <surveillance/FlightPlanControl.h>
-#include <surveillance/PdcControl.h>
 #include <system/ConfigurationRegistry.h>
 #include <version.h>
 
@@ -98,7 +98,7 @@ PlugIn::PlugIn() :
     for (auto& entry : fs::recursive_directory_iterator(path)) {
         if (true == fs::is_regular_file(entry) && "TopSkyTower-Pdc.wav" == entry.path().filename().string()) {
             this->m_pdcNotificationSound = entry.path().string();
-            surveillance::PdcControl::instance().registerNotificationCallback(this, &PlugIn::pdcMessageReceived);
+            management::PdcControl::instance().registerNotificationCallback(this, &PlugIn::pdcMessageReceived);
             break;
         }
     }
@@ -336,7 +336,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         *fontSize = 4.0f;
         std::memcpy(itemString, msg.c_str(), msg.length() + 1);
 
-        if (true == surveillance::PdcControl::instance().messagesAvailable(flight))
+        if (true == management::PdcControl::instance().messagesAvailable(flight))
             *colorCode = EuroScopePlugIn::TAG_COLOR_INFORMATION;
         else
             *colorCode = EuroScopePlugIn::TAG_COLOR_NON_CONCERNED;
@@ -922,11 +922,11 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
         break;
     case PlugIn::TagItemFunction::PdcMenu:
-        if (true == surveillance::PdcControl::instance().airportLoggedIn(flightScreen->airportIcao())) {
+        if (true == management::PdcControl::instance().airportLoggedIn(flightScreen->airportIcao())) {
             this->OpenPopupList(area, "PDC", 1);
             this->AddPopupListElement("Read", "", static_cast<int>(PlugIn::TagItemFunction::PdcReadMessage), false,
                                       EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
-                                      false == surveillance::PdcControl::instance().messagesAvailable(flight), false);
+                                      false == management::PdcControl::instance().messagesAvailable(flight), false);
             this->AddPopupListElement("Send stand-by", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendStandby));
             this->AddPopupListElement("Send clearance", "", static_cast<int>(PlugIn::TagItemFunction::PdcSendClearance), false,
                                       EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.flightPlan().clearanceFlag(), false);
@@ -934,7 +934,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::PdcReadMessage:
     {
-        auto message = surveillance::PdcControl::instance().nextMessage(flight);
+        auto message = management::PdcControl::instance().nextMessage(flight);
         if (nullptr != message) {
             auto screen = this->findLastActiveScreen();
 
@@ -944,13 +944,13 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     }
     case PlugIn::TagItemFunction::PdcSendStandby:
-        surveillance::PdcControl::instance().sendStandbyMessage(flight);
+        management::PdcControl::instance().sendStandbyMessage(flight);
         break;
     case PlugIn::TagItemFunction::PdcSendClearance:
     {
         auto screen = this->findLastActiveScreen();
 
-        surveillance::PdcControl::ClearanceMessagePtr message(new surveillance::PdcControl::ClearanceMessage());
+        management::PdcControl::ClearanceMessagePtr message(new management::PdcControl::ClearanceMessage());
         message->sender = flight.flightPlan().origin();
         message->receiver = flight.callsign();
         message->destination = flight.flightPlan().destination();

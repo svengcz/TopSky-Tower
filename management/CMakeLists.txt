@@ -7,9 +7,11 @@
 
 SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/management/StandControl.h
+    ${CMAKE_SOURCE_DIR}/include/management/PdcControl.h
 )
 SET(SOURCE_FILES
     StandControl.cpp
+    PdcControl.cpp
 )
 
 # define the helper library

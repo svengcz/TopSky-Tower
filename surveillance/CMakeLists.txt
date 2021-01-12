@@ -10,7 +10,6 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/surveillance/CMACControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/FlightPlanControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/MTCAControl.h
-    ${CMAKE_SOURCE_DIR}/include/surveillance/PdcControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/SectorControl.h
 )
 SET(SOURCE_FILES
@@ -18,7 +17,6 @@ SET(SOURCE_FILES
     CMACControl.cpp
     FlightPlanControl.cpp
     MTCAControl.cpp
-    PdcControl.cpp
     SectorControl.cpp
 )
 

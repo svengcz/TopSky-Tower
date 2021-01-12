@@ -7,7 +7,7 @@
 
 #include "stdafx.h"
 
-#include <surveillance/PdcControl.h>
+#include <management/PdcControl.h>
 #include <system/ConfigurationRegistry.h>
 
 #include "../RadarScreen.h"
@@ -29,7 +29,7 @@ private:
         if (0 == this->m_window->code().length())
             return;
 
-        surveillance::PdcControl::instance().addAirport(this->m_window->station());
+        management::PdcControl::instance().addAirport(this->m_window->station());
         this->m_window->setActive(false);
     }
 
@@ -63,8 +63,8 @@ HoppiesLogonWindow::HoppiesLogonWindow(RadarScreen* parent) :
 
 void HoppiesLogonWindow::setActive(bool active) {
     if (true == active) {
-        if (true == surveillance::PdcControl::instance().airportOnline(this->station())) {
-            surveillance::PdcControl::instance().removeAirport(this->station());
+        if (true == management::PdcControl::instance().airportOnline(this->station())) {
+            management::PdcControl::instance().removeAirport(this->station());
             return;
         }
     }

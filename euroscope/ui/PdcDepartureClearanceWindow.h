@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <surveillance/PdcControl.h>
+#include <management/PdcControl.h>
 
 #include "elements/EditText.h"
 #include "InsetWindow.h"
@@ -19,8 +19,8 @@ namespace topskytower {
          */
         class PdcDepartureClearanceWindow : public InsetWindow {
         private:
-            surveillance::PdcControl::ClearanceMessagePtr m_message;
-            EditText*                                     m_nextFrequencyField;
+            management::PdcControl::ClearanceMessagePtr m_message;
+            EditText*                                   m_nextFrequencyField;
 
             void centeredPosition();
 
@@ -30,7 +30,7 @@ namespace topskytower {
              * @param[in] parent The corresponding RADAR screen
              * @param[in] message The clearance message
              */
-            PdcDepartureClearanceWindow(RadarScreen* parent, const surveillance::PdcControl::ClearanceMessagePtr& message);
+            PdcDepartureClearanceWindow(RadarScreen* parent, const management::PdcControl::ClearanceMessagePtr& message);
             /**
              * @brief Destroys the window
              */

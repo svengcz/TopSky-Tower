@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <surveillance/PdcControl.h>
+#include <management/PdcControl.h>
 
 #include "MessageViewerWindow.h"
 
@@ -23,7 +23,7 @@ namespace topskytower {
              * @param[in] parent The corresponding RADAR screen
              * @param[in] message The PDC message
              */
-            PdcMessageViewerWindow(RadarScreen* parent, const surveillance::PdcControl::MessagePtr& message);
+            PdcMessageViewerWindow(RadarScreen* parent, const management::PdcControl::MessagePtr& message);
         };
     }
 }

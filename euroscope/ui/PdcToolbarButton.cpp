@@ -7,7 +7,7 @@
 
 #include "stdafx.h"
 
-#include <surveillance/PdcControl.h>
+#include <management/PdcControl.h>
 
 #include "../RadarScreen.h"
 #include "PdcToolbarButton.h"
@@ -22,7 +22,7 @@ void PdcToolbarButton::clicked() {
     bool isActive = this->active();
 
     if (true == isActive) {
-        surveillance::PdcControl::instance().removeAirport(this->m_parent->airportIcao());
+        management::PdcControl::instance().removeAirport(this->m_parent->airportIcao());
     }
     else {
         this->m_window = new HoppiesLogonWindow(this->m_parent);
@@ -31,6 +31,6 @@ void PdcToolbarButton::clicked() {
 }
 
 bool PdcToolbarButton::active() {
-    return surveillance::PdcControl::instance().airportLoggedIn(this->m_parent->airportIcao());
+    return management::PdcControl::instance().airportLoggedIn(this->m_parent->airportIcao());
 }
 
