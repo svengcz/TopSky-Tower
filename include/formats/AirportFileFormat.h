@@ -1,4 +1,4 @@
-/**
+/*
  * @brief Defines the airport file format
  * @file formats/AirportFileFormat.h
  * @author Sven Czarnian <devel@svcz.de>

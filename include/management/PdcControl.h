@@ -1,6 +1,6 @@
 /*
  * @brief Defines a PDC control system
- * @file surveillance/PdcControl.h
+ * @file management/PdcControl.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 
