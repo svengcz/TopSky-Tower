@@ -872,8 +872,10 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         }
         break;
     case PlugIn::TagItemFunction::HandoffSectorSelect:
-        if (true == flightScreen->sectorControl().handoffRequired(flight) || true == flightScreen->sectorControl().handoffPossible(flight))
+        if (true == flightScreen->sectorControl().handoffRequired(flight) || true == flightScreen->sectorControl().handoffPossible(flight)) {
             flightScreen->sectorControl().handoffSectorSelect(flight, itemString);
+            this->handleHandoffPerform(pt, area, callsign, flight.isTracked());
+        }
         break;
     case PlugIn::TagItemFunction::SectorControllerHandover:
         if (true == flightScreen->sectorControl().sectorHandoverPossible()) {
