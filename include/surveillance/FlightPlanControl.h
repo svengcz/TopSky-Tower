@@ -17,6 +17,37 @@ namespace topskytower {
         /**
          * @brief Describes a flight plan control system
          * @ingroup surveillance
+         *
+         * This module checks the flight plan based on flight levels, the even-odd-rule, navigation capabilities and engine types.
+         * Additionally is the definition of destination constraints possible.
+         * This allows to deactivate some generic checks, like flight levels or even-odd-changes.
+         *
+         * ![Flight-plan check](doc/imgs/FPCheck.png)
+         *
+         * The flight plan checker shows abbreviation:
+         *  - VFR - Defined as VFR flight
+         *  - RTE - Invalid route with no SID exit point
+         *  - SID - Unknown SID
+         *  - FL - Does not match flight level constraints
+         *  - E/O - Even-odd-rule does not fit  
+         *  - ENG - Wrong engine type
+         *  - NAV - Wrong navigation capabilities
+         *  - XDR - Wrong transponder capabilities
+         *  - UNK - Something else went wrong
+         *  - ERR - Multiple flight plan errors detected
+         *
+         * The checker provides a simple menu that activates an flight plan error-log reader and an overwrite-function.
+         * The overwrite functions marks the flight plan as valid independent from error log.
+         *
+         * ![Flight-plan menu](doc/imgs/FPCheckMenu.png)
+         *
+         * ![Flight-plan log](doc/imgs/FPCheckErrorLog.png)
+         *
+         * If a flight plan is marked as valid or is overwritten by the controller is the initial clearance limit set
+         * and the flight plan changed in that way that all waypoints before the SIDs exit point are deleted and the
+         * SID with the departure runway is added to the flight plan.
+         * The flight plan checker provides a marker if the SID contains climb constraints and the phraseology requires
+         * the "climb via SID" call.
          */
         class FlightPlanControl {
         public:
