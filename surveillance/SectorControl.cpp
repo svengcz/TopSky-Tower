@@ -693,7 +693,7 @@ bool SectorControl::handoffPossible(const types::Flight& flight) const {
         return false;
 
     bool inOwnSector = this->isInOwnSectors(flight, flight.currentPosition(), false);
-    return true == inOwnSector || (false == inOwnSector && true == flight.isTracked());
+    return true == inOwnSector || true == flight.isTracked();
 }
 
 void SectorControl::handoffPerformed(const types::Flight& flight) {
