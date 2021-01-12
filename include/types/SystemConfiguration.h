@@ -37,6 +37,9 @@ namespace topskytower {
             bool                ariwsActive;                /**< Defines if ARIWS is active or not */
             types::Length       ariwsDistanceDeadband;      /**< Defines the distance in which the RIW is suppressed around the holding point */
             types::Length       ariwsMaximumDistance;       /**< Defines the maximum distance to check if the flight is on the runway */
+            bool                cmacActive;                 /**< Defines if CMAC is active or not */
+            std::uint8_t        cmacCycleReset;             /**< Defines after how many non-moving cycles the system for a flight resets */
+            types::Length       cmacMinimumDistance;        /**< Defines the minimum distance between the reference position and the new position to estimate the CMA */
 
             /**
              * @brief Creates an empty and uninitialized system configuration
@@ -61,7 +64,10 @@ namespace topskytower {
                     departureClimbRates{ 2000_ftpmin, 1000_ftpmin, 2000_ftpmin, 2000_ftpmin, 2000_ftpmin },
                     ariwsActive(true),
                     ariwsDistanceDeadband(50_m),
-                    ariwsMaximumDistance(100_m) { }
+                    ariwsMaximumDistance(100_m),
+                    cmacActive(true),
+                    cmacCycleReset(10),
+                    cmacMinimumDistance(20_m) { }
         };
     }
 }

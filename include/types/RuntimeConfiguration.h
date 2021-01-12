@@ -18,10 +18,12 @@ namespace topskytower {
          */
         struct RuntimeConfiguration {
             bool ariwsActive;             /**< Marks if ARIWS is active */
+            bool cmacActive;              /**< Marks if CMAC is active */
             bool lowVisibilityProcedures; /**< Marks if LVP are active */
 
             RuntimeConfiguration() :
                     ariwsActive(true),
+                    cmacActive(true),
                     lowVisibilityProcedures(false) { }
         };
     }

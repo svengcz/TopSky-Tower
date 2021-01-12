@@ -83,6 +83,21 @@ namespace topskytower {
          *     <td>Defines the maximum distance between the flight and the holding point to check if RIW is valid.</td>
          *     <td>50</td><td>Metres</td>
          *   </tr>
+         * <tr>
+         *     <td>SURV_CMAC_Active</td>
+         *     <td>Defines if CMAC is active.</td>
+         *     <td>1</td><td>Boolean</td>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_CMAC_CycleReset</td>
+         *     <td>Defines the number of non-moving cycles after which the status resets for a flight.</td>
+         *     <td>10</td><td>None</td>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_CMAC_MinDistance</td>
+         *     <td>Defines the minimum distance between the reference position and the current position to evaluate the CMAC.</td>
+         *     <td>20</td><td>Metres</td>
+         *   </tr>
          *   <tr>
          *     <td>SURV_MTCA_DepartureModelUnknown</td>
          *     <td>Defines which model is used if the WTC category of a flight is unknown.</td>
