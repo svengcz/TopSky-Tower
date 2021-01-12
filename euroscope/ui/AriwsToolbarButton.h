@@ -1,13 +1,12 @@
 /*
  * @brief Defines the ARIWS toolbar button
- * @file ui/PdcToolbarButton.h
+ * @file ui/AriwsToolbarButton.h
  * @author Sven Czarnian <devel@svcz.de>
  */
 
 #pragma once
 
 #include "elements/ToolbarButton.h"
-#include "HoppiesLogonWindow.h"
 
 namespace topskytower {
     namespace euroscope {

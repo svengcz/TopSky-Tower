@@ -28,4 +28,3 @@ bool AriwsToolbarButton::active() {
     isActive &= system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsActive;
     return isActive;
 }
-
