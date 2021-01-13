@@ -46,6 +46,8 @@ SET(SOURCE_FILES_UI
     ui/LvpToolbarButton.h
     ui/MessageViewerWindow.cpp
     ui/MessageViewerWindow.h
+    ui/MtcdToolbarButton.cpp
+    ui/MtcdToolbarButton.h
     ui/PdcDepartureClearanceWindow.cpp
     ui/PdcDepartureClearanceWindow.h
     ui/PdcMessageViewerWindow.cpp
