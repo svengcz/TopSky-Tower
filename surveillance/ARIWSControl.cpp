@@ -5,8 +5,6 @@
  *   Implements the Autonomous Runway Incursion Warning System
  */
 
-#include <GeographicLib/Gnomonic.hpp>
-
 #include <surveillance/ARIWSControl.h>
 #include <system/ConfigurationRegistry.h>
 

@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include <GeographicLib/Gnomonic.hpp>
 #include <nanoflann.hpp>
 
 #include <system/ConfigurationRegistry.h>
