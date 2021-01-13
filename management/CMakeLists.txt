@@ -6,6 +6,7 @@
 #   Creates the management library
 
 SET(HEADER_FILES
+    ${CMAKE_SOURCE_DIR}/include/management/HoldingPointMap.h
     ${CMAKE_SOURCE_DIR}/include/management/PdcControl.h
     ${CMAKE_SOURCE_DIR}/include/management/SectorControl.h
     ${CMAKE_SOURCE_DIR}/include/management/StandControl.h

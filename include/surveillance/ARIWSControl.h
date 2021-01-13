@@ -10,6 +10,7 @@
 
 #include <nanoflann.hpp>
 
+#include <management/HoldingPointMap.h>
 #include <system/ConfigurationRegistry.h>
 #include <types/AirportConfiguration.h>
 #include <types/Flight.h>
@@ -32,38 +33,11 @@ namespace topskytower {
          *
          * ![Runway Incursion Warning](doc/imgs/RunwayIncursionWarning.png)
          */
-        class ARIWSControl {
+        class ARIWSControl : management::HoldingPointMap<management::HoldingPointData> {
         private:
 #ifndef DOXYGEN_IGNORE
-            struct HoldingPointData : public types::HoldingPoint {
-                float cartesianPosition[2];
-            };
-            struct HoldingPointTree {
-                std::vector<HoldingPointData> holdingPoints;
+            std::list<std::string> m_incursionWarnings;
 
-                inline std::size_t kdtree_get_point_count() const {
-                    return holdingPoints.size();
-                }
-                inline float kdtree_get_pt(const std::size_t idx, const std::size_t dimension) const {
-                    return this->holdingPoints[idx].cartesianPosition[dimension];
-                }
-                template <class BBOX>
-                bool kdtree_get_bbox(BBOX&) const {
-                    return false;
-                }
-            };
-            typedef nanoflann::KDTreeSingleIndexAdaptor<nanoflann::L2_Simple_Adaptor<float, HoldingPointTree>,
-                                                        HoldingPointTree, 2> HoldingPointTreeAdaptor;
-
-            std::string                                   m_airportIcao;
-            types::Coordinate                             m_centerPosition;
-            HoldingPointTree                              m_normalHoldingPointTree;
-            HoldingPointTreeAdaptor*                      m_normalHoldingPointTreeAdaptor;
-            HoldingPointTree                              m_lvpHoldingPointTree;
-            HoldingPointTreeAdaptor*                      m_lvpHoldingPointTreeAdaptor;
-            std::list<std::string>                        m_incursionWarnings;
-
-            static void copyHoldingPointData(const types::HoldingPoint& config, HoldingPointData& data);
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
 
         public:
