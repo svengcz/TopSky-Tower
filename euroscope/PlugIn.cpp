@@ -10,6 +10,8 @@
 
 #include <filesystem>
 #include <fstream>
+#include <regex>
+
 #include <Windows.h>
 #include <shlwapi.h>
 
@@ -117,6 +119,35 @@ const std::string& PlugIn::settingsPath() const {
     return this->m_settingsPath;
 }
 
+static __inline void __markRunwayActive(EuroScopePlugIn::CSectorElement& runway, const std::string& airport,
+                                        std::map<std::string, std::list<std::string>>& departureRunways,
+                                        std::map<std::string, std::list<std::string>>& arrivalRunways, int idx) {
+    if (true == runway.IsElementActive(true, idx))
+        departureRunways[airport].push_back(runway.GetRunwayName(idx));
+
+    if (true == runway.IsElementActive(false, idx))
+        arrivalRunways[airport].push_back(runway.GetRunwayName(idx));
+}
+
+void PlugIn::OnAirportRunwayActivityChanged() {
+    auto& departureList = system::ConfigurationRegistry::instance().runtimeConfiguration().activeDepartureRunways;
+    auto& arrivalList = system::ConfigurationRegistry::instance().runtimeConfiguration().activeArrivalRunways;
+
+    departureList.clear();
+    arrivalList.clear();
+
+    EuroScopePlugIn::CSectorElement rwy;
+    for (rwy = this->SectorFileElementSelectFirst(EuroScopePlugIn::SECTOR_ELEMENT_RUNWAY); true == rwy.IsValid();
+        rwy = this->SectorFileElementSelectNext(rwy, EuroScopePlugIn::SECTOR_ELEMENT_RUNWAY)) {
+        /* remove leading and trailing whitespaces */
+        std::string airport(rwy.GetAirportName());
+        airport = std::regex_replace(airport, std::regex("^ +| +$|( ) +"), "$1");
+
+        __markRunwayActive(rwy, airport, departureList, arrivalList, 0);
+        __markRunwayActive(rwy, airport, departureList, arrivalList, 1);
+    }
+}
+
 EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayName, bool needsRadarContent, bool geoReferenced,
                                                             bool canBeSaved, bool canBeCreated) {
     (void)needsRadarContent;
@@ -126,6 +157,9 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
     (void)displayName;
 
     if (false == this->m_errorMode) {
+        if (0 == this->m_screens.size())
+            this->OnAirportRunwayActivityChanged();
+
         this->m_screens.push_back(new RadarScreen());
         return this->m_screens.back();
     }

@@ -109,6 +109,10 @@ namespace topskytower {
             ~PlugIn();
 
             /**
+             * @brief Gets called as soon as the active runways changed
+             */
+            void OnAirportRunwayActivityChanged() override;
+            /**
              * @brief Called as soon as a new RADAR screen needs to be created
              * @param[in] displayName The display's name
              * @param[in] needsRadarContent True of the screen needs RADAR content
