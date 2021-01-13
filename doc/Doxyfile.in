@@ -875,8 +875,6 @@ EXCLUDE               += @PROJECT_SOURCE_DIR@/include/formats/EseFileFormat.h
 EXCLUDE               += @PROJECT_SOURCE_DIR@/include/helper
 EXCLUDE               += @PROJECT_SOURCE_DIR@/include/system
 EXCLUDE               += @PROJECT_SOURCE_DIR@/include/types
-EXCLUDE               += @PROJECT_SOURCE_DIR@/include/surveillance/MTCAControl.h
-EXCLUDE               += @PROJECT_SOURCE_DIR@/include/management/DepartureOrderControl.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
