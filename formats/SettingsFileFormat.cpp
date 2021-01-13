@@ -97,7 +97,10 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("SURV_CMAC_MinDistance" == entry[0]) {
             config.cmacCycleReset = static_cast<std::uint8_t>(std::atoi(entry[1].c_str()));
         }
-        else if ("SURV_MTCA_DepartureModelUnknown" == entry[0]) {
+        else if ("SURV_MTCD_Active" == entry[0]) {
+            config.mtcdActive = '0' != entry[1][0];
+        }
+        else if ("SURV_MTCD_DepartureModelUnknown" == entry[0]) {
             switch (entry[1][0]) {
             case 'L':
                 defaultWtc = types::Aircraft::WTC::Light;
@@ -115,29 +118,32 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
                 break;
             }
         }
-        else if ("SURV_MTCA_DepartureSpeedV2" == entry[0]) {
-            SettingsFileFormat::parseDepartureModelParameters(entry[1], config.departureSpeedV2, types::knot);
+        else if ("SURV_MTCD_DepartureSpeedV2" == entry[0]) {
+            SettingsFileFormat::parseDepartureModelParameters(entry[1], config.mtcdDepartureSpeedV2, types::knot);
         }
-        else if ("SURV_MTCA_DepartureCruiseSpeed" == entry[0]) {
-            SettingsFileFormat::parseDepartureModelParameters(entry[1], config.departureCruiseTAS, types::knot);
+        else if ("SURV_MTCD_DepartureCruiseSpeed" == entry[0]) {
+            SettingsFileFormat::parseDepartureModelParameters(entry[1], config.mtcdDepartureCruiseTAS, types::knot);
         }
-        else if ("SURV_MTCA_DepartureClimbRate" == entry[0]) {
-            SettingsFileFormat::parseDepartureModelParameters(entry[1], config.departureClimbRates, types::feet / types::minute);
+        else if ("SURV_MTCD_DepartureClimbRate" == entry[0]) {
+            SettingsFileFormat::parseDepartureModelParameters(entry[1], config.mtcdDepartureClimbRates, types::feet / types::minute);
         }
-        else if ("SURV_MTCA_DepartureAccelerationAlt" == entry[0]) {
-            config.departureAccelerationAlt = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
+        else if ("SURV_MTCD_DepartureAccelerationAlt" == entry[0]) {
+            config.mtcdDepartureAccelerationAlt = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
         }
-        else if ("SURV_MTCA_DepartureAcceleration" == entry[0]) {
-            config.departureAcceleration =
+        else if ("SURV_MTCD_DepartureAcceleration" == entry[0]) {
+            config.mtcdDepartureAcceleration =
                 static_cast<float>(std::atof(entry[1].c_str())) * (types::metre / (types::second * types::second));
         }
-        else if ("SURV_MTCA_DepartureSpeedBelowFL100" == entry[0]) {
-            config.departureSpeedBelowFL100 = static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
+        else if ("SURV_MTCD_DepartureSpeedBelowFL100" == entry[0]) {
+            config.mtcdDepartureSpeedBelowFL100 = static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
         }
     }
 
     /* copy the MTCA-default values of the departure model */
-    config.departureSpeedV2[static_cast<int>(types::Aircraft::WTC::Unknown)] = config.departureSpeedV2[static_cast<int>(defaultWtc)];
-    config.departureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Unknown)] = config.departureCruiseTAS[static_cast<int>(defaultWtc)];
-    config.departureClimbRates[static_cast<int>(types::Aircraft::WTC::Unknown)] = config.departureClimbRates[static_cast<int>(defaultWtc)];
+    config.mtcdDepartureSpeedV2[static_cast<int>(types::Aircraft::WTC::Unknown)] =
+        config.mtcdDepartureSpeedV2[static_cast<int>(defaultWtc)];
+    config.mtcdDepartureCruiseTAS[static_cast<int>(types::Aircraft::WTC::Unknown)] =
+        config.mtcdDepartureCruiseTAS[static_cast<int>(defaultWtc)];
+    config.mtcdDepartureClimbRates[static_cast<int>(types::Aircraft::WTC::Unknown)] =
+        config.mtcdDepartureClimbRates[static_cast<int>(defaultWtc)];
 }
