@@ -8,8 +8,6 @@
 
 #include <vector>
 
-#include <nanoflann.hpp>
-
 #include <management/HoldingPointMap.h>
 #include <system/ConfigurationRegistry.h>
 #include <types/AirportConfiguration.h>
