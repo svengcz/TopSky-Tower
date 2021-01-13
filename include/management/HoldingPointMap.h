@@ -101,11 +101,6 @@ namespace topskytower {
                 this->m_lvpHoldingPointTreeAdaptor->buildIndex();
             }
 
-            /**
-             * @brief Creates an holding point map
-             * @param[in] airport The airport's ICAO code
-             * @param[in] center The airport's center position
-             */
             HoldingPointMap(const std::string& airport, const types::Coordinate& center) :
                     m_airportIcao(airport),
                     m_centerPosition(center),
@@ -114,7 +109,8 @@ namespace topskytower {
                     m_lvpHoldingPointTree(),
                     m_lvpHoldingPointTreeAdaptor(nullptr) { }
 
-            T* findNextHoldingPoint(const types::Flight& flight) {
+            template <std::size_t N>
+            std::array<T*, N> findNextHoldingPoints(const types::Flight& flight) {
                 /* get the correct adaptor */
                 HoldingPointTreeAdaptor* adaptor;
                 if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures)
@@ -131,17 +127,27 @@ namespace topskytower {
                                    flight.currentPosition().coordinate().longitude().convert(types::degree),
                                    queryPt[0], queryPt[1]);
 
-                std::size_t idx;
-                float distance;
+                std::size_t idx[N];
+                float distance[N];
 
-                /* something went wrong in the search-call */
-                if (1 != adaptor->knnSearch(queryPt, 1, &idx, &distance))
-                    return nullptr;;
+                /* find the neighbors */
+                std::size_t found = adaptor->knnSearch(queryPt, N, idx, distance);
 
-                if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures)
-                    return &this->m_normalHoldingPointTree.holdingPoints[idx];
-                else
-                    return &this->m_lvpHoldingPointTree.holdingPoints[idx];
+                bool lvpActive = system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
+                std::array<T*, N> retval;
+                for (std::size_t i = 0; i < N; ++i) {
+                    if (i < found) {
+                        if (false == lvpActive)
+                            retval[i] = &this->m_normalHoldingPointTree.holdingPoints[idx[i]];
+                        else
+                            retval[i] = &this->m_lvpHoldingPointTree.holdingPoints[idx[i]];
+                    }
+                    else {
+                        retval[i] = nullptr;
+                    }
+                }
+
+                return retval;
             }
 
         public:

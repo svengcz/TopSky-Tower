@@ -65,12 +65,12 @@ void ARIWSControl::updateFlight(const types::Flight& flight) {
     }
 
     /* find the next holding point */
-    auto node = this->findNextHoldingPoint(flight);
-    if (nullptr == node)
+    auto node = this->findNextHoldingPoints<1>(flight);
+    if (nullptr == node[0])
         return;
 
-    auto holdingPointHeading = node->heading;
-    auto holdingPoint = node->holdingPoint;
+    auto holdingPointHeading = node[0]->heading;
+    auto holdingPoint = node[0]->holdingPoint;
 
     /* the heading must be comparable */
     if (15_deg < __normalize(holdingPointHeading - flight.currentPosition().heading()).abs())
