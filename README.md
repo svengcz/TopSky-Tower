@@ -34,6 +34,7 @@ The following surveillance systems are integrated and are documented in the corr
 - Flight plan check: \ref topskytower::surveillance::FlightPlanControl
 - Conformance Monitoring Alerts for Controllers: \ref topskytower::surveillance::CMACControl
 - Autonomous Runway Incursion Warning System: \ref topskytower::surveillance::ARIWSControl
+- Medium Term Collision Detection: \ref topskytower::surveillance::MTCDControl
 
 ## Setup
 The setup describes two different ways of installation.
