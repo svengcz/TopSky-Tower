@@ -36,6 +36,7 @@ namespace fs = std::filesystem;
 
 using namespace topskytower;
 using namespace topskytower::euroscope;
+using namespace topskytower::types;
 
 static Gdiplus::GdiplusStartupInput __gdiStartupInput;
 static ULONG_PTR                    __gdiplusToken;
@@ -1125,6 +1126,32 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     default:
         break;
+    }
+}
+
+void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
+    auto split = helper::String::splitString(fullMetar, " ");
+
+    /* find the wind entry */
+    for (const auto& entry : std::as_const(split)) {
+        /* find the wind entry */
+        auto pos = entry.find("KT", 0);
+        if (entry.length() - 2 == pos) {
+            auto windData = entry.substr(0, entry.length() - 2);
+
+            types::WindData information;
+
+            information.variable = std::string::npos != windData.rfind("VRB");
+            information.direction = static_cast<float>(std::atoi(windData.substr(0, 3).c_str())) * types::degree;
+            information.speed = static_cast<float>(std::atoi(windData.substr(3, 5).c_str())) * types::knot;
+
+            if (std::string::npos != windData.find("G"))
+                information.gusts = static_cast<float>(std::atoi(windData.substr(6, 8).c_str())) * types::knot;
+
+            system::ConfigurationRegistry::instance().runtimeConfiguration().windInformation[station] = information;
+
+            return;
+        }
     }
 }
 

@@ -17,6 +17,7 @@
 
 using namespace topskytower;
 using namespace topskytower::euroscope;
+using namespace topskytower::types;
 
 RadarScreen::RadarScreen() :
         EuroScopePlugIn::CRadarScreen(),
@@ -48,11 +49,14 @@ RadarScreen::~RadarScreen() {
 void RadarScreen::OnAsrContentLoaded(bool loaded) {
     if (true == loaded) {
         auto value = this->GetDataFromAsr("Airport");
-        if (nullptr != value)
+        if (nullptr != value) {
             this->m_airport = value;
-        else
+            system::ConfigurationRegistry::instance().runtimeConfiguration().windInformation[this->m_airport] = types::WindData();
+        }
+        else {
             this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", "No airport in the ASR file defined",
                                                   true, true, false, false, false);
+        }
     }
 }
 

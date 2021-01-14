@@ -146,6 +146,12 @@ namespace topskytower {
              */
             void OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) override;
             /**
+             * @brief Called as soon as metar information are updated
+             * @param[in] station The updated station
+             * @param[in] fullMetar The new metar
+             */
+            void OnNewMetarReceived(const char* station, const char* fullMetar) override;
+            /**
              * @brief Returns the path of the settings files
              * @return The path to the settings files
              */

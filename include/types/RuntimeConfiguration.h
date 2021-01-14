@@ -15,6 +15,25 @@
 namespace topskytower {
     namespace types {
         /**
+         * @brief Defines the wind data
+         */
+        struct WindData {
+            bool            variable;  /**< Indicates if the wind direction is variable */
+            types::Angle    direction; /**< Indicates the wind direction */
+            types::Velocity speed;     /**< Indicates the wind speed */
+            types::Velocity gusts;     /**< Indicates the wind gusts */
+
+            /**
+             * @brief Creates an empty wind-block
+             */
+            WindData() :
+                    variable(false),
+                    direction(),
+                    speed(),
+                    gusts() { }
+        };
+
+        /**
          * @brief Describes a runtime configuration
          * @ingroup types
          */
@@ -25,6 +44,7 @@ namespace topskytower {
             bool lowVisibilityProcedures;                                         /**< Marks if LVP are active */
             std::map<std::string, std::list<std::string>> activeDepartureRunways; /**< Defines all active departure runways per active airport */
             std::map<std::string, std::list<std::string>> activeArrivalRunways;   /**< Defines all active arrival runways per active airport */
+            std::map<std::string, WindData> windInformation;                      /**< Defines the winds on the airport */
 
             RuntimeConfiguration() :
                     ariwsActive(true),
@@ -32,7 +52,8 @@ namespace topskytower {
                     mtcdActive(true),
                     lowVisibilityProcedures(false),
                     activeDepartureRunways(),
-                    activeArrivalRunways() { }
+                    activeArrivalRunways(),
+                    windInformation() { }
         };
     }
 }
