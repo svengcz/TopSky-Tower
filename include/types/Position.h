@@ -34,15 +34,30 @@ namespace topskytower {
             Position(const Coordinate& coordinate, const Length& altitude, const Angle& heading);
 
             /**
+             * @brief Sets a new coordinate
+             * @param[in] coordinate The new coordinate
+             */
+            void setCoordinate(const Coordinate& coordinate);
+            /**
              * @brief Returns the coordinate
              * @return The coordinate
              */
             const Coordinate& coordinate() const;
             /**
+             * @brief Sets a new altitude
+             * @param[in] altitude The new altitude
+             */
+            void setAltitude(const Length& altitude);
+            /**
              * @brief Returns the altitude
              * @return The altitude
              */
             const Length& altitude() const;
+            /**
+             * @brief Sets a new heading
+             * @param[in] heading The new heading
+             */
+            void setHeading(const Angle& heading);
             /**
              * @brief Returns the heading
              * @return The heading

@@ -19,12 +19,24 @@ Position::Position(const Coordinate& coordinate, const Length& altitude, const A
         m_altitude(altitude),
         m_heading(heading) { }
 
+void Position::setCoordinate(const Coordinate& coordinate) {
+    this->m_coordinate = coordinate;
+}
+
 const Coordinate& Position::coordinate() const {
     return this->m_coordinate;
 }
 
+void Position::setAltitude(const Length& altitude) {
+    this->m_altitude = altitude;
+}
+
 const Length& Position::altitude() const {
     return this->m_altitude;
+}
+
+void Position::setHeading(const Angle& heading) {
+    this->m_heading = heading;
 }
 
 const Angle& Position::heading() const {
