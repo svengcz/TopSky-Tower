@@ -29,6 +29,7 @@ RadarScreen::RadarScreen() :
         m_standControl(nullptr),
         m_ariwsControl(nullptr),
         m_cmacControl(nullptr),
+        m_mtcdControl(nullptr),
         m_guiEuroscopeEventsLock(),
         m_guiEuroscopeEvents(),
         m_lastRenderingTime() { }
@@ -38,6 +39,8 @@ RadarScreen::~RadarScreen() {
         delete this->m_ariwsControl;
     if (nullptr != this->m_cmacControl)
         delete this->m_cmacControl;
+    if (nullptr != this->m_mtcdControl)
+        delete this->m_mtcdControl;
     if (nullptr != this->m_sectorControl)
         delete this->m_sectorControl;
     if (nullptr != this->m_standControl)
@@ -120,6 +123,8 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
         this->m_ariwsControl->updateFlight(flight);
     if (nullptr != this->m_cmacControl)
         this->m_cmacControl->updateFlight(flight);
+    if (nullptr != this->m_mtcdControl)
+        this->m_mtcdControl->updateFlight(flight);
 }
 
 void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) {
@@ -157,6 +162,8 @@ void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan
         this->m_ariwsControl->removeFlight(flightPlan.GetCallsign());
     if (nullptr != this->m_cmacControl)
         this->m_cmacControl->removeFlight(flightPlan.GetCallsign());
+    if (nullptr != this->m_mtcdControl)
+        this->m_mtcdControl->removeFlight(flightPlan.GetCallsign());
 
     surveillance::FlightPlanControl::instance().removeFlight(flightPlan.GetCallsign());
 }
@@ -200,6 +207,11 @@ void RadarScreen::initialize() {
         if (nullptr != this->m_cmacControl)
             delete this->m_cmacControl;
         this->m_cmacControl = new surveillance::CMACControl();
+
+        if (nullptr != this->m_mtcdControl)
+            delete this->m_mtcdControl;
+        this->m_mtcdControl = new surveillance::MTCDControl(this->m_airport, center);
+        this->m_mtcdControl->registerSidExtraction(this, &RadarScreen::extractPredictedSID);
 
         this->m_initialized = true;
     }
@@ -264,6 +276,10 @@ surveillance::CMACControl& RadarScreen::cmacControl() const {
     return *this->m_cmacControl;
 }
 
+surveillance::MTCDControl& RadarScreen::mtcdControl() const {
+    return *this->m_mtcdControl;
+}
+
 void RadarScreen::registerEuroscopeEvent(RadarScreen::EuroscopeEvent&& entry) {
     std::lock_guard guard(this->m_guiEuroscopeEventsLock);
     this->m_guiEuroscopeEvents.push_back(std::move(entry));
@@ -285,34 +301,66 @@ const std::chrono::system_clock::time_point& RadarScreen::lastRenderingTime() co
     return this->m_lastRenderingTime;
 }
 
-std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::string& callsign, const types::Coordinate& sidExit) {
+std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::string& callsign) {
     auto flightPlan = this->GetPlugIn()->FlightPlanSelect(callsign.c_str());
     std::vector<types::Coordinate> retval;
 
     if (false == flightPlan.IsValid())
         return retval;
 
+    /* search the SID exit point */
+    const auto& flight = this->flightRegistry().flight(callsign);
+    auto route = flight.flightPlan().route().waypoints();
+    types::Coordinate sidExit;
+    bool foundExit = false;
+    for (const auto& waypoint : std::as_const(route)) {
+        if (std::string::npos != flight.flightPlan().departureRoute().find(waypoint.name())) {
+            sidExit = waypoint.position();
+            foundExit = true;
+            break;
+        }
+    }
+
+    /* fallback to allow a maximum distance to filter the route */
+    types::Length maxDistance = 1000.0_nm;
+    if (false == foundExit)
+        maxDistance = 50.0_nm;
+
     types::Length lastDistance = 1000 * types::nauticmile;
-    retval.reserve(flightPlan.GetPositionPredictions().GetPointsNumber());
-    for (int i = 0; i < flightPlan.GetPositionPredictions().GetPointsNumber(); ++i) {
+    retval.reserve(flightPlan.GetPositionPredictions().GetPointsNumber() - 1);
+    for (int i = 1; i < flightPlan.GetPositionPredictions().GetPointsNumber(); ++i) {
         auto position = Converter::convert(flightPlan.GetPositionPredictions().GetPosition(i));
 
         auto distance = sidExit.distanceTo(position);
 
         /*
          * Assumtion:
-         *  - The distance between the current position and the sidExit decreases until a certain point where we follow the rest of the route
+         *  - The distance between the current position and the sidExit decreases until a certain point
+         *    where we follow the rest of the route
          */
-        if (lastDistance < 10 * types::nauticmile) {
-            /* the distance increases again -> found the closest point in the last iteration */
-            if (distance > lastDistance) {
-                retval[retval.size() - 1] = sidExit;
-                break;
+        if (true == foundExit) {
+            if (lastDistance < 10 * types::nauticmile) {
+                /* the distance increases again -> found the closest point in the last iteration */
+                if (distance > lastDistance) {
+                    retval[retval.size() - 1] = sidExit;
+                    break;
+                }
             }
+        }
+        else {
+            maxDistance -= distance;
+            if (0.0_m > maxDistance)
+                break;
         }
 
         retval.push_back(position);
         lastDistance = distance;
+    }
+
+    /* check if we found the complete SID route */
+    if (true == foundExit && 0 != retval.size()) {
+        if (10_nm < sidExit.distanceTo(retval.back()))
+            return std::vector<types::Coordinate>();
     }
 
     return std::move(retval);

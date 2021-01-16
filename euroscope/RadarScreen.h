@@ -17,6 +17,7 @@
 #include <management/StandControl.h>
 #include <surveillance/ARIWSControl.h>
 #include <surveillance/CMACControl.h>
+#include <surveillance/MTCDControl.h>
 #include <system/FlightRegistry.h>
 
 #include "ui/UiManager.h"
@@ -56,12 +57,13 @@ namespace topskytower {
             management::StandControl*             m_standControl;
             surveillance::ARIWSControl*           m_ariwsControl;
             surveillance::CMACControl*            m_cmacControl;
+            surveillance::MTCDControl*            m_mtcdControl;
             std::mutex                            m_guiEuroscopeEventsLock;
             std::list<EuroscopeEvent>             m_guiEuroscopeEvents;
             std::chrono::system_clock::time_point m_lastRenderingTime;
 
             void initialize();
-            std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign, const types::Coordinate& sidExit);
+            std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign);
 
         public:
             /**
@@ -162,6 +164,11 @@ namespace topskytower {
              * @return The CMAC control
              */
             surveillance::CMACControl& cmacControl() const;
+            /**
+             * @brief Returns the MTCD control
+             * @return The MTCD control
+             */
+            surveillance::MTCDControl& mtcdControl() const;
             /**
              * @brief Registers an Euroscope GUI event to trigger the function call during the next rendering step
              * @param[in] entry The new GUI event
