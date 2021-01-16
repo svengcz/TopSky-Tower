@@ -374,6 +374,7 @@ std::list<DepartureModel::ConflictPosition> DepartureModel::findConflictCandidat
                     auto spacing = DepartureModel::estimateHorizontalSpacing(thisWp, otherWp);
 
                     if (conflict.horizontalSpacing > spacing) {
+                        conflict.coordinate = thisWp.position.coordinate();
                         conflict.altitudeDifference = (otherWp.position.altitude() - thisWp.position.altitude()).abs();
                         conflict.conflictIn = thisWp.reachingIn;
                         conflict.horizontalSpacing = spacing;
@@ -387,7 +388,7 @@ std::list<DepartureModel::ConflictPosition> DepartureModel::findConflictCandidat
         if (types::Coordinate() != conflict.coordinate)
             return { conflict };
         else
-            return std::list<ConflictPosition>();
+            return {};
     }
 
     /* find all intersections */
