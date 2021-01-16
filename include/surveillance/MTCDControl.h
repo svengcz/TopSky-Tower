@@ -68,6 +68,18 @@ namespace topskytower {
              */
             void removeFlight(const std::string& callsign);
             /**
+             * @brief Checks if a departure model exists
+             * @param[in] flight The requested flight
+             * @return True if the departure model exists, else false
+             */
+            bool departureModelExists(const types::Flight& flight) const;
+            /**
+             * @brief Returns the departure model
+             * @param[in] flight The requested flight
+             * @return The departure model
+             */
+            const DepartureModel& departureModel(const types::Flight& flight) const;
+            /**
              * @brief Returns the number of initiated conflicts of this flight
              * @param[in] flight The requested flight
              * @return True if conflicts exist, else false

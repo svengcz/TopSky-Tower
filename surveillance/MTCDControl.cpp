@@ -184,6 +184,21 @@ void MTCDControl::removeFlight(const std::string& callsign) {
         this->m_conflicts.erase(cit);
 }
 
+bool MTCDControl::departureModelExists(const types::Flight& flight) const {
+    auto it = std::find(this->m_departures.cbegin(), this->m_departures.cend(), DepartureModel(flight.callsign()));
+    return this->m_departures.cend() != it;
+}
+
+const DepartureModel& MTCDControl::departureModel(const types::Flight& flight) const {
+    static DepartureModel __fallback("");
+
+    auto it = std::find(this->m_departures.cbegin(), this->m_departures.cend(), DepartureModel(flight.callsign()));
+    if (this->m_departures.cend() != it)
+        return *it;
+    else
+        return __fallback;
+}
+
 bool MTCDControl::conflictsExist(const types::Flight& flight) const {
     /* the controller disabled the system */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().mtcdActive ||
