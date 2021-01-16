@@ -369,7 +369,23 @@ std::list<DepartureModel::ConflictPosition> DepartureModel::findConflictCandidat
 
             conflict.conflictIn = waypointThis.reachingIn;
             conflict.altitudeDifference = (waypointThis.position.altitude() - waypointOther.position.altitude()).abs();
-            conflict.horizontalSpacing = (waypointThis.speed * waypointThis.reachingIn - waypointOther.speed * waypointOther.reachingIn).abs();
+
+            /*
+             * estimate the horizontal spacing
+             * idea:
+             *  - calculate the time difference when both flights reach the point
+             *  - use the closer one to calculate the traveled distance while the other flight travels to the point
+             *  - this is in the end the horizontal spacing for the flight
+             */
+            types::Time dt;
+            if (waypointThis.reachingIn >= waypointOther.reachingIn)
+                dt = waypointThis.reachingIn - waypointOther.reachingIn;
+            else
+                dt = waypointOther.reachingIn - waypointThis.reachingIn;
+            if (waypointThis.reachingIn <= waypointOther.reachingIn)
+                conflict.horizontalSpacing = waypointThis.speed * dt;
+            else
+                conflict.horizontalSpacing = waypointOther.speed * dt;
 
             retval.push_back(conflict);
         }
