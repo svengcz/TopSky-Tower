@@ -43,6 +43,7 @@ namespace topskytower {
              */
             struct ConflictPosition {
                 types::Coordinate coordinate;         /**< Defines the coordinate of the conflict */
+                types::Time       conflictIn;         /**< Defines the time when the conflict is relevant */
                 types::Length     altitudeDifference; /**< Defines the altitude difference between both flights */
                 types::Length     horizontalSpacing;  /**< Defines the horizontal spacing between both points */
             };

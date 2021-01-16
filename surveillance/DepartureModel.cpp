@@ -364,6 +364,7 @@ std::list<DepartureModel::ConflictPosition> DepartureModel::findConflictCandidat
             auto waypointThis = this->predictWaypoint(this->m_waypoints[startThis], conflict.coordinate);
             auto waypointOther = this->predictWaypoint(other.m_waypoints[startOther], conflict.coordinate);
 
+            conflict.conflictIn = waypointThis.reachingIn;
             conflict.altitudeDifference = (waypointThis.position.altitude() - waypointOther.position.altitude()).abs();
             conflict.horizontalSpacing = (waypointThis.speed * waypointThis.reachingIn - waypointOther.speed * waypointOther.reachingIn).abs();
 
