@@ -75,9 +75,9 @@ DepartureModel::Phase DepartureModel::identifyPhase(const types::Length& altitud
             return Phase::AccelerationAltitude;
     }
     /* we are below FL100 */
-    else if (altitude < 10000_ft) {
+    else if (altitude < 10000_ft && this->m_flight.flightPlan().flightLevel() >= 10000_ft) {
         /* we climb to FL100 */
-        if (speed >= config.mtcdDepartureSpeedBelowFL100 * 0.95f)
+        if (speed >= config.mtcdDepartureSpeedBelowFL100 * 0.95f || speed >= this->m_cruiseSpeed * 0.95f)
             return Phase::ClimbFL100;
         else
             return Phase::AccelerationFL100;
