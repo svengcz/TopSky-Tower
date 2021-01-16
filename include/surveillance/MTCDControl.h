@@ -17,6 +17,16 @@ namespace topskytower {
         /**
          * @brief Describes a Medium Term Conflict Detection system
          * @ingroup surveillance
+         *
+         * This module predicts departures that are close to active holding points.
+         * Based on the predictions and the already departing flights is a medium term conflict estimation implemented.
+         *
+         * The MTCD module helps to identify possible conflicts in the departure sector.
+         * It uses the waypoint prediction of EuroScope, but uses it's own model to estimate the position and time when
+         * reaching specific waypoints.
+         *
+         * The following graphics shows the internal prediction model for IFR flights with a defined SID.
+         * 
          */
         class MTCDControl : management::HoldingPointMap<management::HoldingPointData> {
 #ifndef DOXYGEN_IGNORE
@@ -60,16 +70,15 @@ namespace topskytower {
             /**
              * @brief Returns the number of initiated conflicts of this flight
              * @param[in] flight The requested flight
-             * @return The number of conflicts
+             * @return True if conflicts exist, else false
              */
-            std::size_t numberOfConflicts(const types::Flight& flight) const;
+            bool conflictsExist(const types::Flight& flight) const;
             /**
-             * @brief Returns a conflict of a requested flight
+             * @brief Returns the conflicts of a requested flight
              * @param[in] flight The requested flight
-             * @param[in] idx The requested conflict index (needs to be smaller than numberOfConflicts)
-             * @return The requested conflict
+             * @return The requested conflicts
              */
-            const Conflict& conflict(const types::Flight& flight, std::size_t idx) const;
+            const std::list<Conflict>& conflicts(const types::Flight& flight) const;
             /**
              * @brief Registers a function that can be used to extract predicted SID points
              * The function helps to decrease the number of useless route extraction calls.

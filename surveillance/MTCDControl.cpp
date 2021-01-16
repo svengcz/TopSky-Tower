@@ -184,25 +184,23 @@ void MTCDControl::removeFlight(const std::string& callsign) {
         this->m_conflicts.erase(cit);
 }
 
-std::size_t MTCDControl::numberOfConflicts(const types::Flight& flight) const {
-    std::size_t retval = 0;
-
+bool MTCDControl::conflictsExist(const types::Flight& flight) const {
     /* the controller disabled the system */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().mtcdActive ||
         false == system::ConfigurationRegistry::instance().runtimeConfiguration().mtcdActive)
     {
-        return 0;
+        return false;
     }
 
     auto it = this->m_conflicts.find(flight.callsign());
     if (this->m_conflicts.cend() != it)
-        return it->second.size();
+        return 0 != it->second.size();
 
-    return retval;
+    return false;
 }
 
-const MTCDControl::Conflict& MTCDControl::conflict(const types::Flight& flight, std::size_t idx) const {
-    static Conflict __fallback;
+const std::list<MTCDControl::Conflict>& MTCDControl::conflicts(const types::Flight& flight) const {
+    static std::list<Conflict> __fallback;
 
     /* the controller disabled the system */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().mtcdActive ||
@@ -213,11 +211,8 @@ const MTCDControl::Conflict& MTCDControl::conflict(const types::Flight& flight, 
 
     /* find the conflict */
     auto it = this->m_conflicts.find(flight.callsign());
-    if (this->m_conflicts.cend() != it && idx < it->second.size()) {
-        auto cit = it->second.begin();
-        std::advance(cit, idx);
-        return *cit;
-    }
+    if (this->m_conflicts.cend() != it)
+        return it->second;
 
     return __fallback;
 }
