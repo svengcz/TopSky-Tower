@@ -117,13 +117,9 @@ void MTCDControl::updateFlight(const types::Flight& flight) {
     /* do not check departed flights */
     if (types::FlightPlan::AtcCommand::Departure == flight.flightPlan().departureFlag() || 40_kn < flight.groundSpeed()) {
         /* erase flights where this flight is the initiator of the conflict */
-        for (auto cit = this->m_conflicts.begin(); this->m_conflicts.end() != cit;) {
-            if (cit->callsigns[0] == flight.callsign())
-                cit = this->m_conflicts.erase(cit);
-            else
-                ++cit;
-        }
-
+        auto cit = this->m_conflicts.find(flight.callsign());
+        if (this->m_conflicts.end() != cit)
+            this->m_conflicts.erase(cit);
         return;
     }
 
@@ -135,16 +131,31 @@ void MTCDControl::updateFlight(const types::Flight& flight) {
             auto minVerticalSpacing = it->flight().flightPlan().destination() != departure.flight().flightPlan().destination() ?
                 config.mtcdVerticalSeparation : config.mtcdVerticalSeparationSameDestination;
 
+            candidates.sort([](const DepartureModel::ConflictPosition& c0, const DepartureModel::ConflictPosition& c1) {
+                return c0.conflictIn < c1.conflictIn;
+            });
+
             /* check all candidates */
             for (const auto& candidate : std::as_const(candidates)) {
                 /* found a critical conflict */
                 if (candidate.altitudeDifference < minVerticalSpacing && candidate.horizontalSpacing < config.mtcdHorizontalSeparation) {
                     Conflict conflict = {
-                        { it->flight().callsign(), departure.flight().callsign() },
+                        departure.flight().callsign(),
                         candidate
                     };
 
-                    this->m_conflicts.push_back(std::move(conflict));
+                    /* update the statistic */
+                    bool updated = false;
+                    auto& conflicts = this->m_conflicts[it->flight().callsign()];
+                    for (auto cit = conflicts.begin(); conflicts.end() != cit; ++cit) {
+                        if (cit->callsign == departure.flight().callsign()) {
+                            *cit = conflict;
+                            updated = true;
+                            break;
+                        }
+                    }
+                    if (false == updated)
+                        conflicts.push_back(std::move(conflict));
                     return;
                 }
             }
@@ -159,12 +170,18 @@ void MTCDControl::removeFlight(const std::string& callsign) {
         return;
     }
 
-    for (auto cit = this->m_conflicts.begin(); this->m_conflicts.end() != cit;) {
-        if (cit->callsigns[0] == callsign || cit->callsigns[1] == callsign)
-            cit = this->m_conflicts.erase(cit);
-        else
-            ++cit;
+    for (auto cit = this->m_conflicts.begin(); this->m_conflicts.end() != cit; ++cit) {
+        for (auto oit = cit->second.begin(); oit != cit->second.end();) {
+            if (oit->callsign == callsign)
+                oit = cit->second.erase(oit);
+            else
+                ++oit;
+        }
     }
+
+    auto cit = this->m_conflicts.find(callsign);
+    if (this->m_conflicts.end() != cit)
+        this->m_conflicts.erase(cit);
 }
 
 std::size_t MTCDControl::numberOfConflicts(const types::Flight& flight) const {
@@ -177,10 +194,9 @@ std::size_t MTCDControl::numberOfConflicts(const types::Flight& flight) const {
         return 0;
     }
 
-    for (const auto& conflict : std::as_const(this->m_conflicts)) {
-        if (flight.callsign() == conflict.callsigns[0])
-            retval += 1;
-    }
+    auto it = this->m_conflicts.find(flight.callsign());
+    if (this->m_conflicts.cend() != it)
+        return it->second.size();
 
     return retval;
 }
@@ -195,9 +211,12 @@ const MTCDControl::Conflict& MTCDControl::conflict(const types::Flight& flight, 
         return __fallback;
     }
 
-    for (const auto& conflict : std::as_const(this->m_conflicts)) {
-        if (flight.callsign() == conflict.callsigns[0] && 0 == idx--)
-            return conflict;
+    /* find the conflict */
+    auto it = this->m_conflicts.find(flight.callsign());
+    if (this->m_conflicts.cend() != it && idx < it->second.size()) {
+        auto cit = it->second.begin();
+        std::advance(cit, idx);
+        return *cit;
     }
 
     return __fallback;

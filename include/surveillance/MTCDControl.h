@@ -25,16 +25,16 @@ namespace topskytower {
              * @brief Defines a conflict between two flights
              */
             struct Conflict {
-                std::string                      callsigns[2]; /**< The conflicting callsigns */
-                DepartureModel::ConflictPosition position;     /**< The conflict position */
+                std::string                      callsign; /**< The callsign of the other flight */
+                DepartureModel::ConflictPosition position; /**< The conflict position */
             };
 
             typedef std::vector<types::Coordinate>(departureRoute)(const std::string&);
 
         private:
-            std::function<departureRoute> m_sidExtractionCallback;
-            std::list<DepartureModel>     m_departures;
-            std::list<Conflict>           m_conflicts;
+            std::function<departureRoute>              m_sidExtractionCallback;
+            std::list<DepartureModel>                  m_departures;
+            std::map<std::string, std::list<Conflict>> m_conflicts;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
             std::list<DepartureModel>::iterator insertFlight(const types::Flight& flight);
