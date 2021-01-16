@@ -131,7 +131,7 @@ namespace topskytower {
             /**
              * @brief Returns the predicted waypoints
              */
-            const std::vector<Waypoint>& waypoints();
+            const std::vector<Waypoint>& waypoints() const;
         };
     }
 }

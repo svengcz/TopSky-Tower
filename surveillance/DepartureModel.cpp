@@ -430,6 +430,6 @@ const types::Flight& DepartureModel::flight() const {
     return this->m_flight;
 }
 
-const std::vector<DepartureModel::Waypoint>& DepartureModel::waypoints() {
+const std::vector<DepartureModel::Waypoint>& DepartureModel::waypoints() const {
     return this->m_waypoints;
 }
