@@ -29,6 +29,7 @@ namespace topskytower {
             bool                flightPlanCheckEvenOdd;                /**< Defines if the generic even-odd checks are performed */
             bool                flightPlanCheckNavigation;             /**< Defines if the flight plan checker tests for RNAV-capabilities */
             types::Length       standAssociationDistance;              /**< Defines the maximum distance to assign automatically an aircraft to a stand */
+            types::Time         surveillanceVisualizationDuration;     /**< Defines the duration of visualization durations */
             bool                ariwsActive;                           /**< Defines if ARIWS is active or not */
             types::Length       ariwsDistanceDeadband;                 /**< Defines the distance in which the RIW is suppressed around the holding point */
             types::Length       ariwsMaximumDistance;                  /**< Defines the maximum distance to check if the flight is on the runway */
@@ -62,6 +63,7 @@ namespace topskytower {
                     flightPlanCheckEvenOdd(true),
                     flightPlanCheckNavigation(true),
                     standAssociationDistance(10_nm),
+                    surveillanceVisualizationDuration(10_s),
                     ariwsActive(true),
                     ariwsDistanceDeadband(50_m),
                     ariwsMaximumDistance(100_m),

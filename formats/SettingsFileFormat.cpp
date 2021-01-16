@@ -70,6 +70,9 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("SYS_TrackingOnGround" == entry[0]) {
             config.trackingOnGround = '0' != entry[1][0];
         }
+        else if ("SYS_SurveillanceVisualizationDuration" == entry[0]) {
+            config.surveillanceVisualizationDuration = static_cast<float>(std::atoi(entry[1].c_str())) * types::second;
+        }
         else if ("SURV_FlightPlanCheckEvenOdd" == entry[0]) {
             config.flightPlanCheckEvenOdd = '0' != entry[1][0];
         }

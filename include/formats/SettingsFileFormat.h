@@ -64,6 +64,11 @@ namespace topskytower {
          *     <td>10</td><td>NM</td>
          *   </tr>
          *   <tr>
+         *     <td>SYS_SurveillanceVisualizationDuration</td>
+         *     <td>Defines the visualization duration of surveillance results.</td>
+         *     <td>10</td><td>Seconds</td>
+         *   </tr>
+         *   <tr>
          *     <td>SURV_FlightPlanCheckEvenOdd</td>
          *     <td>Defines if the flight plan checker needs to check the destination independent even/odd-rule.</td>
          *     <td>1</td><td>Boolean</td>
@@ -155,12 +160,12 @@ namespace topskytower {
          *   <tr>
          *     <td>SURV_MTCD_VerticalSpacing</td>
          *     <td>Defines the vertical spacing between two departures.</td>
-         *     <td>2000</td><td>feet</td>
+         *     <td>2000</td><td>Feet</td>
          *   </tr>
          *   <tr>
          *     <td>SURV_MTCD_HorizontalSpacing</td>
          *     <td>Defines the horizontal spacing between two departures.</td>
-         *     <td>10</td><td>Nautical miles</td>
+         *     <td>10</td><td>NM</td>
          *   </tr>
          *   <tr>
          *     <td>SURV_MTCD_VerticalSpacingSameDestination</td>
