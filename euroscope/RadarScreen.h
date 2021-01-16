@@ -49,20 +49,24 @@ namespace topskytower {
             };
 
         private:
-            bool                                  m_initialized;
-            std::string                           m_airport;
-            UiManager                             m_userInterface;
-            system::FlightRegistry*               m_flightRegistry;
-            management::SectorControl*            m_sectorControl;
-            management::StandControl*             m_standControl;
-            surveillance::ARIWSControl*           m_ariwsControl;
-            surveillance::CMACControl*            m_cmacControl;
-            surveillance::MTCDControl*            m_mtcdControl;
-            std::mutex                            m_guiEuroscopeEventsLock;
-            std::list<EuroscopeEvent>             m_guiEuroscopeEvents;
-            std::chrono::system_clock::time_point m_lastRenderingTime;
+            bool                                                                     m_initialized;
+            std::string                                                              m_airport;
+            UiManager                                                                m_userInterface;
+            system::FlightRegistry*                                                  m_flightRegistry;
+            management::SectorControl*                                               m_sectorControl;
+            management::StandControl*                                                m_standControl;
+            surveillance::ARIWSControl*                                              m_ariwsControl;
+            surveillance::CMACControl*                                               m_cmacControl;
+            surveillance::MTCDControl*                                               m_mtcdControl;
+            std::mutex                                                               m_guiEuroscopeEventsLock;
+            std::list<EuroscopeEvent>                                                m_guiEuroscopeEvents;
+            std::chrono::system_clock::time_point                                    m_lastRenderingTime;
+            std::mutex                                                               m_surveillanceVisualizationsLock;
+            std::list<std::pair<std::string, std::chrono::system_clock::time_point>> m_surveillanceVisualizations;
 
             void initialize();
+            Gdiplus::PointF convertCoordinate(const types::Coordinate& coordinate);
+            bool visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& graphics);
             std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign);
 
         public:
@@ -194,6 +198,11 @@ namespace topskytower {
              * @return The last rendering time
              */
             const std::chrono::system_clock::time_point& lastRenderingTime() const;
+            /**
+             * @brief Activates the visualization for surveillance functions
+             * @param[in] callsign The visualizable callsign
+             */
+            void activeSurveillanceVisualization(const std::string& callsign);
         };
     }
 }

@@ -11,6 +11,8 @@
 #include <formats/EseFileFormat.h>
 #include <management/PdcControl.h>
 
+#include "ui/elements/Text.h"
+
 #include "Converter.h"
 #include "PlugIn.h"
 #include "RadarScreen.h"
@@ -32,7 +34,9 @@ RadarScreen::RadarScreen() :
         m_mtcdControl(nullptr),
         m_guiEuroscopeEventsLock(),
         m_guiEuroscopeEvents(),
-        m_lastRenderingTime() { }
+        m_lastRenderingTime(),
+        m_surveillanceVisualizationsLock(),
+        m_surveillanceVisualizations() { }
 
 RadarScreen::~RadarScreen() {
     if (nullptr != this->m_ariwsControl)
@@ -217,6 +221,130 @@ void RadarScreen::initialize() {
     }
 }
 
+Gdiplus::PointF RadarScreen::convertCoordinate(const types::Coordinate& coordinate) {
+    EuroScopePlugIn::CPosition position;
+
+    position.m_Latitude = coordinate.latitude().convert(types::degree);
+    position.m_Longitude = coordinate.longitude().convert(types::degree);
+    POINT pixel = this->ConvertCoordFromPositionToPixel(position);
+
+    return Gdiplus::PointF(static_cast<float>(pixel.x), static_cast<float>(pixel.y));
+}
+
+bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& graphics) {
+    const auto& flight = this->m_flightRegistry->flight(callsign);
+    if (false == this->m_mtcdControl->conflictsExist(flight))
+        return false;
+
+    const auto& config = system::ConfigurationRegistry::instance().systemConfiguration();
+    Gdiplus::Color foreground(config.uiForegroundColor[0], config.uiForegroundColor[1], config.uiForegroundColor[2]);
+    Gdiplus::Pen pen(foreground, 3.0f);
+    Gdiplus::SolidBrush brush(Gdiplus::Color(255, 0, 0));
+
+    auto pixelPos = this->convertCoordinate(flight.currentPosition().coordinate());
+    const auto& conflicts = this->m_mtcdControl->conflicts(flight);
+    for (const auto& conflict : std::as_const(conflicts)) {
+        if (false == this->m_flightRegistry->flightExists(conflict.callsign))
+            continue;
+
+        const auto& other = this->m_flightRegistry->flight(conflict.callsign);
+
+        auto otherPos = this->convertCoordinate(other.currentPosition().coordinate());
+        auto conflictPos = this->convertCoordinate(conflict.position.coordinate);
+
+        /* estimate the optimal position for the text */
+        float offsetX = 0.0f, offsetY = 0.0f;
+        bool alignRight = false;
+        /* both flights are left of -> no vertical offset, but on the right side */
+        if (conflictPos.X >= pixelPos.X && conflictPos.X >= otherPos.X) {
+            offsetX = 10.0f;
+        }
+        /* both flights are right -> no vertical offset, but on the left side */
+        else if (conflictPos.X < pixelPos.X && conflictPos.X < otherPos.X) {
+            alignRight = true;
+            offsetX = -10.0f;
+        }
+        /* one on the left, the other on the right */
+        else if (conflictPos.X >= pixelPos.X && conflictPos.X < otherPos.X) {
+            offsetX = 10.0f;
+            if (conflictPos.Y >= otherPos.Y)
+                offsetY = 10.0f;
+            else
+                offsetY = -30.0f;
+        }
+        else {
+            alignRight = true;
+            offsetX = -10.0f;
+            if (conflictPos.Y >= pixelPos.Y)
+                offsetY = 10.0f;
+            else
+                offsetY = -30.0f;
+        }
+
+        std::stringstream stream;
+        stream << std::fixed << std::setprecision(1);
+
+        /* prepare the texts */
+        Text verticalSpacing, horizontalSpacing, conflictTime;
+        verticalSpacing.setGraphics(&graphics);
+        verticalSpacing.setFontColor(foreground);
+        stream << static_cast<int>(conflict.position.altitudeDifference.convert(types::feet)) << "ft";
+        verticalSpacing.setText(stream.str());
+        horizontalSpacing.setGraphics(&graphics);
+        horizontalSpacing.setFontColor(foreground);
+        stream.str("");
+        stream << conflict.position.horizontalSpacing.convert(types::nauticmile) << "nm";
+        horizontalSpacing.setText(stream.str());
+        conflictTime.setGraphics(&graphics);
+        conflictTime.setFontColor(foreground);
+        stream.str("");
+        auto minutes = static_cast<int>(conflict.position.conflictIn.convert(types::second)) / 60;
+        auto seconds = static_cast<int>(conflict.position.conflictIn.convert(types::second)) % 60;
+        stream << minutes << "min " << seconds << "s";
+        conflictTime.setText(stream.str());
+
+        /* draw the lines between the flights and the conflict position */
+        graphics.DrawLine(&pen, pixelPos, conflictPos);
+        graphics.DrawLine(&pen, otherPos, conflictPos);
+
+        /* draw the conflict circle */
+        Gdiplus::RectF area(conflictPos.X - 3.0f, conflictPos.Y - 3.0f, 6.0f, 6.0f);
+        graphics.FillEllipse(&brush, area);
+
+        /* set the positions of the texts */
+        if (true == alignRight) {
+            Gdiplus::PointF position(offsetX + conflictPos.X - conflictTime.rectangle().Width, conflictPos.Y + offsetY);
+            conflictTime.setPosition(position);
+
+            position.X = offsetX + conflictPos.X - verticalSpacing.rectangle().Width;
+            position.Y += conflictTime.rectangle().Height;
+            verticalSpacing.setPosition(position);
+
+            position.X = offsetX + conflictPos.X - horizontalSpacing.rectangle().Width;
+            position.Y += verticalSpacing.rectangle().Height;
+            horizontalSpacing.setPosition(position);
+        }
+        else {
+            Gdiplus::PointF position(offsetX + conflictPos.X, conflictPos.Y + offsetY);
+
+            conflictTime.setPosition(position);
+
+            position.Y += conflictTime.rectangle().Height;
+            verticalSpacing.setPosition(position);
+
+            position.Y += verticalSpacing.rectangle().Height;
+            horizontalSpacing.setPosition(position);
+        }
+
+        /* draw the texts */
+        conflictTime.visualize();
+        verticalSpacing.visualize();
+        horizontalSpacing.visualize();
+    }
+
+    return 0 != conflicts.size();
+}
+
 void RadarScreen::OnRefresh(HDC hdc, int phase) {
     (void)hdc;
 
@@ -254,6 +382,31 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
         this->m_sectorControl->setOwnSector(Converter::convert(plugin->ControllerMyself()));
 
     this->m_lastRenderingTime = std::chrono::system_clock::now();
+
+    /* draw the different visualization results */
+    this->m_surveillanceVisualizationsLock.lock();
+    for (auto it = this->m_surveillanceVisualizations.begin(); this->m_surveillanceVisualizations.end() != it;) {
+        /* erase the visualization if the flight does not exist anymore */
+        if (false == this->m_flightRegistry->flightExists(it->first)) {
+            it = this->m_surveillanceVisualizations.erase(it);
+            continue;
+        }
+
+        /* check if the result is outdated */
+        auto duration = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(this->m_lastRenderingTime - it->second).count()) * types::second;
+        if (duration >= system::ConfigurationRegistry::instance().systemConfiguration().surveillanceVisualizationDuration) {
+            it = this->m_surveillanceVisualizations.erase(it);
+            continue;
+        }
+
+        /* draw the MTCD conflicts */
+        if (true == this->visualizeMTCD(it->first, graphics))
+            ++it;
+        /* no more conflicts available */
+        else
+            it = this->m_surveillanceVisualizations.erase(it);
+    }
+    this->m_surveillanceVisualizationsLock.unlock();
 }
 
 management::SectorControl& RadarScreen::sectorControl() {
@@ -299,6 +452,21 @@ bool RadarScreen::isInitialized() const {
 
 const std::chrono::system_clock::time_point& RadarScreen::lastRenderingTime() const {
     return this->m_lastRenderingTime;
+}
+
+void RadarScreen::activeSurveillanceVisualization(const std::string& callsign) {
+    std::lock_guard guard(m_surveillanceVisualizationsLock);
+
+    auto stamp = std::chrono::system_clock::now();
+
+    for (auto& entry : this->m_surveillanceVisualizations) {
+        if (entry.first == callsign) {
+            entry.second = stamp;
+            return;
+        }
+    }
+
+    this->m_surveillanceVisualizations.push_back(std::make_pair(callsign, stamp));
 }
 
 std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::string& callsign) {

@@ -58,6 +58,7 @@ namespace topskytower {
                 DepartureGroundStatusSelect         = 3025, /**< Sets the new status of the departure status */
                 ArrivalGroundStatusMenu             = 3026, /**< Opens the arrival ground status menu */
                 ArrivalGroundStatusSelect           = 3027, /**< Sets the new status of the arrival status */
+                SurveillanceAlertVisualization      = 3028, /**< Triggers the current surveillance visualization */
                 UiElementIds                        = 4000, /**< Elements of the UI entries */
                 UiEditTextRequest                   = 4001, /**< Request an edit-field */
                 UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */
