@@ -118,6 +118,14 @@ namespace topskytower {
                 else
                     adaptor = this->m_lvpHoldingPointTreeAdaptor;
 
+                /* avoid uninitialized calls */
+                if (nullptr == adaptor) {
+                    std::array<T*, N> retval;
+                    for (std::size_t i = 0; i < N; ++i)
+                        retval[i] = nullptr;
+                    return retval;
+                }
+
                 /* project to Cartesian coordinates */
                 GeographicLib::Gnomonic projection(GeographicLib::Geodesic::WGS84());
                 float queryPt[2];
