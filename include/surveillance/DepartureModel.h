@@ -81,6 +81,7 @@ namespace topskytower {
             void predictWaypoints(const std::vector<types::Coordinate>& waypoints);
             static bool findSegment(const std::vector<Waypoint>& route, const types::Coordinate& point,
                                     std::size_t& startIdx, std::size_t& endIdx);
+            static types::Length estimateHorizontalSpacing(const Waypoint& waypoint0, const Waypoint& waypoint1);
 
         public:
             /**
