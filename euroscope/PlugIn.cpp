@@ -550,7 +550,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             std::strcat(itemString, "RIW ");
         else if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight))
             std::strcat(itemString, "CMA ");
-        else if (0 != flightScreen->mtcdControl().numberOfConflicts(flight))
+        else if (true == flightScreen->mtcdControl().conflictsExist(flight))
             std::strcat(itemString, "MTC ");
 
         break;
