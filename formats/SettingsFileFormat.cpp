@@ -141,7 +141,7 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
             config.mtcdVerticalSeparation = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
         }
         else if ("SURV_MTCD_HorizontalSpacing" == entry[0]) {
-            config.mtcdHorizontalSeparation = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
+            config.mtcdHorizontalSeparation = static_cast<float>(std::atoi(entry[1].c_str())) * types::nauticmile;
         }
         else if ("SURV_MTCD_VerticalSpacingSameDestination" == entry[0]) {
             config.mtcdVerticalSeparationSameDestination = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
