@@ -152,6 +152,21 @@ namespace topskytower {
          *     <td>Defines the maximum speed below FL100.</td>
          *     <td>250</td><td>Knot</td>
          *   </tr>
+         *   <tr>
+         *     <td>SURV_MTCD_VerticalSpacing</td>
+         *     <td>Defines the vertical spacing between two departures.</td>
+         *     <td>2000</td><td>feet</td>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_MTCD_HorizontalSpacing</td>
+         *     <td>Defines the horizontal spacing between two departures.</td>
+         *     <td>10</td><td>Nautical miles</td>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_MTCD_VerticalSpacingSameDestination</td>
+         *     <td>Defines the vertical spacing between two departures with the same destination.</td>
+         *     <td>6000</td><td>Knot</td>
+         *   </tr>
          * </table>
          */
         class SettingsFileFormat {

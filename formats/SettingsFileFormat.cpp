@@ -137,6 +137,15 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("SURV_MTCD_DepartureSpeedBelowFL100" == entry[0]) {
             config.mtcdDepartureSpeedBelowFL100 = static_cast<float>(std::atoi(entry[1].c_str())) * types::knot;
         }
+        else if ("SURV_MTCD_VerticalSpacing" == entry[0]) {
+            config.mtcdVerticalSeparation = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
+        }
+        else if ("SURV_MTCD_HorizontalSpacing" == entry[0]) {
+            config.mtcdHorizontalSeparation = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
+        }
+        else if ("SURV_MTCD_VerticalSpacingSameDestination" == entry[0]) {
+            config.mtcdVerticalSeparationSameDestination = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
+        }
     }
 
     /* copy the MTCA-default values of the departure model */

@@ -17,31 +17,34 @@ namespace topskytower {
          * @ingroup types
          */
         struct SystemConfiguration {
-            bool                valid;                        /**< Marks if the configuration is valid */
-            std::string         hoppiesCode;                  /**< Defines Hoppie's logon-code */
-            std::uint8_t        uiBackgroundColor[3];         /**< Defines the background color of the UI elements */
-            std::uint8_t        uiForegroundColor[3];         /**< Defines the foreground color of the UI elements */
-            std::uint8_t        uiBackgroundActiveColor[3];   /**< Defines the background color of active UI elements */
-            std::uint8_t        uiForegroundActiveColor[3];   /**< Defines the foreground color of active UI elements */
-            std::string         fontFamily;                   /**< Defines the font family of the visualizations */
-            float               fontSize;                     /**< Defines the font size of the visualizations */
-            bool                trackingOnGround;             /**< Defines if the ground controllers track flights */
-            bool                flightPlanCheckEvenOdd;       /**< Defines if the generic even-odd checks are performed */
-            bool                flightPlanCheckNavigation;    /**< Defines if the flight plan checker tests for RNAV-capabilities */
-            types::Length       standAssociationDistance;     /**< Defines the maximum distance to assign automatically an aircraft to a stand */
-            bool                ariwsActive;                  /**< Defines if ARIWS is active or not */
-            types::Length       ariwsDistanceDeadband;        /**< Defines the distance in which the RIW is suppressed around the holding point */
-            types::Length       ariwsMaximumDistance;         /**< Defines the maximum distance to check if the flight is on the runway */
-            bool                cmacActive;                   /**< Defines if CMAC is active or not */
-            std::uint8_t        cmacCycleReset;               /**< Defines after how many non-moving cycles the system for a flight resets */
-            types::Length       cmacMinimumDistance;          /**< Defines the minimum distance between the reference position and the new position to estimate the CMA */
-            bool                mtcdActive;                   /**< Defines if MTCD is active or not */
-            types::Velocity     mtcdDepartureSpeedV2[5];      /**< Defines the V2 speeds for all WTCs */
-            types::Length       mtcdDepartureAccelerationAlt; /**< Defines the acceleration altitude */
-            types::Acceleration mtcdDepartureAcceleration;    /**< Defines the average aircrafts acceleration */
-            types::Velocity     mtcdDepartureSpeedBelowFL100; /**< Defines the velocity below FL100 */
-            types::Velocity     mtcdDepartureCruiseTAS[5];    /**< Defines the true air speed during cruise for all WTCs */
-            types::Velocity     mtcdDepartureClimbRates[5];   /**< Defines the climb rates for all WTCs */
+            bool                valid;                                 /**< Marks if the configuration is valid */
+            std::string         hoppiesCode;                           /**< Defines Hoppie's logon-code */
+            std::uint8_t        uiBackgroundColor[3];                  /**< Defines the background color of the UI elements */
+            std::uint8_t        uiForegroundColor[3];                  /**< Defines the foreground color of the UI elements */
+            std::uint8_t        uiBackgroundActiveColor[3];            /**< Defines the background color of active UI elements */
+            std::uint8_t        uiForegroundActiveColor[3];            /**< Defines the foreground color of active UI elements */
+            std::string         fontFamily;                            /**< Defines the font family of the visualizations */
+            float               fontSize;                              /**< Defines the font size of the visualizations */
+            bool                trackingOnGround;                      /**< Defines if the ground controllers track flights */
+            bool                flightPlanCheckEvenOdd;                /**< Defines if the generic even-odd checks are performed */
+            bool                flightPlanCheckNavigation;             /**< Defines if the flight plan checker tests for RNAV-capabilities */
+            types::Length       standAssociationDistance;              /**< Defines the maximum distance to assign automatically an aircraft to a stand */
+            bool                ariwsActive;                           /**< Defines if ARIWS is active or not */
+            types::Length       ariwsDistanceDeadband;                 /**< Defines the distance in which the RIW is suppressed around the holding point */
+            types::Length       ariwsMaximumDistance;                  /**< Defines the maximum distance to check if the flight is on the runway */
+            bool                cmacActive;                            /**< Defines if CMAC is active or not */
+            std::uint8_t        cmacCycleReset;                        /**< Defines after how many non-moving cycles the system for a flight resets */
+            types::Length       cmacMinimumDistance;                   /**< Defines the minimum distance between the reference position and the new position to estimate the CMA */
+            bool                mtcdActive;                            /**< Defines if MTCD is active or not */
+            types::Velocity     mtcdDepartureSpeedV2[5];               /**< Defines the V2 speeds for all WTCs */
+            types::Length       mtcdDepartureAccelerationAlt;          /**< Defines the acceleration altitude */
+            types::Acceleration mtcdDepartureAcceleration;             /**< Defines the average aircrafts acceleration */
+            types::Velocity     mtcdDepartureSpeedBelowFL100;          /**< Defines the velocity below FL100 */
+            types::Velocity     mtcdDepartureCruiseTAS[5];             /**< Defines the true air speed during cruise for all WTCs */
+            types::Velocity     mtcdDepartureClimbRates[5];            /**< Defines the climb rates for all WTCs */
+            types::Length       mtcdVerticalSeparation;                /**< Defines the vertical separation between flights */
+            types::Length       mtcdVerticalSeparationSameDestination; /**< Defines the vertical separation between flights with the same destination */
+            types::Length       mtcdHorizontalSeparation;              /**< Defines the horizontal separation between flights */
 
             /**
              * @brief Creates an empty and uninitialized system configuration
@@ -71,7 +74,10 @@ namespace topskytower {
                     mtcdDepartureAcceleration(1.8_mps2),
                     mtcdDepartureSpeedBelowFL100(250_kn),
                     mtcdDepartureCruiseTAS{ 270_kn, 120_kn, 270_kn, 290_kn, 290_kn },
-                    mtcdDepartureClimbRates{ 2000_ftpmin, 1000_ftpmin, 2000_ftpmin, 2000_ftpmin, 2000_ftpmin } { }
+                    mtcdDepartureClimbRates{ 2000_ftpmin, 1000_ftpmin, 2000_ftpmin, 2000_ftpmin, 2000_ftpmin },
+                    mtcdVerticalSeparation(2000_ft),
+                    mtcdVerticalSeparationSameDestination(6000_ft),
+                    mtcdHorizontalSeparation(10_nm) { }
         };
     }
 }
