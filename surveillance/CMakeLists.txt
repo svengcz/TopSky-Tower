@@ -9,13 +9,11 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/surveillance/ARIWSControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/CMACControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/FlightPlanControl.h
-    ${CMAKE_SOURCE_DIR}/include/surveillance/MTCAControl.h
 )
 SET(SOURCE_FILES
     ARIWSControl.cpp
     CMACControl.cpp
     FlightPlanControl.cpp
-    MTCAControl.cpp
 )
 
 # define the helper library
