@@ -330,7 +330,7 @@ bool DepartureModel::findSegment(const std::vector<Waypoint>& route, const types
             delta -= 360.0_deg;
 
         /* found the correct line segment */
-        if (10_deg > delta) {
+        if (10_deg > delta.abs()) {
             startIdx = i;
             endIdx = i + 1;
             return true;
