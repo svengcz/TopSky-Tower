@@ -87,7 +87,8 @@ namespace topskytower {
             std::function<void(const std::string&)> m_uiCallback;
             std::string                             m_pdcNotificationSound;
 
-            void handleHandoffPerform(POINT point, RECT area, const types::Flight& flight, bool tracked);
+            void handleHandoffPerform(POINT point, RECT area, const types::Flight& flight, bool tracked,
+                                      RadarScreen* screen);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
             void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);

@@ -335,17 +335,12 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
     switch (static_cast<PlugIn::TagItemElement>(itemCode)) {
     case PlugIn::TagItemElement::HandoffFrequency:
-        /* test all loaded screens */
-        for (const auto& screen : std::as_const(this->m_screens)) {
-            /* found the correct screen with the handoff */
-            if (true == screen->sectorControl().handoffRequired(flight)) {
-                auto& info = screen->sectorControl().handoffSector(flight);
-                std::string msg = info.identifier() + " " + info.primaryFrequency();
+        if (true == flightScreen->sectorControl().handoffRequired(flight)) {
+            auto& info = flightScreen->sectorControl().handoffSector(flight);
+            std::string msg = info.identifier() + " " + info.primaryFrequency();
 
-                std::strncpy(itemString, msg.c_str(), 16 < (msg.length() + 1) ? 16 : msg.length() + 1);
-                *colorCode = EuroScopePlugIn::TAG_COLOR_NOTIFIED;
-                break;
-            }
+            std::strncpy(itemString, msg.c_str(), 16 < (msg.length() + 1) ? 16 : msg.length() + 1);
+            *colorCode = EuroScopePlugIn::TAG_COLOR_NOTIFIED;
         }
         break;
     case PlugIn::TagItemElement::ManuallyAlerts0:
@@ -561,38 +556,33 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     }
 }
 
-void PlugIn::handleHandoffPerform(POINT point, RECT area, const types::Flight& flight, bool tracked) {
+void PlugIn::handleHandoffPerform(POINT point, RECT area, const types::Flight& flight, bool tracked, RadarScreen* screen) {
     auto radarTarget = this->RadarTargetSelectASEL();
 
-    /* test all loaded screens */
-    for (const auto& screen : std::as_const(this->m_screens)) {
-        /* found the correct screen with the handoff */
-        if (true == screen->sectorControl().handoffRequired(flight)) {
-            auto controllers = screen->sectorControl().handoffStations(flight);
+    /* found the correct screen with the handoff */
+    if (true == screen->sectorControl().handoffRequired(flight)) {
+        auto controllers = screen->sectorControl().handoffStations(flight);
 
-            /* check if handoff or a release is needed */
-            if (1 == controllers.size()) {
-                /* handoff to unicom */
-                if (true == tracked) {
-                    if (0 == controllers.front().size())
-                        radarTarget.GetCorrelatedFlightPlan().EndTracking();
-                    else
-                        radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(controllers.front().c_str());
-                }
-                screen->sectorControl().handoffPerformed(flight);
+        /* check if handoff or a release is needed */
+        if (1 == controllers.size()) {
+            /* handoff to unicom */
+            if (true == tracked) {
+                if (0 == controllers.front().size())
+                    radarTarget.GetCorrelatedFlightPlan().EndTracking();
+                else
+                    radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(controllers.front().c_str());
             }
-            else {
-                RadarScreen::EuroscopeEvent eventEntry = {
-                    static_cast<int>(PlugIn::TagItemFunction::HandoffControllerSelectEvent),
-                    flight.callsign(),
-                    "",
-                    point,
-                    area
-                };
-                screen->registerEuroscopeEvent(std::move(eventEntry));
-            }
-
-            return;
+            screen->sectorControl().handoffPerformed(flight);
+        }
+        else {
+            RadarScreen::EuroscopeEvent eventEntry = {
+                static_cast<int>(PlugIn::TagItemFunction::HandoffControllerSelectEvent),
+                flight.callsign(),
+                "",
+                point,
+                area
+            };
+            screen->registerEuroscopeEvent(std::move(eventEntry));
         }
     }
 }
@@ -867,7 +857,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             radarTarget.GetCorrelatedFlightPlan().RefuseHandoff();
         }
         else {
-            this->handleHandoffPerform(pt, area, flight, flight.isTracked());
+            this->handleHandoffPerform(pt, area, flight, flight.isTracked(), flightScreen);
         }
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelectEvent:
@@ -915,7 +905,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::HandoffSectorSelect:
         if (true == flightScreen->sectorControl().handoffRequired(flight) || true == flightScreen->sectorControl().handoffPossible(flight)) {
             flightScreen->sectorControl().handoffSectorSelect(flight, itemString);
-            this->handleHandoffPerform(pt, area, flight, flight.isTracked());
+            this->handleHandoffPerform(pt, area, flight, flight.isTracked(), flightScreen);
         }
         break;
     case PlugIn::TagItemFunction::SectorControllerHandover:
