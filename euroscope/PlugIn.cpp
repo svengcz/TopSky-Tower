@@ -1145,22 +1145,25 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
     /* find the wind entry */
     for (const auto& entry : std::as_const(split)) {
         /* find the wind entry */
-        auto pos = entry.find("KT", 0);
-        if (entry.length() - 2 == pos) {
+        if (entry.length() - 2 == entry.find("KT", 0)) {
             auto windData = entry.substr(0, entry.length() - 2);
 
-            types::WindData information;
+            types::WindData wind;
 
-            information.variable = std::string::npos != windData.rfind("VRB");
-            information.direction = static_cast<float>(std::atoi(windData.substr(0, 3).c_str())) * types::degree;
-            information.speed = static_cast<float>(std::atoi(windData.substr(3, 5).c_str())) * types::knot;
+            wind.variable = std::string::npos != windData.rfind("VRB");
+            wind.direction = static_cast<float>(std::atoi(windData.substr(0, 3).c_str())) * types::degree;
+            wind.speed = static_cast<float>(std::atoi(windData.substr(3, 5).c_str())) * types::knot;
 
             if (std::string::npos != windData.find("G"))
-                information.gusts = static_cast<float>(std::atoi(windData.substr(6, 8).c_str())) * types::knot;
+                wind.gusts = static_cast<float>(std::atoi(windData.substr(6, 8).c_str())) * types::knot;
 
-            system::ConfigurationRegistry::instance().runtimeConfiguration().windInformation[station] = information;
+            system::ConfigurationRegistry::instance().runtimeConfiguration().weatherInformation[station].wind = wind;
 
             return;
+        }
+        else if (0 == entry.find("Q")) {
+            auto qnh = static_cast<std::uint16_t>(std::atoi(entry.substr(1).c_str()));
+            system::ConfigurationRegistry::instance().runtimeConfiguration().weatherInformation[station].qnh = qnh;
         }
     }
 }

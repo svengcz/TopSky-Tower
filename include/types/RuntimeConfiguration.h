@@ -34,6 +34,14 @@ namespace topskytower {
         };
 
         /**
+         * @brief Defines the weather data
+         */
+        struct WeatherData {
+            WindData      wind; /**< Defines the wind data */
+            std::uint16_t qnh;  /**< Defines the current QNH */
+        };
+
+        /**
          * @brief Describes a runtime configuration
          * @ingroup types
          */
@@ -44,7 +52,7 @@ namespace topskytower {
             bool lowVisibilityProcedures;                                         /**< Marks if LVP are active */
             std::map<std::string, std::list<std::string>> activeDepartureRunways; /**< Defines all active departure runways per active airport */
             std::map<std::string, std::list<std::string>> activeArrivalRunways;   /**< Defines all active arrival runways per active airport */
-            std::map<std::string, WindData> windInformation;                      /**< Defines the winds on the airport */
+            std::map<std::string, WeatherData> weatherInformation                 /**< Defines the weather on the airport */
 
             RuntimeConfiguration() :
                     ariwsActive(true),
