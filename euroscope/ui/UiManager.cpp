@@ -84,6 +84,11 @@ bool UiManager::move(const std::string_view& objectName, const Gdiplus::PointF& 
     return false;
 }
 
+bool UiManager::windowIsActive(const std::string& name) const {
+    auto customIt = this->m_customWindows.find(name);
+    return this->m_customWindows.cend() != customIt;
+}
+
 void UiManager::addCustomWindow(InsetWindow* window) {
     auto customIt = this->m_customWindows.find(window->title());
     if (this->m_customWindows.end() != customIt)
