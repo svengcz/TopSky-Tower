@@ -313,24 +313,20 @@ void DepartureModel::update(const types::Flight& flight, const std::vector<types
 bool DepartureModel::findSegment(const std::vector<Waypoint>& route, const types::Coordinate& point,
                                  std::size_t& startIdx, std::size_t& endIdx) {
     for (std::size_t i = 0; i < route.size() - 1; ++i) {
-        if (route[i + 1].position.coordinate() == point) {
-            startIdx = i;
-            endIdx = i + 1;
-            return true;
-        }
+        auto distanceAC = point.distanceTo(route[i + 1].position.coordinate());
+        auto distanceAB = point.distanceTo(route[i].position.coordinate());
+        auto distanceBC = route[i].position.coordinate().distanceTo(route[i + 1].position.coordinate());
 
-        auto headingStart = route[i].position.coordinate().bearingTo(point);
-        auto headingEnd = point.bearingTo(route[i + 1].position.coordinate());
+        /* definitly not on the line segment */
+        if (distanceAC + distanceAB - distanceBC > 0.05_nm)
+            continue;
 
-        /* get the heading difference and normalize it */
-        auto delta = headingStart - headingEnd;
-        while (-1.0f * 180.0_deg > delta)
-            delta += 360.0_deg;
-        while (180.0_deg < delta)
-            delta -= 360.0_deg;
+        auto bearingAB = point.bearingTo(route[i].position.coordinate());
+        auto bearingAC = point.bearingTo(route[i + 1].position.coordinate());
 
-        /* found the correct line segment */
-        if (10_deg > delta.abs()) {
+        auto distance = std::asin(std::sin(distanceAC.convert(types::kilometre) / 6371.0f) * std::sin((bearingAC - bearingAB).convert(types::radian))) * 6371.0_km;
+
+        if (0.05_nm > distance) {
             startIdx = i;
             endIdx = i + 1;
             return true;
