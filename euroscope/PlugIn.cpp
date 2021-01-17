@@ -97,6 +97,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemFunction("Departure Ground status menu", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusMenu));
     this->RegisterTagItemFunction("Arrival Ground status menu", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusMenu));
     this->RegisterTagItemFunction("Surveillance visualization trigger", static_cast<int>(PlugIn::TagItemFunction::SurveillanceAlertVisualization));
+    this->RegisterTagItemFunction("Draw departure route", static_cast<int>(PlugIn::TagItemFunction::DepartureRouteDraw));
 
     /* search for the sound file and register the PDC sound callback */
     for (auto& entry : fs::recursive_directory_iterator(path)) {
@@ -1128,7 +1129,10 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
         break;
     case PlugIn::TagItemFunction::SurveillanceAlertVisualization:
-        flightScreen->activeSurveillanceVisualization(flight.callsign());
+        flightScreen->activateSurveillanceVisualization(flight.callsign());
+        break;
+    case PlugIn::TagItemFunction::DepartureRouteDraw:
+        flightScreen->activateDepartureRouteVisualization(flight.callsign());
         break;
     default:
         break;

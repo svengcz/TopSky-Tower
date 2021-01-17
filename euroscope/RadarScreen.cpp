@@ -36,7 +36,9 @@ RadarScreen::RadarScreen() :
         m_guiEuroscopeEvents(),
         m_lastRenderingTime(),
         m_surveillanceVisualizationsLock(),
-        m_surveillanceVisualizations() { }
+        m_surveillanceVisualizations(),
+        m_departureRouteVisualizationsLock(),
+        m_departureRouteVisualizations() { }
 
 RadarScreen::~RadarScreen() {
     if (nullptr != this->m_ariwsControl)
@@ -231,6 +233,67 @@ Gdiplus::PointF RadarScreen::convertCoordinate(const types::Coordinate& coordina
     return Gdiplus::PointF(static_cast<float>(pixel.x), static_cast<float>(pixel.y));
 }
 
+void RadarScreen::estimateOffsets(Gdiplus::PointF& start, Gdiplus::PointF& center, Gdiplus::PointF& end,
+                                  float& offsetX, float& offsetY, bool& alignRight) {
+    offsetX = offsetY = 0.0f;
+    alignRight = false;
+
+    /* both flights are left of -> no vertical offset, but on the right side */
+    if (center.X >= start.X && center.X >= end.X) {
+        offsetX = 10.0f;
+    }
+    /* both flights are right -> no vertical offset, but on the left side */
+    else if (center.X < start.X && center.X < end.X) {
+        alignRight = true;
+        offsetX = -10.0f;
+    }
+    /* one on the left, the other on the right */
+    else if (center.X >= start.X && center.X < end.X) {
+        offsetX = 10.0f;
+        if (center.Y >= end.Y)
+            offsetY = 10.0f;
+        else
+            offsetY = -30.0f;
+    }
+    else {
+        alignRight = true;
+        offsetX = -10.0f;
+        if (center.Y >= start.Y)
+            offsetY = 10.0f;
+        else
+            offsetY = -30.0f;
+    }
+}
+
+void RadarScreen::drawTexts(const Gdiplus::PointF& center, float offsetX, float offsetY, bool alignRight,
+                            const std::list<std::string>& lines, Gdiplus::Graphics& graphics) {
+    if (0 == lines.size())
+        return;
+
+    const auto& config = system::ConfigurationRegistry::instance().systemConfiguration();
+    float positionY = center.Y + offsetY;
+
+    Text text;
+    text.setGraphics(&graphics);
+    text.setFontColor(Gdiplus::Color(config.uiForegroundColor[0], config.uiForegroundColor[1], config.uiForegroundColor[2]));
+
+    for (const auto& line : std::as_const(lines)) {
+        Gdiplus::PointF position(0.0f, positionY);
+
+        text.setText(line);
+
+        if (true == alignRight)
+            position.X = offsetX + center.X - text.rectangle().Width;
+        else
+            position.X = offsetX + center.X;
+        position.Y = positionY;
+
+        text.setPosition(position);
+        text.visualize();
+        positionY += text.rectangle().Height;
+    }
+}
+
 bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& graphics) {
     const auto& flight = this->m_flightRegistry->flight(callsign);
     if (false == this->m_mtcdControl->conflictsExist(flight))
@@ -238,7 +301,7 @@ bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& 
 
     const auto& config = system::ConfigurationRegistry::instance().systemConfiguration();
     Gdiplus::Color foreground(config.uiForegroundColor[0], config.uiForegroundColor[1], config.uiForegroundColor[2]);
-    Gdiplus::Pen pen(foreground, 3.0f);
+    Gdiplus::Pen pen(foreground, 2.0f);
     Gdiplus::SolidBrush brush(Gdiplus::Color(255, 0, 0));
 
     auto pixelPos = this->convertCoordinate(flight.currentPosition().coordinate());
@@ -253,55 +316,25 @@ bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& 
         auto conflictPos = this->convertCoordinate(conflict.position.coordinate);
 
         /* estimate the optimal position for the text */
-        float offsetX = 0.0f, offsetY = 0.0f;
-        bool alignRight = false;
-        /* both flights are left of -> no vertical offset, but on the right side */
-        if (conflictPos.X >= pixelPos.X && conflictPos.X >= otherPos.X) {
-            offsetX = 10.0f;
-        }
-        /* both flights are right -> no vertical offset, but on the left side */
-        else if (conflictPos.X < pixelPos.X && conflictPos.X < otherPos.X) {
-            alignRight = true;
-            offsetX = -10.0f;
-        }
-        /* one on the left, the other on the right */
-        else if (conflictPos.X >= pixelPos.X && conflictPos.X < otherPos.X) {
-            offsetX = 10.0f;
-            if (conflictPos.Y >= otherPos.Y)
-                offsetY = 10.0f;
-            else
-                offsetY = -30.0f;
-        }
-        else {
-            alignRight = true;
-            offsetX = -10.0f;
-            if (conflictPos.Y >= pixelPos.Y)
-                offsetY = 10.0f;
-            else
-                offsetY = -30.0f;
-        }
+        float offsetX, offsetY;
+        bool alignRight;
+        RadarScreen::estimateOffsets(pixelPos, conflictPos, otherPos, offsetX, offsetY, alignRight);
 
         std::stringstream stream;
         stream << std::fixed << std::setprecision(1);
 
         /* prepare the texts */
-        Text verticalSpacing, horizontalSpacing, conflictTime;
-        verticalSpacing.setGraphics(&graphics);
-        verticalSpacing.setFontColor(foreground);
+        std::list<std::string> lines;
         stream << static_cast<int>(conflict.position.altitudeDifference.convert(types::feet)) << "ft";
-        verticalSpacing.setText(stream.str());
-        horizontalSpacing.setGraphics(&graphics);
-        horizontalSpacing.setFontColor(foreground);
+        lines.push_back(stream.str());
         stream.str("");
         stream << conflict.position.horizontalSpacing.convert(types::nauticmile) << "nm";
-        horizontalSpacing.setText(stream.str());
-        conflictTime.setGraphics(&graphics);
-        conflictTime.setFontColor(foreground);
+        lines.push_back(stream.str());
         stream.str("");
         auto minutes = static_cast<int>(conflict.position.conflictIn.convert(types::second)) / 60;
         auto seconds = static_cast<int>(conflict.position.conflictIn.convert(types::second)) % 60;
         stream << minutes << "min " << seconds << "s";
-        conflictTime.setText(stream.str());
+        lines.push_back(stream.str());
 
         /* draw the lines between the flights and the conflict position */
         graphics.DrawLine(&pen, pixelPos, conflictPos);
@@ -311,38 +344,100 @@ bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& 
         Gdiplus::RectF area(conflictPos.X - 3.0f, conflictPos.Y - 3.0f, 6.0f, 6.0f);
         graphics.FillEllipse(&brush, area);
 
-        /* set the positions of the texts */
-        if (true == alignRight) {
-            Gdiplus::PointF position(offsetX + conflictPos.X - conflictTime.rectangle().Width, conflictPos.Y + offsetY);
-            conflictTime.setPosition(position);
-
-            position.X = offsetX + conflictPos.X - verticalSpacing.rectangle().Width;
-            position.Y += conflictTime.rectangle().Height;
-            verticalSpacing.setPosition(position);
-
-            position.X = offsetX + conflictPos.X - horizontalSpacing.rectangle().Width;
-            position.Y += verticalSpacing.rectangle().Height;
-            horizontalSpacing.setPosition(position);
-        }
-        else {
-            Gdiplus::PointF position(offsetX + conflictPos.X, conflictPos.Y + offsetY);
-
-            conflictTime.setPosition(position);
-
-            position.Y += conflictTime.rectangle().Height;
-            verticalSpacing.setPosition(position);
-
-            position.Y += verticalSpacing.rectangle().Height;
-            horizontalSpacing.setPosition(position);
-        }
-
-        /* draw the texts */
-        conflictTime.visualize();
-        verticalSpacing.visualize();
-        horizontalSpacing.visualize();
+        RadarScreen::drawTexts(conflictPos, offsetX, offsetY, alignRight, lines, graphics);
     }
 
     return 0 != conflicts.size();
+}
+
+bool RadarScreen::visualizeRoute(const std::string& callsign, Gdiplus::Graphics& graphics) {
+    const auto& flight = this->m_flightRegistry->flight(callsign);
+
+    if (false == this->m_mtcdControl->departureModelExists(flight))
+        return false;
+
+    const auto& model = this->m_mtcdControl->departureModel(flight);
+    const auto& config = system::ConfigurationRegistry::instance().systemConfiguration();
+    Gdiplus::Color foreground(config.uiForegroundColor[0], config.uiForegroundColor[1], config.uiForegroundColor[2]);
+    Gdiplus::Pen pen(foreground, 2.0f);
+
+    auto previousPos = this->convertCoordinate(model.waypoints()[0].position.coordinate());
+    auto currentPos = this->convertCoordinate(model.waypoints()[1].position.coordinate());
+    graphics.DrawLine(&pen, previousPos, currentPos);
+
+    /* draw the complete route */
+    for (std::size_t i = 1; i < model.waypoints().size() - 1; ++i) {
+        auto currentPos = this->convertCoordinate(model.waypoints()[i].position.coordinate());
+        auto nextPos = this->convertCoordinate(model.waypoints()[i + 1].position.coordinate());
+
+        graphics.DrawLine(&pen, currentPos, nextPos);
+
+        /* prepare the information to draw the relevant flight data */
+        float offsetX, offsetY;
+        bool alignRight;
+        RadarScreen::estimateOffsets(previousPos, currentPos, nextPos, offsetX, offsetY, alignRight);
+
+        /* generate the text */
+        std::list<std::string> lines;
+        std::stringstream stream;
+        auto limit = static_cast<int>(model.waypoints()[i].position.altitude().convert(types::feet));
+        limit /= 100;
+        if (this->GetPlugIn()->GetTransitionAltitude() <= model.waypoints()[i].position.altitude().convert(types::feet))
+            stream << "FL" << std::setw(3) << std::setfill('0') << limit;
+        else
+            stream << "A" << std::setw(3) << std::setfill('0') << limit;
+        lines.push_back(stream.str());
+        stream.str("");
+        stream.clear();
+        stream << static_cast<int>(model.waypoints()[i].speed.convert(types::knot)) << "kn";
+        lines.push_back(stream.str());
+        stream.str("");
+        auto minutes = static_cast<int>(model.waypoints()[i].reachingIn.convert(types::second)) / 60;
+        auto seconds = static_cast<int>(model.waypoints()[i].reachingIn.convert(types::second)) % 60;
+        stream << minutes << "min " << seconds << "s";
+        lines.push_back(stream.str());
+
+        /* draw the texts */
+        RadarScreen::drawTexts(currentPos, offsetX, offsetY, alignRight, lines, graphics);
+    }
+
+    return 0 != model.waypoints().size();
+}
+
+void RadarScreen::drawData(std::mutex& lock, std::list<std::pair<std::string, std::chrono::system_clock::time_point>>& data,
+                           bool surveillanceData, Gdiplus::Graphics& graphics) {
+    /* draw the different visualization results */
+    lock.lock();
+    for (auto it = data.begin(); data.end() != it;) {
+        /* erase the visualization if the flight does not exist anymore */
+        if (false == this->m_flightRegistry->flightExists(it->first)) {
+            it = data.erase(it);
+            continue;
+        }
+
+        /* check if the result is outdated */
+        auto duration = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(this->m_lastRenderingTime - it->second).count()) * types::second;
+        if (duration >= system::ConfigurationRegistry::instance().systemConfiguration().surveillanceVisualizationDuration) {
+            it = data.erase(it);
+            continue;
+        }
+
+        if (true == surveillanceData) {
+            /* draw the MTCD conflicts */
+            if (true == this->visualizeMTCD(it->first, graphics))
+                ++it;
+            /* no more conflicts available */
+            else
+                it = data.erase(it);
+        }
+        else {
+            if (true == this->visualizeRoute(it->first, graphics))
+                ++it;
+            else
+                it = data.erase(it);
+        }
+    }
+    lock.unlock();
 }
 
 void RadarScreen::OnRefresh(HDC hdc, int phase) {
@@ -351,9 +446,14 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     if (EuroScopePlugIn::REFRESH_PHASE_AFTER_TAGS != phase)
         return;
 
+    this->m_lastRenderingTime = std::chrono::system_clock::now();
     Gdiplus::Graphics graphics(hdc);
     graphics.SetPageUnit(Gdiplus::UnitPixel);
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+
+    this->drawData(this->m_surveillanceVisualizationsLock, this->m_surveillanceVisualizations, true, graphics);
+    this->drawData(this->m_departureRouteVisualizationsLock, this->m_departureRouteVisualizations, false, graphics);
+
     /* visualize everything of the UI manager */
     this->m_userInterface.visualize(&graphics);
 
@@ -380,33 +480,6 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     std::string_view positionId(plugin->ControllerMyself().GetPositionId());
     if (0 != positionId.length() && "XX" != positionId)
         this->m_sectorControl->setOwnSector(Converter::convert(plugin->ControllerMyself()));
-
-    this->m_lastRenderingTime = std::chrono::system_clock::now();
-
-    /* draw the different visualization results */
-    this->m_surveillanceVisualizationsLock.lock();
-    for (auto it = this->m_surveillanceVisualizations.begin(); this->m_surveillanceVisualizations.end() != it;) {
-        /* erase the visualization if the flight does not exist anymore */
-        if (false == this->m_flightRegistry->flightExists(it->first)) {
-            it = this->m_surveillanceVisualizations.erase(it);
-            continue;
-        }
-
-        /* check if the result is outdated */
-        auto duration = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(this->m_lastRenderingTime - it->second).count()) * types::second;
-        if (duration >= system::ConfigurationRegistry::instance().systemConfiguration().surveillanceVisualizationDuration) {
-            it = this->m_surveillanceVisualizations.erase(it);
-            continue;
-        }
-
-        /* draw the MTCD conflicts */
-        if (true == this->visualizeMTCD(it->first, graphics))
-            ++it;
-        /* no more conflicts available */
-        else
-            it = this->m_surveillanceVisualizations.erase(it);
-    }
-    this->m_surveillanceVisualizationsLock.unlock();
 }
 
 management::SectorControl& RadarScreen::sectorControl() {
@@ -454,8 +527,8 @@ const std::chrono::system_clock::time_point& RadarScreen::lastRenderingTime() co
     return this->m_lastRenderingTime;
 }
 
-void RadarScreen::activeSurveillanceVisualization(const std::string& callsign) {
-    std::lock_guard guard(m_surveillanceVisualizationsLock);
+void RadarScreen::activateSurveillanceVisualization(const std::string& callsign) {
+    std::lock_guard guard(this->m_surveillanceVisualizationsLock);
 
     auto stamp = std::chrono::system_clock::now();
 
@@ -467,6 +540,21 @@ void RadarScreen::activeSurveillanceVisualization(const std::string& callsign) {
     }
 
     this->m_surveillanceVisualizations.push_back(std::make_pair(callsign, stamp));
+}
+
+void RadarScreen::activateDepartureRouteVisualization(const std::string& callsign) {
+    std::lock_guard guard(this->m_departureRouteVisualizationsLock);
+
+    auto stamp = std::chrono::system_clock::now();
+
+    for (auto& entry : this->m_departureRouteVisualizations) {
+        if (entry.first == callsign) {
+            entry.second = stamp;
+            return;
+        }
+    }
+
+    this->m_departureRouteVisualizations.push_back(std::make_pair(callsign, stamp));
 }
 
 std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::string& callsign) {

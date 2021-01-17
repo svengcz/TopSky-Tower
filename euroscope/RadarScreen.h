@@ -63,10 +63,19 @@ namespace topskytower {
             std::chrono::system_clock::time_point                                    m_lastRenderingTime;
             std::mutex                                                               m_surveillanceVisualizationsLock;
             std::list<std::pair<std::string, std::chrono::system_clock::time_point>> m_surveillanceVisualizations;
+            std::mutex                                                               m_departureRouteVisualizationsLock;
+            std::list<std::pair<std::string, std::chrono::system_clock::time_point>> m_departureRouteVisualizations;
 
             void initialize();
             Gdiplus::PointF convertCoordinate(const types::Coordinate& coordinate);
+            static void estimateOffsets(Gdiplus::PointF& start, Gdiplus::PointF& center, Gdiplus::PointF& end,
+                                        float& offsetX, float& offsetY, bool& alignRight);
+            static void drawTexts(const Gdiplus::PointF& center, float offsetX, float offsetY, bool alignRight,
+                                  const std::list<std::string>& lines, Gdiplus::Graphics& graphics);
             bool visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& graphics);
+            bool visualizeRoute(const std::string& callsign, Gdiplus::Graphics& graphics);
+            void drawData(std::mutex& lock, std::list<std::pair<std::string, std::chrono::system_clock::time_point>>& data,
+                          bool surveillanceData, Gdiplus::Graphics& graphics);
             std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign);
 
         public:
@@ -202,7 +211,12 @@ namespace topskytower {
              * @brief Activates the visualization for surveillance functions
              * @param[in] callsign The visualizable callsign
              */
-            void activeSurveillanceVisualization(const std::string& callsign);
+            void activateSurveillanceVisualization(const std::string& callsign);
+            /**
+             * @brief Activates the visualization of the departure route
+             * @param[in] callsign The visualizable callsign
+             */
+            void activateDepartureRouteVisualization(const std::string& callsign);
         };
     }
 }
