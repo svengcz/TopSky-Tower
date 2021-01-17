@@ -87,6 +87,8 @@ void CMACControl::updateFlight(const types::Flight& flight) {
     else {
         it->second.expectedCommand = types::FlightPlan::AtcCommand::TaxiIn;
     }
+
+    it->second.referencePosition = flight.currentPosition().coordinate();
 }
 
 void CMACControl::removeFlight(const std::string& callsign) {
