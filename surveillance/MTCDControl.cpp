@@ -167,6 +167,9 @@ void MTCDControl::updateFlight(const types::Flight& flight) {
                     return;
                 }
             }
+
+            /* no relevant conflict found -> delete the old conflicts */
+            this->removeConflict(it->flight().callsign(), departure.flight().callsign());
         }
     }
 }
