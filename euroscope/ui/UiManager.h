@@ -83,6 +83,12 @@ namespace topskytower {
              */
             bool move(const std::string_view& objectName, const Gdiplus::PointF& pt, bool released);
             /**
+             * @brief Checks if a window is active or not
+             * @param[in] name The window's name
+             * @return True if the window is active, else false
+             */
+            bool windowIsActive(const std::string& name) const;
+            /**
              * @brief Adds a custom window into the manager
              * @param[in] window The custom window
              */
