@@ -161,6 +161,7 @@ void MTCDControl::updateFlight(const types::Flight& flight) {
                             break;
                         }
                     }
+
                     if (false == updated)
                         conflicts.push_back(std::move(conflict));
                     return;
