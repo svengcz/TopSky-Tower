@@ -229,7 +229,7 @@ DepartureModel::Waypoint DepartureModel::predictWaypoint(const Waypoint& waypoin
 
 void DepartureModel::predictWaypoints(const std::vector<types::Coordinate>& waypoints) {
     this->m_waypoints.clear();
-    this->m_waypoints.reserve(waypoints.size());
+    this->m_waypoints.reserve(waypoints.size() + 1);
     this->m_routeCartesian.clear();
 
     /* transform the route to Cartesian coordinates to perform some intersection-tests */
@@ -251,10 +251,10 @@ void DepartureModel::predictWaypoints(const std::vector<types::Coordinate>& wayp
 
     prevPoint.position = this->m_flight.currentPosition();
     prevPoint.speed = this->m_flight.groundSpeed();
+    prevPoint.reachingIn = 0.0_s;
+    this->m_waypoints.push_back(prevPoint);
     if (this->m_flight.groundSpeed() < 5_kn)
         prevPoint.reachingIn = 20.0_s;
-    else
-        prevPoint.reachingIn = 0.0_s;
 
     for (it = waypoints.cbegin(); it < waypoints.cend(); ++it) {
         auto waypoint = this->predictWaypoint(prevPoint, *it);
