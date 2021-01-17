@@ -48,6 +48,7 @@ namespace topskytower {
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
             std::list<DepartureModel>::iterator insertFlight(const types::Flight& flight);
+            void removeConflict(const std::string& callsignModel, const std::string& callsignConflict);
 
         public:
             /**

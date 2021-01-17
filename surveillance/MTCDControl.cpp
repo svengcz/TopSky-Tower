@@ -128,6 +128,13 @@ void MTCDControl::updateFlight(const types::Flight& flight) {
     for (const auto& departure : std::as_const(this->m_departures)) {
         if (*it != departure) {
             auto candidates = it->findConflictCandidates(departure);
+
+            /* erase all existing conflicts for this combination */
+            if (0 == candidates.size()) {
+                this->removeConflict(it->flight().callsign(), departure.flight().callsign());
+                continue;
+            }
+
             auto minVerticalSpacing = it->flight().flightPlan().destination() != departure.flight().flightPlan().destination() ?
                 config.mtcdVerticalSeparation : config.mtcdVerticalSeparationSameDestination;
 
@@ -158,6 +165,18 @@ void MTCDControl::updateFlight(const types::Flight& flight) {
                         conflicts.push_back(std::move(conflict));
                     return;
                 }
+            }
+        }
+    }
+}
+
+void MTCDControl::removeConflict(const std::string& callsignModel, const std::string& callsignConflict) {
+    auto it = this->m_conflicts.find(callsignModel);
+    if (this->m_conflicts.end() != it) {
+        for (auto cit = it->second.begin(); it->second.end() != cit; ++cit) {
+            if (cit->callsign == callsignConflict) {
+                it->second.erase(cit);
+                return;
             }
         }
     }
