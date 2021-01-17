@@ -362,35 +362,6 @@ types::Length DepartureModel::estimateHorizontalSpacing(const Waypoint& waypoint
 std::list<DepartureModel::ConflictPosition> DepartureModel::findConflictCandidates(const DepartureModel& other) const {
     std::list<DepartureModel::ConflictPosition> retval;
 
-    /* same departure routes are bit special -> search the nearest point */
-    if (other.flight().flightPlan().departureRoute() == this->flight().flightPlan().departureRoute()) {
-        ConflictPosition conflict;
-        conflict.horizontalSpacing = 1000.0_nm;
-
-        for (const auto& otherWp : std::as_const(other.m_waypoints)) {
-            for (const auto& thisWp : std::as_const(this->m_waypoints)) {
-                /* found the direct neighbors */
-                if (1_nm > otherWp.position.coordinate().distanceTo(thisWp.position.coordinate())) {
-                    auto spacing = DepartureModel::estimateHorizontalSpacing(thisWp, otherWp);
-
-                    if (conflict.horizontalSpacing > spacing) {
-                        conflict.coordinate = thisWp.position.coordinate();
-                        conflict.altitudeDifference = (otherWp.position.altitude() - thisWp.position.altitude()).abs();
-                        conflict.conflictIn = thisWp.reachingIn;
-                        conflict.horizontalSpacing = spacing;
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        if (types::Coordinate() != conflict.coordinate)
-            return { conflict };
-        else
-            return {};
-    }
-
     /* find all intersections */
     std::deque<bg::model::point<float, 2, bg::cs::cartesian>> intersections;
     bg::intersection(this->m_routeCartesian, other.m_routeCartesian, intersections);
