@@ -52,7 +52,7 @@ namespace topskytower {
             bool lowVisibilityProcedures;                                         /**< Marks if LVP are active */
             std::map<std::string, std::list<std::string>> activeDepartureRunways; /**< Defines all active departure runways per active airport */
             std::map<std::string, std::list<std::string>> activeArrivalRunways;   /**< Defines all active arrival runways per active airport */
-            std::map<std::string, WeatherData> weatherInformation                 /**< Defines the weather on the airport */
+            std::map<std::string, WeatherData> weatherInformation;                /**< Defines the weather on the airport */
 
             RuntimeConfiguration() :
                     ariwsActive(true),
@@ -61,7 +61,7 @@ namespace topskytower {
                     lowVisibilityProcedures(false),
                     activeDepartureRunways(),
                     activeArrivalRunways(),
-                    windInformation() { }
+                    weatherInformation() { }
         };
     }
 }
