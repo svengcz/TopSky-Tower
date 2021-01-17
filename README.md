@@ -79,11 +79,13 @@ The arrival list should have the following entries:
 The tag extension should have the following entries for the Correlated A+C mode, Correlated S mode in all three entries:
 - In one single line:
   - TopSky-Tower / Surveillance alerts
+   - Right button: TopSky-Tower / Surveillance visualization trigger
   - TopSky-Tower / Manually alerts 0
   - TopSky-Tower / Manually alerts 1
   - TopSky-Tower / Manually alerts 1
 - Extension of the callsign:
   - Before the callsign: TopSky-Tower / Flight marker
+  - Left button: TopSky-Tower / Draw departure route
   - Right button: TopSky-Tower / Menu bar
 - In one single line at the bottom:
   - TopSky-Tower / Handoff frequency
