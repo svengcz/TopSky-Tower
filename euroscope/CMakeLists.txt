@@ -70,6 +70,8 @@ SET(SOURCE_FILES_UI_ELEMENTS
     ui/elements/Button.h
     ui/elements/EditText.cpp
     ui/elements/EditText.h
+    ui/elements/TableViewer.cpp
+    ui/elements/TableViewer.h
     ui/elements/Text.cpp
     ui/elements/Text.h
     ui/elements/TextViewer.cpp
