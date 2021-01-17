@@ -367,7 +367,7 @@ bool RadarScreen::visualizeRoute(const std::string& callsign, Gdiplus::Graphics&
 
     /* draw the complete route */
     for (std::size_t i = 1; i < model.waypoints().size() - 1; ++i) {
-        auto currentPos = this->convertCoordinate(model.waypoints()[i].position.coordinate());
+        currentPos = this->convertCoordinate(model.waypoints()[i].position.coordinate());
         auto nextPos = this->convertCoordinate(model.waypoints()[i + 1].position.coordinate());
 
         graphics.DrawLine(&pen, currentPos, nextPos);
