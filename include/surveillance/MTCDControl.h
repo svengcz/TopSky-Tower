@@ -19,14 +19,41 @@ namespace topskytower {
          * @ingroup surveillance
          *
          * This module predicts departures that are close to active holding points.
-         * Based on the predictions and the already departing flights is a medium term conflict estimation implemented.
+         * Based on the predictions and the already departing flights is a Medium Term Conflict Detection implemented.
          *
          * The MTCD module helps to identify possible conflicts in the departure sector.
          * It uses the waypoint prediction of EuroScope, but uses it's own model to estimate the position and time when
          * reaching specific waypoints.
          *
-         * The following graphics shows the internal prediction model for IFR flights with a defined SID.
-         * 
+         * The conflict analysis is based on the predicted routes, altitudes and speeds to check the criticality based
+         * on the safety net configuration. It is possible to define the minimum required altitude difference
+         * and the minimum required horizontal spacing. If multiple positions does not fit the safety configuration,
+         * the most critical point is selected. The most critical point is defined by the time of occurence.
+         *
+         * The MTC-value is only calculated for non-departed flights, becaus departing flights cannot be handled
+         * by the tower anymore. The system calculates the predicted route and all relevant metrices only
+         * for aircrafts that are next to an active holding point and do not have a departure-clearance or
+         * the ground speed is below 40 kn.
+         *
+         * The tag will be extended by the surveillance alert message "MTC".
+         *
+         * ![Medium Term Conflict](doc/imgs/MediumTermConflict.png)
+         *
+         * It is additionally possible to visualize the predicted conflict points for a specific aircraft.
+         * All combinations between the specific aircraft and all other relevant aircrafts is visualized
+         * with the information about the altitude difference, horizontal spacing and the time of occurence.
+         *
+         * ![Medium Term Conflict Position](doc/imgs/MTCDPrediction.png)
+         *
+         * An other visualizable information is the predicted path with the ETA for every waypoint on the SID,
+         * The expected altitude and the expected speed. This helps to controller to verify the MTC-warning
+         * and handle accordingly.
+         *
+         * ![Predicted route](doc/imgs/MTCDRoutePrediction.png)
+         *
+         * The following graphics shows the internal prediction model for IFR flights with a defined SID:
+         *
+         * ![Departure model](doc/imgs/DepartureModel.png)
          */
         class MTCDControl : management::HoldingPointMap<management::HoldingPointData> {
 #ifndef DOXYGEN_IGNORE
