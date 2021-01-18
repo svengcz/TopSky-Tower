@@ -21,6 +21,7 @@ namespace topskytower {
             std::string         hoppiesCode;                           /**< Defines Hoppie's logon-code */
             std::uint8_t        uiBackgroundColor[3];                  /**< Defines the background color of the UI elements */
             std::uint8_t        uiForegroundColor[3];                  /**< Defines the foreground color of the UI elements */
+            std::uint8_t        uiForegroundBlinkColor[3];             /**< Defines the blink color of the UI elements */
             std::uint8_t        uiBackgroundActiveColor[3];            /**< Defines the background color of active UI elements */
             std::uint8_t        uiForegroundActiveColor[3];            /**< Defines the foreground color of active UI elements */
             std::string         fontFamily;                            /**< Defines the font family of the visualizations */
@@ -54,7 +55,8 @@ namespace topskytower {
                     valid(false),
                     hoppiesCode(),
                     uiBackgroundColor{ 50, 50, 50 },
-                    uiForegroundColor{ 150, 150, 150, },
+                    uiForegroundColor{ 150, 150, 150 },
+                    uiForegroundBlinkColor{ 250, 250, 250 },
                     uiBackgroundActiveColor{ 0, 150, 0 },
                     uiForegroundActiveColor{ 100, 100, 100 },
                     fontFamily(),

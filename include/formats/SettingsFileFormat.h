@@ -44,6 +44,11 @@ namespace topskytower {
          *     <td>150, 150, 150</td><td>R,G,B</td>
          *   </tr>
          *   <tr>
+         *     <td>UI_ForegroundBlinkColor</td>
+         *     <td>Defines the foreground blink color of TopSky-Tower windows.</td>
+         *     <td>250, 250, 250</td><td>R,G,B</td>
+         *   </tr>
+         *   <tr>
          *     <td>UI_BackgroundActiveColor</td>
          *     <td>Defines the background color of TopSky-Tower windows for active elements.</td>
          *     <td>0, 150, 0</td><td>R,G,B</td>

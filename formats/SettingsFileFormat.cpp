@@ -55,6 +55,9 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("UI_ForegroundColor" == entry[0]) {
             SettingsFileFormat::parseColor(entry[1], config.uiForegroundColor);
         }
+        else if ("UI_ForegroundBlinkColor" == entry[0]) {
+            SettingsFileFormat::parseColor(entry[1], config.uiForegroundBlinkColor);
+        }
         else if ("UI_BackgroundActiveColor" == entry[0]) {
             SettingsFileFormat::parseColor(entry[1], config.uiBackgroundActiveColor);
         }
