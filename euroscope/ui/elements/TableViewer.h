@@ -25,6 +25,8 @@ namespace topskytower {
             std::vector<Text>            m_header;
             std::list<std::vector<Text>> m_rows;
 
+            float calculateRequiredArea(std::vector<float>& columnWidths, Gdiplus::Graphics* graphics);
+
         public:
             /**
              * @brief Creates a new text viewer
@@ -64,6 +66,18 @@ namespace topskytower {
              * @param[in] element The new content
              */
             void setElement(std::size_t rowIdx, std::size_t columnIdx, const std::string& element);
+            /**
+             * @brief Handles the click events
+             * @param[in] pt The position of the mouse
+             * @param[in] button The clicked mouse button
+             * @return True if the click was handled, else false
+             */
+            bool click(const Gdiplus::PointF& pt, UiManager::MouseButton button) override;
+            /**
+             * @brief prepares the visualization data
+             * @param[in] graphics The graphic-interface
+             */
+            void prepareVisualization(Gdiplus::Graphics* graphics);
             /**
              * @brief Visualizes the toolbar with all active sub-menus
              * @param[in] graphics The graphics container
