@@ -15,6 +15,7 @@
 #include "CmacToolbarButton.h"
 #include "LvpToolbarButton.h"
 #include "PdcToolbarButton.h"
+#include "MetarToolbarButton.h"
 #include "MtcdToolbarButton.h"
 #include "Toolbar.h"
 #include "UiManager.h"
@@ -287,6 +288,7 @@ void Toolbar::initialize() {
     this->m_buttons.push_back(new AriwsToolbarButton(this->m_parent));
     this->m_buttons.push_back(new CmacToolbarButton(this->m_parent));
     this->m_buttons.push_back(new MtcdToolbarButton(this->m_parent));
+    this->m_buttons.push_back(new MetarToolbarButton(this->m_parent));
     this->m_buttons.push_back(new LvpToolbarButton(this->m_parent));
 }
 
