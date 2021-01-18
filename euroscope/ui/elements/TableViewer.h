@@ -69,6 +69,13 @@ namespace topskytower {
              */
             void setElement(std::size_t rowIdx, std::size_t columnIdx, const std::string& element);
             /**
+             * @brief Sets the font color for a specific element
+             * @param[in] rowIdx The row index
+             * @param[in] columnIdx The column index
+             * @param[in] color The new color
+             */
+            void setTextColor(std::size_t rowIdx, std::size_t columnIdx, const Gdiplus::Color& color);
+            /**
              * @brief Handles the click events
              * @param[in] pt The position of the mouse
              * @param[in] button The clicked mouse button

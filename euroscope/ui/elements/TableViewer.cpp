@@ -64,6 +64,14 @@ void TableViewer::setElement(std::size_t rowIdx, std::size_t columnIdx, const st
     }
 }
 
+void TableViewer::setTextColor(std::size_t rowIdx, std::size_t columnIdx, const Gdiplus::Color& color) {
+    if (rowIdx < this->m_rows.size() && columnIdx < this->m_header.size()) {
+        auto it = this->m_rows.begin();
+        std::advance(it, rowIdx);
+        (*it)[columnIdx].setFontColor(color);
+    }
+}
+
 bool TableViewer::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     if (UiManager::MouseButton::Left != button)
         return false;
