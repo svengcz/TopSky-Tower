@@ -22,10 +22,12 @@ namespace topskytower {
          */
         class TableViewer : public UiElement {
         private:
-            std::vector<Text>            m_header;
-            std::list<std::vector<Text>> m_rows;
+            std::vector<std::string>            m_headerContent;
+            std::vector<Text>                   m_header;
+            std::list<std::vector<std::string>> m_rowContent;
+            std::list<std::vector<Text>>        m_rows;
 
-            float calculateRequiredArea(std::vector<float>& columnWidths, Gdiplus::Graphics* graphics);
+            float calculateRequiredArea(std::vector<float>& columnWidths, Gdiplus::Graphics* graphics, float& height);
 
         public:
             /**
