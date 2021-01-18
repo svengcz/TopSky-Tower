@@ -60,6 +60,11 @@ Gdiplus::Color UiElement::activeForegroundColor() {
     return Gdiplus::Color(255, color[0], color[1], color[2]);
 }
 
+Gdiplus::Color UiElement::foregroundBlinkColor() {
+    const auto& color = system::ConfigurationRegistry::instance().systemConfiguration().uiForegroundBlinkColor;
+    return Gdiplus::Color(255, color[0], color[1], color[2]);
+}
+
 const Gdiplus::RectF& UiElement::area() const {
     return this->m_area;
 }

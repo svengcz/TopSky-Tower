@@ -50,6 +50,11 @@ namespace topskytower {
              * @return The active foreground color
              */
             static Gdiplus::Color activeForegroundColor();
+            /**
+             * @brief Returns the blink foreground color
+             * @return The blink color
+             */
+            static Gdiplus::Color foregroundBlinkColor();
 
         public:
             /**
