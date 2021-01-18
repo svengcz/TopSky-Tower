@@ -15,6 +15,20 @@ namespace topskytower {
          * @ingroup euroscope
          */
         class MetarViewerWindow : public InsetWindow {
+        private:
+            using TimePoint = std::chrono::system_clock::time_point;
+
+            struct QnhTracker {
+                std::uint16_t  qnhValue;
+                TimePoint      blinkUntil;
+                Gdiplus::Color currentColor;
+                TimePoint      lastSwitch;
+            };
+
+            std::map<std::string, QnhTracker> m_qnhValues;
+
+            void updateData();
+
         public:
             /**
              * @brief Creates a new METAR viewer

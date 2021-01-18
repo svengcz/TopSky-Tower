@@ -13,6 +13,7 @@
 #include "elements/TableViewer.h"
 #include "MetarViewerWindow.h"
 
+using namespace std::literals;
 using namespace topskytower;
 using namespace topskytower::euroscope;
 
@@ -28,9 +29,23 @@ MetarViewerWindow::~MetarViewerWindow() {
     this->m_elements.clear();
 }
 
+void MetarViewerWindow::updateData() {
+    for (auto it = this->m_qnhValues.begin(); this->m_qnhValues.end() != it; ++it) {
+        auto value = system::ConfigurationRegistry::instance().runtimeConfiguration().weatherInformation.find(it->first)->second.qnh;
+        if (it->second.qnhValue != value) {
+            it->second.lastSwitch = std::chrono::system_clock::now();
+            it->second.blinkUntil = it->second.lastSwitch + 10s;
+            it->second.qnhValue = value;
+        }
+    }
+}
+
 bool MetarViewerWindow::visualize(Gdiplus::Graphics* graphics) {
     const auto& config = system::ConfigurationRegistry::instance().runtimeConfiguration();
     auto viewer = static_cast<TableViewer*>(this->m_elements.front());
+
+    TimePoint currentStamp = std::chrono::system_clock::now();
+    this->updateData();
 
     /* set up the table data */
     std::size_t rowIdx = 0;
@@ -55,6 +70,24 @@ bool MetarViewerWindow::visualize(Gdiplus::Graphics* graphics) {
         stream.str("");
         stream << std::setw(4) << std::setfill(' ') << data.second.qnh;
         viewer->setElement(rowIdx, 3, stream.str());
+
+        /* the color change is needed */
+        auto& qnhData = this->m_qnhValues[data.first];
+        auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(currentStamp - qnhData.lastSwitch).count();
+        if (qnhData.blinkUntil >= currentStamp) {
+            if (1000 <= milliseconds) {
+                /* switch the color */
+                if (qnhData.currentColor.GetValue() == UiElement::foregroundBlinkColor().GetValue())
+                    qnhData.currentColor = UiElement::foregroundColor();
+                else if (qnhData.currentColor.GetValue() == UiElement::foregroundColor().GetValue())
+                    qnhData.currentColor = UiElement::foregroundBlinkColor();
+                qnhData.lastSwitch = currentStamp;
+            }
+        }
+        else {
+            qnhData.currentColor = UiElement::foregroundColor();
+        }
+        viewer->setTextColor(rowIdx, 3, qnhData.currentColor);
     }
 
     /* prepare the information of the viewer */
