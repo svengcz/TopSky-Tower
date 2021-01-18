@@ -53,20 +53,30 @@ void TableViewer::setElement(std::size_t rowIdx, std::size_t columnIdx, const st
     }
 }
 
-bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
+bool TableViewer::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
+    if (UiManager::MouseButton::Left != button)
+        return false;
+
+    return UiElement::isInRectangle(pt, this->m_area);
+}
+
+float TableViewer::calculateRequiredArea(std::vector<float>& columnWidths, Gdiplus::Graphics* graphics) {
     /* contains the per-column widths */
-    std::vector<float> columnWidths(this->m_header.size(), 0.0f);
+    columnWidths = std::vector<float>(this->m_header.size(), 0.0f);
     std::size_t emptyLines = 0;
 
     /* get the widths of the header */
-    for (std::size_t i = 0; i < this->m_header.size(); ++i)
+    for (std::size_t i = 0; i < this->m_header.size(); ++i) {
+        this->m_header[i].setGraphics(graphics);
         columnWidths[i] = std::max(columnWidths[i], this->m_header[i].rectangle().Width);
+    }
 
     /* get the width of every row element */
-    for (const auto& row : std::as_const(this->m_rows)) {
+    for (auto& row : this->m_rows) {
         bool emptyRow = true;
 
         for (std::size_t i = 0; i < row.size(); ++i) {
+            row[i].setGraphics(graphics);
             columnWidths[i] = std::max(columnWidths[i], row[i].rectangle().Width);
             if (false == helper::Math::almostEqual(0.0f, row[i].rectangle().Width))
                 emptyRow = false;
@@ -84,6 +94,18 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
     this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth,
                                   (this->m_rows.size() - emptyLines + 1) * this->m_header[0].rectangle().Height);
 
+    return overallWidth;
+}
+
+void TableViewer::prepareVisualization(Gdiplus::Graphics* graphics) {
+    std::vector<float> columnWidths;
+    this->calculateRequiredArea(columnWidths, graphics);
+}
+
+bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
+    std::vector<float> columnWidths;
+
+    float overallWidth = this->calculateRequiredArea(columnWidths, graphics);
     float offsetX = this->m_area.X;
     float offsetY = this->m_area.Y;
 
