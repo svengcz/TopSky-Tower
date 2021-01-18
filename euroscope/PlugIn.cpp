@@ -1148,8 +1148,6 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
                 wind.gusts = static_cast<float>(std::atoi(windData.substr(6, 8).c_str())) * types::knot;
 
             system::ConfigurationRegistry::instance().runtimeConfiguration().weatherInformation[station].wind = wind;
-
-            return;
         }
         else if (0 == entry.find("Q")) {
             auto qnh = static_cast<std::uint16_t>(std::atoi(entry.substr(1).c_str()));
