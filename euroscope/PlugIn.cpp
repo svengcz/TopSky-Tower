@@ -816,13 +816,17 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         /* define the menu bar for the manually alerts */
         if (true == radarTarget.GetCorrelatedFlightPlan().IsValid()) {
             this->AddPopupListElement("M/A", (true == flight.onMissedApproach() ? "X" : ""),
-                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
+                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal), false,
+                                      EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.isTrackedByOther(), false);
             this->AddPopupListElement("Irreg", (true == flight.irregularHandoff() ? "X" : ""),
-                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
+                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal), false,
+                                      EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.isTrackedByOther(), false);
             this->AddPopupListElement("Est", (true == flight.establishedOnILS() ? "X" : ""),
-                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
+                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal), false,
+                                      EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.isTrackedByOther(), false);
             this->AddPopupListElement("Mark", (true == flight.markedByController() ? "X" : ""),
-                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal));
+                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal), false,
+                                      EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.isTrackedByOther(), false);
         }
 
         break;
