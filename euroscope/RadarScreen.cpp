@@ -498,6 +498,39 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     std::string_view positionId(plugin->ControllerMyself().GetPositionId());
     if (0 != positionId.length() && "XX" != positionId)
         this->m_sectorControl->setOwnSector(Converter::convert(plugin->ControllerMyself()));
+
+    /* add the UI elements for the ground menu */
+    if (nullptr != this->m_standControl && true == this->m_standOnScreenSelection) {
+        auto stands = this->m_standControl->allStands();
+        auto radarArea = this->GetRadarArea();
+        Gdiplus::Color color(
+            system::ConfigurationRegistry::instance().systemConfiguration().uiScreenClickColor[0],
+            system::ConfigurationRegistry::instance().systemConfiguration().uiScreenClickColor[1],
+            system::ConfigurationRegistry::instance().systemConfiguration().uiScreenClickColor[2]
+        );
+        Gdiplus::Pen pen(color, 1.0f);
+
+        for (const auto& stand : std::as_const(stands)) {
+            /* ignore occupied stands */
+            if (true == stand.second)
+                continue;
+
+            const auto& standData = this->m_standControl->stand(stand.first);
+            const auto pixelPos = this->convertCoordinate(standData.position);
+
+            /* the stand is inside the radar area */
+            if (pixelPos.X >= radarArea.left && pixelPos.X < radarArea.right && pixelPos.Y >= radarArea.top && pixelPos.Y < radarArea.bottom) {
+                RECT rect = {
+                    static_cast<int>(pixelPos.X) - 5, static_cast<int>(pixelPos.Y) - 5,
+                    static_cast<int>(pixelPos.X) + 5, static_cast<int>(pixelPos.Y) + 5
+                };
+                this->AddScreenObject(static_cast<int>(RadarScreen::ClickId::StandSelect), standData.name.c_str(), rect, false, "");
+
+                Gdiplus::Rect gdiRect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+                graphics.DrawEllipse(&pen, gdiRect);
+            }
+        }
+    }
 }
 
 management::SectorControl& RadarScreen::sectorControl() {
