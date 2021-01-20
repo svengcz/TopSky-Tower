@@ -38,6 +38,7 @@ namespace topskytower {
             bool            m_irregularFlight;
             bool            m_establishedOnILS;
             bool            m_isTrackedByController;
+            bool            m_isTrackedByOtherController;
             std::string     m_handoffReceivedBy;
 
         public:
@@ -156,6 +157,16 @@ namespace topskytower {
              * @param[in] state The new tracking state
              */
             void setTrackedState(bool state);
+            /**
+             * @brief Returns if the flight is tracked by an other controller
+             * @return True if the flight is tracked by an other controller, else false
+             */
+            bool isTrackedByOther() const;
+            /**
+             * @brief Sets the tracking state for other controllers
+             * @param[in] state The new tracking by other state
+             */
+            void setTrackedByOtherState(bool state);
             /**
              * @brief Sets the ID of the controller who initiated a handoff to this instance
              * @param[in] id The controllers ID

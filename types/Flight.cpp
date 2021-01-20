@@ -21,6 +21,7 @@ Flight::Flight() :
         m_irregularFlight(false),
         m_establishedOnILS(false),
         m_isTrackedByController(false),
+        m_isTrackedByOtherController(false),
         m_handoffReceivedBy() { }
 
 Flight::Flight(const std::string& callsign) :
@@ -34,6 +35,7 @@ Flight::Flight(const std::string& callsign) :
         m_onMissedApproach(false),
         m_irregularFlight(false),
         m_establishedOnILS(false),
+        m_isTrackedByOtherController(false),
         m_handoffReceivedBy() { }
 
 Flight::Type Flight::type() const {
@@ -118,6 +120,14 @@ bool Flight::isTracked() const {
 
 void Flight::setTrackedState(bool state) {
     this->m_isTrackedByController = state;
+}
+
+bool Flight::isTrackedByOther() const {
+    return this->m_isTrackedByOtherController;
+}
+
+void Flight::setTrackedByOtherState(bool state) {
+    this->m_isTrackedByOtherController = state;
 }
 
 void Flight::setHandoffInitiatedId(const std::string& id) {
