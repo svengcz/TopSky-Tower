@@ -883,7 +883,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         if (true == flightScreen->sectorControl().handoffRequired(flight) || true == flightScreen->sectorControl().handoffPossible(flight)) {
             RadarScreen::EuroscopeEvent eventEntry = {
                 static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChange),
-                callsign,
+                flight.callsign(),
                 "",
                 pt,
                 area
