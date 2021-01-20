@@ -173,6 +173,7 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     retval.setClearanceFlag(plan.GetClearenceFlag());
 
     /* get the ground status and check if this or an other TopSky-Tower set something */
+    __convertEuroScopeAtcStatus(plan.GetGroundState(), retval);
     std::string annotation(plan.GetControllerAssignedData().GetFlightStripAnnotation(4));
     auto split = helper::String::splitString(annotation, "/");
     if (3 == split.size() && 'a' == split[0][0] && 'a' == split[2][0]) {
@@ -181,21 +182,13 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
         std::uint8_t arrival = (static_cast<std::uint8_t>(mask & 0xf0));
 
         /* validate the values to avoid buffer overruns */
-        if (departure > static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Departure)) {
-            __convertEuroScopeAtcStatus(plan.GetGroundState(), retval);
-        }
-        else if (arrival > static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::TaxiIn)) {
-            __convertEuroScopeAtcStatus(plan.GetGroundState(), retval);
-        }
-        else {
+        if (departure <= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Departure) &&
+            arrival <= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::TaxiIn))
+        {
             retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
             if (0 != arrival)
                 retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
         }
-    }
-    /* use the native ES flags */
-    else {
-        __convertEuroScopeAtcStatus(plan.GetGroundState(), retval);
     }
 
     /* convert the route */
