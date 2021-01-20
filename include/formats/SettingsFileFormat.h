@@ -54,6 +54,11 @@ namespace topskytower {
          *     <td>100, 100, 100</td><td>R,G,B</td>
          *   </tr>
          *   <tr>
+         *     <td>UI_ScreenClickColor</td>
+         *     <td>Defines the color that is used to mark clickable areas on the screen.</td>
+         *     <td>0, 0, 200</td><td>R,G,B</td>
+         *   </tr>
+         *   <tr>
          *     <td>SYS_TrackingOnGround</td>
          *     <td>Defines if the ground tracks or not.</td>
          *     <td>1</td><td>Boolean</td>
