@@ -40,6 +40,14 @@ ControllerInfo::ControllerInfo(const std::string& identifier, const std::string&
         m_controllerName(fullName),
         m_center(longitude, latitude) { }
 
+bool ControllerInfo::operator==(const ControllerInfo& other) const {
+    return this->m_prefix == other.m_prefix && this->m_midfix == other.m_midfix && this->m_suffix == other.m_suffix;
+}
+
+bool ControllerInfo::operator!=(const ControllerInfo& other) const {
+    return false == this->operator==(other);
+}
+
 const std::string& ControllerInfo::identifier() const {
     return this->m_identifier;
 }
