@@ -599,7 +599,7 @@ void PlugIn::updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& radarTarget, co
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchPad.c_str());
 }
 
-void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, int idx, const std::string& marker) {
+void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, RadarScreen* screen, int idx, const std::string& marker) {
     if (8 < idx)
         return;
 
