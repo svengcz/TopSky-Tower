@@ -793,6 +793,7 @@ void SectorControl::handoffSectorSelect(const types::Flight& flight, const std::
     auto node = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, identifier);
     if (nullptr != node) {
         it->second.manuallyChanged = true;
+        it->second.handoffPerformed = false;
         it->second.nextSector = node;
     }
 }
