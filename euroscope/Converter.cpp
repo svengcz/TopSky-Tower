@@ -224,6 +224,9 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, co
         std::string_view destination(flightPlan.GetFlightPlanData().GetDestination());
 
         retval.setTrackedState(flightPlan.GetTrackingControllerIsMe());
+        bool isTrackedByOther = nullptr != flightPlan.GetTrackingControllerId() && 0 != std::strlen(flightPlan.GetTrackingControllerId());
+        isTrackedByOther &= false == retval.isTracked();
+        retval.setTrackedByOtherState(isTrackedByOther);
         /* an flight was tracked by an other controller and we keep this information */
         if (EuroScopePlugIn::FLIGHT_PLAN_STATE_TRANSFER_TO_ME_INITIATED == flightPlan.GetState()) {
             if (nullptr != flightPlan.GetTrackingControllerId() && 0 != std::strlen(flightPlan.GetTrackingControllerId()))
