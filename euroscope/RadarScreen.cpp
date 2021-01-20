@@ -78,12 +78,28 @@ void RadarScreen::OnAsrContentToBeClosed() {
 void RadarScreen::OnClickScreenObject(int objectType, const char* objectId, POINT pt, RECT area, int button) {
     (void)area;
 
-    /* forward to UI manager */
-    if (RadarScreen::ClickId::UserWindow == static_cast<RadarScreen::ClickId>(objectType)) {
-        /* get the click point */
+    switch (static_cast<RadarScreen::ClickId>(objectType)) {
+    case RadarScreen::ClickId::UserWindow:
+    {
+        /* get the click point and forward it to the UI manager */
         Gdiplus::PointF point(static_cast<Gdiplus::REAL>(pt.x), static_cast<Gdiplus::REAL>(pt.y));
-
         this->m_userInterface.click(objectId, point, static_cast<UiManager::MouseButton>(button));
+        break;
+    }
+    case RadarScreen::ClickId::StandSelect:
+        if (UiManager::MouseButton::Left == static_cast<UiManager::MouseButton>(button)) {
+            EuroscopeEvent esEvent = {
+                static_cast<int>(PlugIn::TagItemFunction::StandControlManualSelect),
+                this->m_standOnScreenSelectionCallsign,
+                objectId,
+                pt,
+                area
+            };
+            this->registerEuroscopeEvent(std::move(esEvent));
+        }
+        break;
+    default:
+        break;
     }
 
     /* reset UI elements, if needed */

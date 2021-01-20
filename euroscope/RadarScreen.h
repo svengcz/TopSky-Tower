@@ -34,7 +34,8 @@ namespace topskytower {
              * @brief Defines the different click elements
              */
             enum class ClickId {
-                UserWindow = 40 /**< A user windows is clicked */
+                UserWindow  = 40, /**< A user windows is clicked */
+                StandSelect = 41  /**< A stand element is active on the screen */
             };
 
             /**
