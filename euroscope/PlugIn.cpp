@@ -613,6 +613,7 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, Radar
 
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, stripEntry.c_str());
 
+#if 0
     /* publish the strip to all available controllers */
     for (const auto& sector : screen->sectorControl().onlineControllers()) {
         /* create the callsign */
@@ -623,6 +624,7 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, Radar
 
         radarTarget.GetCorrelatedFlightPlan().PushFlightStrip(callsign.c_str());
     }
+#endif
 
     for (auto& screenElem : this->m_screens) {
         auto updatedFlight = Converter::convert(radarTarget, *screenElem);
