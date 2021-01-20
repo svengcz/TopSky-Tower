@@ -850,7 +850,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             else if (0 == std::strncmp(itemString, "Est", 3))
                 PlugIn::updateManuallyAlerts(radarTarget, "EST_");
             else if (0 == std::strncmp(itemString, "Mark", 4))
-                this->updateFlightStrip(radarTarget, 7, "K");
+                this->updateFlightStrip(radarTarget, flightScreen, 7, "K");
         }
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
