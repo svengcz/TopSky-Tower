@@ -65,6 +65,7 @@ namespace topskytower {
             std::list<std::pair<std::string, std::chrono::system_clock::time_point>> m_surveillanceVisualizations;
             std::mutex                                                               m_departureRouteVisualizationsLock;
             std::list<std::pair<std::string, std::chrono::system_clock::time_point>> m_departureRouteVisualizations;
+            bool                                                                     m_standOnScreenSelection;
 
             void initialize();
             Gdiplus::PointF convertCoordinate(const types::Coordinate& coordinate);
@@ -217,6 +218,11 @@ namespace topskytower {
              * @param[in] callsign The visualizable callsign
              */
             void activateDepartureRouteVisualization(const std::string& callsign);
+            /**
+             * @brief Activates the stand on screen selection for an easier stand selection
+             * @param[in] activate Activate or deactivate the screen selection
+             */
+            void activateStandOnScreenSelection(bool activate);
         };
     }
 }

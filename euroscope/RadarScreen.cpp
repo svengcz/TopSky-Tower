@@ -38,7 +38,8 @@ RadarScreen::RadarScreen() :
         m_surveillanceVisualizationsLock(),
         m_surveillanceVisualizations(),
         m_departureRouteVisualizationsLock(),
-        m_departureRouteVisualizations() { }
+        m_departureRouteVisualizations(),
+        m_standOnScreenSelection(false) { }
 
 RadarScreen::~RadarScreen() {
     if (nullptr != this->m_ariwsControl)
@@ -620,4 +621,8 @@ std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::strin
     }
 
     return std::move(retval);
+}
+
+void RadarScreen::activateStandOnScreenSelection(bool activate) {
+    this->m_standOnScreenSelection = activate;
 }
