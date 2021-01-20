@@ -56,6 +56,19 @@ namespace topskytower {
                            const std::string& latitude, const std::string& longitude);
 
             /**
+             * @brief Compares this controller with an other instance
+             * @param[in] other The other instance
+             * @return True if both infos are equal, else false
+             */
+            bool operator==(const ControllerInfo& other) const;
+            /**
+             * @brief Compares this controller with an other instance
+             * @param[in] other The other instance
+             * @return True if both infos are unequal, else false
+             */
+            bool operator!=(const ControllerInfo& other) const;
+
+            /**
              * @brief Returns the identifier
              * @return The identifier
              */

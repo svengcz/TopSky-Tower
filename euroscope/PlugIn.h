@@ -91,15 +91,15 @@ namespace topskytower {
                                       RadarScreen* screen);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
-            void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, int idx, const std::string& marker);
+            void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, RadarScreen* screen, int idx, const std::string& marker);
             RadarScreen* findLastActiveScreen();
             static bool summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
                                                  char* itemString, int* colorCode);
             static std::string flightPlanCheckResultLog(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes);
             void pdcMessageReceived();
             RadarScreen* findScreenAndFlight(const std::string& callsign, types::Flight& flight) const;
-            static void updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
-                                           const types::Flight& flight, bool arrival);
+            void updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
+                                    RadarScreen* screen, const types::Flight& flight, bool arrival);
 
         public:
             /**

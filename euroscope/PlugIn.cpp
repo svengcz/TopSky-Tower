@@ -599,7 +599,7 @@ void PlugIn::updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& radarTarget, co
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchPad.c_str());
 }
 
-void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, int idx, const std::string& marker) {
+void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, RadarScreen* screen, int idx, const std::string& marker) {
     if (8 < idx)
         return;
 
@@ -613,9 +613,20 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, int i
 
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, stripEntry.c_str());
 
-    for (auto& screen : this->m_screens) {
-        auto updatedFlight = Converter::convert(radarTarget, *screen);
-        screen->flightRegistry().updateFlight(updatedFlight);
+    /* publish the strip to all available controllers */
+    for (const auto& sector : screen->sectorControl().onlineControllers()) {
+        /* create the callsign */
+        std::string callsign = sector.prefix() + "_";
+        if (0 != sector.midfix().length())
+            callsign += sector.midfix() + "_";
+        callsign += sector.suffix();
+
+        radarTarget.GetCorrelatedFlightPlan().PushFlightStrip(callsign.c_str());
+    }
+
+    for (auto& screenElem : this->m_screens) {
+        auto updatedFlight = Converter::convert(radarTarget, *screenElem);
+        screenElem->flightRegistry().updateFlight(updatedFlight);
     }
 }
 
@@ -680,7 +691,7 @@ std::string PlugIn::flightPlanCheckResultLog(const std::list<surveillance::Fligh
 }
 
 void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
-                                const types::Flight& flight, bool arrival) {
+                                RadarScreen* screen, const types::Flight& flight, bool arrival) {
     std::uint8_t mask;
 
     if (false == arrival) {
@@ -735,7 +746,7 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
     }
 
     std::string annotation = "a/" + std::to_string(mask) + "/a";
-    target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(4, annotation.c_str());
+    this->updateFlightStrip(target, screen, 4, annotation);
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
@@ -834,7 +845,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         else if (0 == std::strncmp(itemString, "Est", 3))
             PlugIn::updateManuallyAlerts(radarTarget, "EST_");
         else if (0 == std::strncmp(itemString, "Mark", 4))
-            this->updateFlightStrip(radarTarget, 7, "K");
+            this->updateFlightStrip(radarTarget, flightScreen, 7, "K");
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
         if (0 == std::strncmp(itemString, "Release", 7)) {
@@ -1104,7 +1115,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("DEPA", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
         break;
     case PlugIn::TagItemFunction::DepartureGroundStatusSelect:
-        PlugIn::updateGroundStatus(radarTarget, itemString, flight, false);
+        this->updateGroundStatus(radarTarget, itemString, flightScreen, flight, false);
         flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
         break;
     case PlugIn::TagItemFunction::ArrivalGroundStatusMenu:
@@ -1115,7 +1126,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("GO-AR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
         break;
     case PlugIn::TagItemFunction::ArrivalGroundStatusSelect:
-        PlugIn::updateGroundStatus(radarTarget, itemString, flight, true);
+        this->updateGroundStatus(radarTarget, itemString, flightScreen, flight, true);
         flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
         break;
     case PlugIn::TagItemFunction::SurveillanceAlertVisualization:
