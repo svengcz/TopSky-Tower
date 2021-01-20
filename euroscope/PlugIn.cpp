@@ -680,7 +680,7 @@ std::string PlugIn::flightPlanCheckResultLog(const std::list<surveillance::Fligh
 }
 
 void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
-                                const types::Flight& flight, bool arrival) {
+                                RadarScreen* screen, const types::Flight& flight, bool arrival) {
     std::uint8_t mask;
 
     if (false == arrival) {
@@ -735,7 +735,7 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
     }
 
     std::string annotation = "a/" + std::to_string(mask) + "/a";
-    this->updateFlightStrip(target, 4, annotation);
+    this->updateFlightStrip(target, screen, 4, annotation);
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
@@ -834,7 +834,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         else if (0 == std::strncmp(itemString, "Est", 3))
             PlugIn::updateManuallyAlerts(radarTarget, "EST_");
         else if (0 == std::strncmp(itemString, "Mark", 4))
-            this->updateFlightStrip(radarTarget, 7, "K");
+            this->updateFlightStrip(radarTarget, flightScreen, 7, "K");
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
         if (0 == std::strncmp(itemString, "Release", 7)) {
@@ -1104,7 +1104,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("DEPA", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
         break;
     case PlugIn::TagItemFunction::DepartureGroundStatusSelect:
-        this->updateGroundStatus(radarTarget, itemString, flight, false);
+        this->updateGroundStatus(radarTarget, itemString, flightScreen, flight, false);
         flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
         break;
     case PlugIn::TagItemFunction::ArrivalGroundStatusMenu:
@@ -1115,7 +1115,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("GO-AR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
         break;
     case PlugIn::TagItemFunction::ArrivalGroundStatusSelect:
-        this->updateGroundStatus(radarTarget, itemString, flight, true);
+        this->updateGroundStatus(radarTarget, itemString, flightScreen, flight, true);
         flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
         break;
     case PlugIn::TagItemFunction::SurveillanceAlertVisualization:

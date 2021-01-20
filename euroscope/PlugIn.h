@@ -99,7 +99,7 @@ namespace topskytower {
             void pdcMessageReceived();
             RadarScreen* findScreenAndFlight(const std::string& callsign, types::Flight& flight) const;
             void updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
-                                    const types::Flight& flight, bool arrival);
+                                    RadarScreen* screen, const types::Flight& flight, bool arrival);
 
         public:
             /**
