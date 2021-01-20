@@ -98,8 +98,8 @@ namespace topskytower {
             static std::string flightPlanCheckResultLog(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes);
             void pdcMessageReceived();
             RadarScreen* findScreenAndFlight(const std::string& callsign, types::Flight& flight) const;
-            static void updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
-                                           const types::Flight& flight, bool arrival);
+            void updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
+                                    const types::Flight& flight, bool arrival);
 
         public:
             /**

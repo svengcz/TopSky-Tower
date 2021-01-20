@@ -735,7 +735,7 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
     }
 
     std::string annotation = "a/" + std::to_string(mask) + "/a";
-    target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(4, annotation.c_str());
+    this->updateFlightStrip(target, 4, annotation);
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
@@ -1104,7 +1104,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("DEPA", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
         break;
     case PlugIn::TagItemFunction::DepartureGroundStatusSelect:
-        PlugIn::updateGroundStatus(radarTarget, itemString, flight, false);
+        this->updateGroundStatus(radarTarget, itemString, flight, false);
         flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
         break;
     case PlugIn::TagItemFunction::ArrivalGroundStatusMenu:
@@ -1115,7 +1115,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("GO-AR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
         break;
     case PlugIn::TagItemFunction::ArrivalGroundStatusSelect:
-        PlugIn::updateGroundStatus(radarTarget, itemString, flight, true);
+        this->updateGroundStatus(radarTarget, itemString, flight, true);
         flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
         break;
     case PlugIn::TagItemFunction::SurveillanceAlertVisualization:
