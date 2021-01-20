@@ -66,6 +66,7 @@ namespace topskytower {
             std::mutex                                                               m_departureRouteVisualizationsLock;
             std::list<std::pair<std::string, std::chrono::system_clock::time_point>> m_departureRouteVisualizations;
             bool                                                                     m_standOnScreenSelection;
+            std::string                                                              m_standOnScreenSelectionCallsign;
 
             void initialize();
             Gdiplus::PointF convertCoordinate(const types::Coordinate& coordinate);
@@ -221,8 +222,9 @@ namespace topskytower {
             /**
              * @brief Activates the stand on screen selection for an easier stand selection
              * @param[in] activate Activate or deactivate the screen selection
+             * @param[in] callsign The flight's callsign
              */
-            void activateStandOnScreenSelection(bool activate);
+            void activateStandOnScreenSelection(bool activate, const std::string& callsign);
         };
     }
 }

@@ -774,7 +774,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     if (nullptr == flightScreen)
         return;
     /* disable the screen selection */
-    flightScreen->activateStandOnScreenSelection(false);
+    flightScreen->activateStandOnScreenSelection(false, flight.callsign());
 
     switch (static_cast<PlugIn::TagItemFunction>(functionId)) {
     case PlugIn::TagItemFunction::AircraftControlMenuBar:
@@ -1107,7 +1107,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("DEPA", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
         break;
     case PlugIn::TagItemFunction::StandControlScreenSelect:
-        flightScreen->activateStandOnScreenSelection(true);
+        flightScreen->activateStandOnScreenSelection(true, flight.callsign());
         break;
     case PlugIn::TagItemFunction::DepartureGroundStatusSelect:
         PlugIn::updateGroundStatus(radarTarget, itemString, flight, false);
