@@ -827,14 +827,16 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
         break;
     case PlugIn::TagItemFunction::AircraftControlSignal:
-        if (0 == std::strncmp(itemString, "M/A", 7))
-            PlugIn::updateManuallyAlerts(radarTarget, "MISAP_");
-        else if (0 == std::strncmp(itemString, "Irreg", 5))
-            PlugIn::updateManuallyAlerts(radarTarget, "IRREG_");
-        else if (0 == std::strncmp(itemString, "Est", 3))
-            PlugIn::updateManuallyAlerts(radarTarget, "EST_");
-        else if (0 == std::strncmp(itemString, "Mark", 4))
-            this->updateFlightStrip(radarTarget, 7, "K");
+        if (false == flight.isTrackedByOther()) {
+            if (0 == std::strncmp(itemString, "M/A", 7))
+                PlugIn::updateManuallyAlerts(radarTarget, "MISAP_");
+            else if (0 == std::strncmp(itemString, "Irreg", 5))
+                PlugIn::updateManuallyAlerts(radarTarget, "IRREG_");
+            else if (0 == std::strncmp(itemString, "Est", 3))
+                PlugIn::updateManuallyAlerts(radarTarget, "EST_");
+            else if (0 == std::strncmp(itemString, "Mark", 4))
+                this->updateFlightStrip(radarTarget, 7, "K");
+        }
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
         if (0 == std::strncmp(itemString, "Release", 7)) {
@@ -953,7 +955,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
         break;
     case PlugIn::TagItemFunction::PdcMenu:
-        if (true == management::PdcControl::instance().airportLoggedIn(flightScreen->airportIcao())) {
+        if (false == flight.isTrackedByOther() && true == management::PdcControl::instance().airportLoggedIn(flightScreen->airportIcao())) {
             this->OpenPopupList(area, "PDC", 1);
             this->AddPopupListElement("Read", "", static_cast<int>(PlugIn::TagItemFunction::PdcReadMessage), false,
                                       EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX,
@@ -1017,10 +1019,12 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             }
         }
 
-        this->OpenPopupList(area, "FP check", 1);
-        this->AddPopupListElement("Read results", "", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckErrorLog));
-        this->AddPopupListElement("Overwrite", "", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckOverwrite), false,
-                                  EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == isValid, false);
+        if (false == flight.isTrackedByOther()) {
+            this->OpenPopupList(area, "FP check", 1);
+            this->AddPopupListElement("Read results", "", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckErrorLog));
+            this->AddPopupListElement("Overwrite", "", static_cast<int>(PlugIn::TagItemFunction::FlightPlanCheckOverwrite), false,
+                                      EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == isValid, false);
+        }
         break;
     }
     case PlugIn::TagItemFunction::FlightPlanCheckErrorLog:
@@ -1036,14 +1040,16 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::StandControlMenu:
     {
-        auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
-        auto stand = "s/" + flightScreen->standControl().stand(flight) + "/s";
+        if (false == flight.isTrackedByOther()) {
+            auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+            auto stand = "s/" + flightScreen->standControl().stand(flight) + "/s";
 
-        this->OpenPopupList(area, "Stand", 1);
-        this->AddPopupListElement("Publish", "", static_cast<int>(PlugIn::TagItemFunction::StandControlPublish),
-                                  false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, stand == strip, false);
-        this->AddPopupListElement("Automatic", "", static_cast<int>(PlugIn::TagItemFunction::StandControlAutomatic));
-        this->AddPopupListElement("Manual", "", static_cast<int>(PlugIn::TagItemFunction::StandControlManualEvent));
+            this->OpenPopupList(area, "Stand", 1);
+            this->AddPopupListElement("Publish", "", static_cast<int>(PlugIn::TagItemFunction::StandControlPublish),
+                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, stand == strip, false);
+            this->AddPopupListElement("Automatic", "", static_cast<int>(PlugIn::TagItemFunction::StandControlAutomatic));
+            this->AddPopupListElement("Manual", "", static_cast<int>(PlugIn::TagItemFunction::StandControlManualEvent));
+        }
         break;
     }
     case PlugIn::TagItemFunction::StandControlPublish:
@@ -1095,24 +1101,28 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, "");
         break;
     case PlugIn::TagItemFunction::DepartureGroundStatusMenu:
-        this->OpenPopupList(area, "Status", 1);
-        this->AddPopupListElement("ST-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
-        this->AddPopupListElement("DEICE", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
-        this->AddPopupListElement("PUSH", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
-        this->AddPopupListElement("TAXI", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
-        this->AddPopupListElement("LI-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
-        this->AddPopupListElement("DEPA", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+        if (false == flight.isTrackedByOther()) {
+            this->OpenPopupList(area, "Status", 1);
+            this->AddPopupListElement("ST-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+            this->AddPopupListElement("DEICE", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+            this->AddPopupListElement("PUSH", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+            this->AddPopupListElement("TAXI", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+            this->AddPopupListElement("LI-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+            this->AddPopupListElement("DEPA", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+        }
         break;
     case PlugIn::TagItemFunction::DepartureGroundStatusSelect:
         PlugIn::updateGroundStatus(radarTarget, itemString, flight, false);
         flightScreen->flightRegistry().updateFlight(Converter::convert(radarTarget, *flightScreen));
         break;
     case PlugIn::TagItemFunction::ArrivalGroundStatusMenu:
-        this->OpenPopupList(area, "Status", 1);
-        this->AddPopupListElement("APPR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
-        this->AddPopupListElement("LAND", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
-        this->AddPopupListElement("TAXI", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
-        this->AddPopupListElement("GO-AR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
+        if (false == flight.isTrackedByOther()) {
+            this->OpenPopupList(area, "Status", 1);
+            this->AddPopupListElement("APPR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
+            this->AddPopupListElement("LAND", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
+            this->AddPopupListElement("TAXI", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
+            this->AddPopupListElement("GO-AR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
+        }
         break;
     case PlugIn::TagItemFunction::ArrivalGroundStatusSelect:
         PlugIn::updateGroundStatus(radarTarget, itemString, flight, true);
