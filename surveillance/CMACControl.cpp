@@ -107,7 +107,7 @@ bool CMACControl::conformanceMonitoringAlert(const types::Flight& flight) const 
 
     auto it = this->m_tracks.find(flight.callsign());
 
-    if (this->m_tracks.cend() != it) {
+    if (this->m_tracks.cend() != it && types::FlightPlan::AtcCommand::Unknown != it->second.expectedCommand) {
         if (types::Flight::Type::Departure == flight.type()) {
             if (types::FlightPlan::AtcCommand::Pushback == it->second.expectedCommand)
                 return flight.flightPlan().departureFlag() != it->second.expectedCommand;
