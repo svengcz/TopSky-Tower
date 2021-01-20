@@ -773,6 +773,8 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     /* nothing to do */
     if (nullptr == flightScreen)
         return;
+    /* disable the screen selection */
+    flightScreen->activateStandOnScreenSelection(false);
 
     switch (static_cast<PlugIn::TagItemFunction>(functionId)) {
     case PlugIn::TagItemFunction::AircraftControlMenuBar:
@@ -1043,6 +1045,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("Publish", "", static_cast<int>(PlugIn::TagItemFunction::StandControlPublish),
                                   false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, stand == strip, false);
         this->AddPopupListElement("Automatic", "", static_cast<int>(PlugIn::TagItemFunction::StandControlAutomatic));
+        this->AddPopupListElement("Screen select", "", static_cast<int>(PlugIn::TagItemFunction::StandControlScreenSelect));
         this->AddPopupListElement("Manual", "", static_cast<int>(PlugIn::TagItemFunction::StandControlManualEvent));
         break;
     }
@@ -1102,6 +1105,9 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         this->AddPopupListElement("TAXI", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
         this->AddPopupListElement("LI-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
         this->AddPopupListElement("DEPA", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
+        break;
+    case PlugIn::TagItemFunction::StandControlScreenSelect:
+        flightScreen->activateStandOnScreenSelection(true);
         break;
     case PlugIn::TagItemFunction::DepartureGroundStatusSelect:
         PlugIn::updateGroundStatus(radarTarget, itemString, flight, false);
