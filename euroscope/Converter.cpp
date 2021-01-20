@@ -185,7 +185,8 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
         if (departure <= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Departure) &&
             arrival <= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::TaxiIn))
         {
-            retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
+            if (0 != departure)
+                retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
             if (0 != arrival)
                 retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
         }
