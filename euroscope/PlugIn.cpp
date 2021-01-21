@@ -603,7 +603,16 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, Radar
     if (8 < idx)
         return;
 
-    radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, message.c_str());
+    std::string entry(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(idx));
+
+    std::size_t pos = entry.find(message);
+    if (std::string::npos != pos) {
+        entry.erase(pos, message.length());
+        radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, entry.c_str());
+    }
+    else {
+        radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, message.c_str());
+    }
 
     /* publish the strip to all available controllers */
     for (const auto& sector : screen->sectorControl().onlineControllers()) {
