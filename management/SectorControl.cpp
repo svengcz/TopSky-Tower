@@ -20,16 +20,14 @@ SectorControl::SectorControl() :
         m_ownSector(nullptr),
         m_handoffs(),
         m_sectorsOfFlights(),
-        m_handoffOfFlightsToMe(),
-        m_onlineControllers() { }
+        m_handoffOfFlightsToMe() { }
 
 SectorControl::SectorControl(const std::string& airport, const std::list<types::Sector>& sectors) :
         m_unicom(new Node(types::Sector("UNICOM", "", "", "FSS", "122.800"))),
         m_rootNode(nullptr),
         m_ownSector(nullptr),
         m_handoffs(),
-        m_sectorsOfFlights(),
-        m_onlineControllers() {
+        m_sectorsOfFlights() {
     std::list<types::Sector> airportSectors;
 
     /* find the tower sectors of the airport */
@@ -405,10 +403,6 @@ void SectorControl::controllerUpdate(const types::ControllerInfo& info) {
 
         node->controllers.push_back(info);
     }
-
-    auto it = std::find(this->m_onlineControllers.cbegin(), this->m_onlineControllers.cend(), info);
-    if (this->m_onlineControllers.cend() == it)
-        this->m_onlineControllers.push_back(info);
 }
 
 void SectorControl::controllerOffline(const types::ControllerInfo& info) {
@@ -424,10 +418,6 @@ void SectorControl::controllerOffline(const types::ControllerInfo& info) {
             }
         }
     }
-
-    auto it = std::find(this->m_onlineControllers.cbegin(), this->m_onlineControllers.cend(), info);
-    if (this->m_onlineControllers.cend() != it)
-        this->m_onlineControllers.erase(it);
 }
 
 void SectorControl::setOwnSector(const types::ControllerInfo& info) {
@@ -834,6 +824,28 @@ bool SectorControl::isInSector(const types::Flight& flight) const {
         return false;
 }
 
-const std::list<types::ControllerInfo>& SectorControl::onlineControllers() const {
-    return this->m_onlineControllers;
+std::list<types::ControllerInfo> SectorControl::findOnlineControllers(const std::shared_ptr<Node>& node) const {
+    std::list<types::ControllerInfo> retval;
+
+    for (const auto& child : std::as_const(node->children)) {
+        auto children = findOnlineControllers(child);
+
+        for (const auto& elem : std::as_const(children)) {
+            auto it = std::find(retval.cbegin(), retval.cend(), elem);
+            if (retval.cend() == it)
+                retval.push_back(elem);
+        }
+    }
+
+    for (const auto& controller : std::as_const(node->controllers)) {
+        auto it = std::find(retval.cbegin(), retval.cend(), controller);
+        if (retval.cend() == it)
+            retval.push_back(controller);
+    }
+
+    return retval;
+}
+
+std::list<types::ControllerInfo> SectorControl::findAllRelatedControllers() const {
+    return this->findOnlineControllers(this->m_rootNode);
 }

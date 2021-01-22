@@ -27,6 +27,16 @@ namespace topskytower {
         class PlugIn : public EuroScopePlugIn::CPlugIn {
         public:
             /**
+             * @brief Defines the indices of the flight strip annotations
+             */
+            enum class AnnotationIndex {
+                Unknown    = -1, /**< The annotation is unknown */
+                Stand      = 6,  /**< Defines the stand annotation */
+                Marker     = 7,  /**< Defines the marker annotation */
+                AtcCommand = 8   /**< Defines the ATC command annotation */
+            };
+
+            /**
              * @brief Defines the different internal and external tag functions
              */
             enum class TagItemFunction {
@@ -91,7 +101,7 @@ namespace topskytower {
                                       RadarScreen* screen);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
-            void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, RadarScreen* screen, int idx, const std::string& marker);
+            void updateFlightStrip(EuroScopePlugIn::CRadarTarget& target, RadarScreen* screen, int idx, const std::string& message);
             RadarScreen* findLastActiveScreen();
             static bool summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
                                                  char* itemString, int* colorCode);

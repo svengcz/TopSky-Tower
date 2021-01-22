@@ -65,6 +65,7 @@ namespace topskytower {
                                                                          bool ignoreClearanceFlag);
             bool isInOwnSectors(const types::Flight& flight, const types::Position& position, bool ignoreClearanceFlag) const;
             void cleanupHandoffList(std::shared_ptr<Node>& node);
+            std::list<types::ControllerInfo> findOnlineControllers(const std::shared_ptr<Node>& node) const;
 
             std::shared_ptr<Node>                                       m_unicom;
             std::shared_ptr<Node>                                       m_rootNode;
@@ -72,7 +73,6 @@ namespace topskytower {
             std::map<std::string, FlightData>                           m_handoffs;
             std::map<std::string, std::shared_ptr<SectorControl::Node>> m_sectorsOfFlights;
             std::map<std::string, std::string>                          m_handoffOfFlightsToMe;
-            std::list<types::ControllerInfo>                            m_onlineControllers;
 
         public:
             /**
@@ -198,7 +198,7 @@ namespace topskytower {
              * @brief Returns all logged in controllers that are also logged in as observers
              * @return The controller list
              */
-            const std::list<types::ControllerInfo>& onlineControllers() const;
+            std::list<types::ControllerInfo> findAllRelatedControllers() const;
 #endif
         };
     }

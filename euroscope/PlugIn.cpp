@@ -460,7 +460,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         auto stand = flightScreen->standControl().stand(flight);
         if (0 != stand.length()) {
             /* validate that no other controller published a stand already */
-            std::string strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+            std::string strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand));
             if (0 != strip.length()) {
                 auto split = helper::String::splitString(strip, "/");
                 /* validate that it is the stand-message */
@@ -481,7 +481,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             }
             else if (types::Flight::Type::Arrival == flight.type()) {
                 /* check if we have to publish the stand */
-                auto esStrip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+                auto esStrip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand));
                 std::string expected = "s/" + stand + "/s";
 
                 if (esStrip == expected)
@@ -599,23 +599,23 @@ void PlugIn::updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& radarTarget, co
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchPad.c_str());
 }
 
-void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, RadarScreen* screen, int idx, const std::string& marker) {
+void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, RadarScreen* screen, int idx, const std::string& message) {
     if (8 < idx)
         return;
 
-    std::string stripEntry(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(idx));
+    std::string entry(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(idx));
 
-    std::size_t pos = stripEntry.find(marker);
-    if (std::string::npos != pos)
-        stripEntry.erase(pos, marker.length());
-    else
-        stripEntry += marker;
+    std::size_t pos = entry.find(message);
+    if (std::string::npos != pos) {
+        entry.erase(pos, message.length());
+        radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, entry.c_str());
+    }
+    else {
+        radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, message.c_str());
+    }
 
-    radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, stripEntry.c_str());
-
-#if 0
     /* publish the strip to all available controllers */
-    for (const auto& sector : screen->sectorControl().onlineControllers()) {
+    for (const auto& sector : screen->sectorControl().findAllRelatedControllers()) {
         /* create the callsign */
         std::string callsign = sector.prefix() + "_";
         if (0 != sector.midfix().length())
@@ -624,7 +624,6 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, Radar
 
         radarTarget.GetCorrelatedFlightPlan().PushFlightStrip(callsign.c_str());
     }
-#endif
 
     for (auto& screenElem : this->m_screens) {
         auto updatedFlight = Converter::convert(radarTarget, *screenElem);
@@ -747,8 +746,8 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
         }
     }
 
-    std::string annotation = "a/" + std::to_string(mask) + "/a";
-    this->updateFlightStrip(target, screen, 4, annotation);
+    std::string annotation = "c/" + std::to_string(mask) + "/c";
+    this->updateFlightStrip(target, screen, static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), annotation);
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
@@ -1058,7 +1057,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::StandControlMenu:
     {
         if (false == flight.isTrackedByOther()) {
-            auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+            auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand));
             auto stand = "s/" + flightScreen->standControl().stand(flight) + "/s";
 
             this->OpenPopupList(area, "Stand", 1);
@@ -1071,24 +1070,24 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     }
     case PlugIn::TagItemFunction::StandControlPublish:
     {
-        auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6);
+        auto strip = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand));
         auto stand = flightScreen->standControl().stand(flight);
         if (0 != stand.length()) {
             auto newStrip = "s/" + stand + "/s";
             /* do the check to increase the performance by avoiding useless network traffic */
             if (newStrip != strip)
-                radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, newStrip.c_str());
+                radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), newStrip.c_str());
         }
         else if (0 != std::strlen(strip)) {
             /* reset the current annotation */
-            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, "");
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), "");
         }
         break;
     }
     case PlugIn::TagItemFunction::StandControlAutomatic:
         flightScreen->standControl().removeFlight(flight.callsign());
-        if (0 != std::strlen(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6)))
-            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, "");
+        if (0 != std::strlen(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand))))
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), "");
         break;
     case PlugIn::TagItemFunction::StandControlManualEvent:
     {
@@ -1114,8 +1113,8 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     }
     case PlugIn::TagItemFunction::StandControlManualSelect:
         flightScreen->standControl().assignManually(flight, itemString);
-        if (0 != std::strlen(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(6)))
-            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(6, "");
+        if (0 != std::strlen(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand))))
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), "");
         break;
     case PlugIn::TagItemFunction::DepartureGroundStatusMenu:
         if (false == flight.isTrackedByOther()) {
