@@ -27,6 +27,16 @@ namespace topskytower {
         class PlugIn : public EuroScopePlugIn::CPlugIn {
         public:
             /**
+             * @brief Defines the indices of the flight strip annotations
+             */
+            enum class AnnotationIndex {
+                Unknown    = -1, /**< The annotation is unknown */
+                Stand      = 6,  /**< Defines the stand annotation */
+                Marker     = 7,  /**< Defines the marker annotation */
+                AtcCommand = 8   /**< Defines the ATC command annotation */
+            };
+
+            /**
              * @brief Defines the different internal and external tag functions
              */
             enum class TagItemFunction {

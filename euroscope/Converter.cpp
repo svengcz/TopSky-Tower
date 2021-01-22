@@ -16,6 +16,7 @@
 #include <system/ConfigurationRegistry.h>
 
 #include "Converter.h"
+#include "PlugIn.h"
 #include "RadarScreen.h"
 
 using namespace topskytower;
@@ -173,12 +174,12 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     retval.setClearanceFlag(plan.GetClearenceFlag());
 
     /* get the ground status and check if this or an other TopSky-Tower set something */
-    std::string annotation(plan.GetControllerAssignedData().GetFlightStripAnnotation(4));
+    std::string annotation(plan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand)));
     auto split = helper::String::splitString(annotation, "/");
-    if (3 == split.size() && 'a' == split[0][0] && 'a' == split[2][0]) {
+    if (3 == split.size() && 'c' == split[0][0] && 'c' == split[2][0]) {
         int mask = std::atoi(split[1].c_str());
-        std::uint8_t departure = (static_cast<std::uint8_t>(mask & 0x0f));
-        std::uint8_t arrival = (static_cast<std::uint8_t>(mask & 0xf0));
+        std::uint8_t departure = static_cast<std::uint8_t>(mask & 0x0f);
+        std::uint8_t arrival = static_cast<std::uint8_t>(mask & 0xf0);
 
         /* validate the values to avoid buffer overruns */
         if (departure > static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Departure)) {
@@ -241,7 +242,7 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, co
         }
 
         /* check if the flight is marked by a controller */
-        std::string_view annotation(flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(7));
+        std::string_view annotation(flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Marker)));
         if (std::string::npos != annotation.find('K'))
             retval.setMarkedByController(true);
 
