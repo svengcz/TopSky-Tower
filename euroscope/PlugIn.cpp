@@ -615,7 +615,7 @@ void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, Radar
     }
 
     /* publish the strip to all available controllers */
-    for (const auto& sector : screen->sectorControl().onlineControllers()) {
+    for (const auto& sector : screen->sectorControl().findAllRelatedControllers()) {
         /* create the callsign */
         std::string callsign = sector.prefix() + "_";
         if (0 != sector.midfix().length())
