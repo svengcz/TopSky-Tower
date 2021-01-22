@@ -746,8 +746,8 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
         }
     }
 
-    std::string annotation = "a/" + std::to_string(mask) + "/a";
-    this->updateFlightStrip(target, screen, 4, annotation);
+    std::string annotation = "c/" + std::to_string(mask) + "/c";
+    this->updateFlightStrip(target, screen, static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), annotation);
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
