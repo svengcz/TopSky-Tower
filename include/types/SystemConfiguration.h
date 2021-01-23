@@ -46,6 +46,7 @@ namespace topskytower {
             types::Length       mtcdVerticalSeparation;                /**< Defines the vertical separation between flights */
             types::Length       mtcdVerticalSeparationSameDestination; /**< Defines the vertical separation between flights with the same destination */
             types::Length       mtcdHorizontalSeparation;              /**< Defines the horizontal separation between flights */
+            bool                stdcActive;                            /**< Defines if STCD is active or not */
 
             /**
              * @brief Creates an empty and uninitialized system configuration
@@ -79,7 +80,8 @@ namespace topskytower {
                     mtcdDepartureClimbRates{ 2000_ftpmin, 1000_ftpmin, 2000_ftpmin, 2000_ftpmin, 2000_ftpmin },
                     mtcdVerticalSeparation(2000_ft),
                     mtcdVerticalSeparationSameDestination(6000_ft),
-                    mtcdHorizontalSeparation(10_nm) { }
+                    mtcdHorizontalSeparation(10_nm),
+                    stdcActive(true) { }
         };
     }
 }

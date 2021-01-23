@@ -41,6 +41,8 @@ namespace topskytower {
             bool ariwsActive;                                                     /**< Marks if ARIWS is active */
             bool cmacActive;                                                      /**< Marks if CMAC is active */
             bool mtcdActive;                                                      /**< Marks if MTCD is active */
+            bool stcdActive;                                                      /**< Marks if STCD is active */
+            bool ipaActive;                                                       /**< Marks if IPA (independent parallel approach) is used */
             bool lowVisibilityProcedures;                                         /**< Marks if LVP are active */
             std::map<std::string, std::list<std::string>> activeDepartureRunways; /**< Defines all active departure runways per active airport */
             std::map<std::string, std::list<std::string>> activeArrivalRunways;   /**< Defines all active arrival runways per active airport */
@@ -50,6 +52,8 @@ namespace topskytower {
                     ariwsActive(true),
                     cmacActive(true),
                     mtcdActive(true),
+                    stcdActive(true),
+                    ipaActive(false),
                     lowVisibilityProcedures(false),
                     activeDepartureRunways(),
                     activeArrivalRunways(),

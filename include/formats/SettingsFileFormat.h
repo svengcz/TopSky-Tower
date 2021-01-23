@@ -172,6 +172,11 @@ namespace topskytower {
          *     <td>Defines the vertical spacing between two departures with the same destination.</td>
          *     <td>6000</td><td>Knot</td>
          *   </tr>
+         *   <tr>
+         *     <td>SURV_STCD_Active</td>
+         *     <td>Defines if STCD is active.</td>
+         *     <td>1</td><td>Boolean</td>
+         *   </tr>
          * </table>
          */
         class SettingsFileFormat {

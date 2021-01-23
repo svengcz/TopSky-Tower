@@ -149,6 +149,9 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("SURV_MTCD_VerticalSpacingSameDestination" == entry[0]) {
             config.mtcdVerticalSeparationSameDestination = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
         }
+        else if ("SURV_STCD_Active" == entry[0]) {
+            config.stdcActive = '0' != entry[1][0];
+        }
     }
 
     /* copy the MTCA-default values of the departure model */
