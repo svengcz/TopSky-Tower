@@ -21,6 +21,10 @@ MTCDControl::MTCDControl(const std::string& airport, const types::Coordinate& ce
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
 }
 
+MTCDControl::~MTCDControl() {
+    system::ConfigurationRegistry::instance().deleteNotificationCallback(this);
+}
+
 void MTCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
     if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::Airports != type)
         return;
