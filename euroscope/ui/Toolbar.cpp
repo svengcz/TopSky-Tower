@@ -13,9 +13,11 @@
 #include "../RadarScreen.h"
 #include "AriwsToolbarButton.h"
 #include "CmacToolbarButton.h"
+#include "IpaToolbarButton.h"
 #include "LvpToolbarButton.h"
 #include "PdcToolbarButton.h"
 #include "MtcdToolbarButton.h"
+#include "StcdToolbarButton.h"
 #include "Toolbar.h"
 #include "UiManager.h"
 
@@ -286,7 +288,9 @@ void Toolbar::initialize() {
     this->m_buttons.push_back(new PdcToolbarButton(this->m_parent));
     this->m_buttons.push_back(new AriwsToolbarButton(this->m_parent));
     this->m_buttons.push_back(new CmacToolbarButton(this->m_parent));
+    this->m_buttons.push_back(new StcdToolbarButton(this->m_parent));
     this->m_buttons.push_back(new MtcdToolbarButton(this->m_parent));
+    this->m_buttons.push_back(new IpaToolbarButton(this->m_parent));
     this->m_buttons.push_back(new LvpToolbarButton(this->m_parent));
 }
 
