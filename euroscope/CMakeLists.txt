@@ -32,6 +32,8 @@ SET(SOURCE_FILES
     stdafx.cpp
     stdafx.h
     TopSkyTowerMain.cpp
+    VersionChecker.cpp
+    VersionChecker.h
 )
 SET(SOURCE_FILES_UI
     ui/AriwsToolbarButton.cpp
