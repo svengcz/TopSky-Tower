@@ -29,6 +29,7 @@
 #include "ui/PdcDepartureClearanceWindow.h"
 #include "ui/PdcMessageViewerWindow.h"
 #include "PlugIn.h"
+#include "VersionChecker.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -159,11 +160,18 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
     (void)canBeCreated;
     (void)displayName;
 
+    static bool firstCall = true;
+
     if (false == this->m_errorMode) {
         if (0 == this->m_screens.size())
             this->OnAirportRunwayActivityChanged();
 
         this->m_screens.push_back(new RadarScreen());
+        if (true == firstCall) {
+            VersionChecker::checkForUpdates(this->m_screens.back());
+            firstCall = false;
+        }
+
         return this->m_screens.back();
     }
 
