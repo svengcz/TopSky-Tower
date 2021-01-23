@@ -373,10 +373,14 @@ bool AirportFileFormat::parseAirportData(const std::vector<std::string>& lines) 
             return false;
 
         /* check if IPA or PRM is defined */
-        if ("IPA" == split[0])
-            this->m_configuration.ipaRunways.push_back(std::make_pair(split[1], split[2]));
-        else
-            this->m_configuration.prmRunways.push_back(std::make_pair(split[1], split[2]));
+        if ("IPA" == split[0]) {
+            this->m_configuration.ipaRunways[split[1]].push_back(split[2]);
+            this->m_configuration.ipaRunways[split[2]].push_back(split[1]);
+        }
+        else {
+            this->m_configuration.prmRunways[split[1]].push_back(split[2]);
+            this->m_configuration.prmRunways[split[2]].push_back(split[1]);
+        }
     }
 
     return true;
