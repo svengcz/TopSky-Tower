@@ -23,5 +23,6 @@ STCDControl::~STCDControl() {
 }
 
 void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
-
+    if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::Runtime != type)
+        return;
 }
