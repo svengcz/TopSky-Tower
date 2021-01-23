@@ -48,6 +48,11 @@ namespace topskytower {
             virtual ~ToolbarButton() { }
 
             /**
+             * @brief Sets the text of the button
+             * @param[in] text The new text
+             */
+            void setText(const std::string& text);
+            /**
              * @brief Handles the click events
              * @param[in] pt The position of the mouse
              * @param[in] button The clicked mouse button

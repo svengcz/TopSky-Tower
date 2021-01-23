@@ -19,6 +19,10 @@ ToolbarButton::ToolbarButton(RadarScreen* parent, const std::string& text, const
     this->m_visualization.setFontColor(UiElement::foregroundColor());
 }
 
+void ToolbarButton::setText(const std::string& text) {
+    this->m_text = text;
+}
+
 bool ToolbarButton::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     /* only left mouse clicks are allowed */
     if (UiManager::MouseButton::Left != button)
