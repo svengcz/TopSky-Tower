@@ -22,7 +22,44 @@ void IpaToolbarButton::clicked() {
     bool isActive = this->active();
 
     auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
-    configuration.ipaActive = !isActive;
+    const auto& airportConfig = system::ConfigurationRegistry::instance().airportConfiguration(this->m_parent->airportIcao());
+    configuration.ipaActive = false;
+
+    const auto& arrivalRunways = configuration.activeArrivalRunways.find(this->m_parent->airportIcao())->second;
+    bool ipaAvailable = false, prmAvailable = false;
+    for (auto it = arrivalRunways.cbegin(); arrivalRunways.cend() != it; ++it) {
+        auto cit = it;
+        std::advance(cit, 1);
+
+        if (airportConfig.ipaRunways.cend() != airportConfig.ipaRunways.find(*it)) {
+            const auto& partnerRwys = airportConfig.ipaRunways.find(*it)->second;
+
+            for (; arrivalRunways.cend() != cit; ++cit) {
+                auto partner = std::find(partnerRwys.cbegin(), partnerRwys.cend(), *cit);
+                if (partnerRwys.cend() != partner) {
+                    ipaAvailable = true;
+                    break;
+                }
+            }
+        }
+        else if (airportConfig.prmRunways.cend() != airportConfig.prmRunways.find(*it)) {
+            const auto& partnerRwys = airportConfig.prmRunways.find(*it)->second;
+
+            for (; arrivalRunways.cend() != cit; ++cit) {
+                auto partner = std::find(partnerRwys.cbegin(), partnerRwys.cend(), *cit);
+                if (partnerRwys.cend() != partner) {
+                    prmAvailable = true;
+                    break;
+                }
+            }
+        }
+
+        if (true == ipaAvailable || true == prmAvailable) {
+            configuration.ipaActive = !isActive;
+            break;
+        }
+    }
+
     system::ConfigurationRegistry::instance().setRuntimeConfiguration(configuration);
 }
 
