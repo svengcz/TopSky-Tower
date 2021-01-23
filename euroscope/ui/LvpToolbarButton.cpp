@@ -20,7 +20,10 @@ LvpToolbarButton::LvpToolbarButton(RadarScreen* parent) :
 
 void LvpToolbarButton::clicked() {
     bool isActive = this->active();
-    system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures = !isActive;
+
+    auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
+    configuration.lowVisibilityProcedures = !isActive;
+    system::ConfigurationRegistry::instance().setRuntimeConfiguration(configuration);
 }
 
 bool LvpToolbarButton::active() {

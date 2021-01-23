@@ -26,10 +26,11 @@ namespace topskytower {
              * @brief Defines the different configuration types that can be updated
              */
             enum class UpdateType {
-                All       = 0x07, /**< All configurations are updated */
+                All       = 0x0F, /**< All configurations are updated */
                 System    = 0x01, /**< The system settings are updated */
                 Airports  = 0x02, /**< The airport settings are updated */
-                Aircrafts = 0x04  /**< The aircraft settings are updated */
+                Aircrafts = 0x04, /**< The aircraft settings are updated */
+                Runtime   = 0x08  /**< The runtime settings are updated */
             };
 
         private:
@@ -66,10 +67,10 @@ namespace topskytower {
              */
             const types::SystemConfiguration& systemConfiguration() const;
             /**
-             * @brief Returns the runtime configuration
-             * @return The reference to the runtime configuration
+             * @brief Sets the new runtime configuration
+             * @param[in] configuration The new runtime configuration
              */
-            types::RuntimeConfiguration& runtimeConfiguration();
+            void setRuntimeConfiguration(const types::RuntimeConfiguration& configuration);
             /**
              * @brief Returns the runtime configuration
              * @return The constant reference to the runtime configuration

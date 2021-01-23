@@ -60,7 +60,12 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
         auto value = this->GetDataFromAsr("Airport");
         if (nullptr != value) {
             this->m_airport = value;
-            system::ConfigurationRegistry::instance().runtimeConfiguration().windInformation[this->m_airport] = types::WindData();
+
+            auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
+            if (configuration.windInformation.cend() == configuration.windInformation.find(this->m_airport)) {
+                configuration.windInformation[this->m_airport] = types::WindData();
+                system::ConfigurationRegistry::instance().setRuntimeConfiguration(configuration);
+            }
         }
         else {
             this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", "No airport in the ASR file defined",

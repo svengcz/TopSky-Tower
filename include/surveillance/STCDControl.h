@@ -9,6 +9,7 @@
 #include <map>
 
 #include <types/Flight.h>
+#include <types/SectorBorder.h>
 
 namespace topskytower {
     namespace surveillance {
@@ -19,6 +20,7 @@ namespace topskytower {
         class STCDControl {
         private:
 #ifndef DOXYGEN_IGNORE
+            types::SectorBorder m_noTransgressionZone;
 
         public:
             /**
