@@ -21,6 +21,10 @@ namespace topskytower {
             static std::uint32_t versionHash(std::uint8_t major, std::uint8_t minor, std::uint8_t patch);
 
         public:
+            /**
+             * @brief Checks if an update is available and shows it on the given RADAR screen
+             * @param[in] screen The screen that will show the messages
+             */
             static void checkForUpdates(RadarScreen* screen);
         };
     }
