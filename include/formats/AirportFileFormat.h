@@ -20,10 +20,18 @@ namespace topskytower {
          * 'TopSkyTowerAirportICAO.txt' (i.e. 'TopSkyTowerAirportEDDB.txt')
          *
          * The airport configuration is defined into multiple sections:
+         * - [AIRPORT] Defines some airport specific parameters
          * - [DEPARTURES] Defines all SIDs and the destination constraints
          * - [STANDS] Defines all stands with generic constraint definitions
          * - [PRIORITIES] Defines the airline to stand assignment priorities
          * - [TAXIWAYS] Defines all taxiway configuration components
+         *
+         * The airport-block contains information about possible independent approaches.
+         * Two different types of independent approaches are possible, the normal IPA and the PRM approach.
+         * The following block describes the syntax to define IPA or PRM runway combinations
+         * @code{.xml}
+         * [IPA,PRM]:RUNWAY1:RUNWAY2
+         * @endcode
          *
          * The departures-block contains two different entries.
          * The first entry is the definition of the SID.
@@ -280,6 +288,7 @@ namespace topskytower {
             bool parsePriorities(const std::vector<std::string>& lines);
             static bool parseHoldingPoint(const std::vector<std::string>& elements, types::HoldingPoint& holdingPoint);
             bool parseTaxiways(const std::vector<std::string>& lines);
+            bool parseAirportData(const std::vector<std::string>& lines);
 
         public:
             /**

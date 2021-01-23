@@ -360,6 +360,28 @@ bool AirportFileFormat::parseTaxiways(const std::vector<std::string>& lines) {
     return true;
 }
 
+bool AirportFileFormat::parseAirportData(const std::vector<std::string>& lines) {
+    for (const auto& line : std::as_const(lines)) {
+        auto split = helper::String::splitString(line, ":");
+
+        /* found invalid configuration entries */
+        if (3 != split.size() || ("IPA" != split[0] && "PRM" != split[0]))
+            return false;
+
+        /* validate that all entries are defined */
+        if (0 == split[1].length() || 0 == split[2].length())
+            return false;
+
+        /* check if IPA or PRM is defined */
+        if ("IPA" == split[0])
+            this->m_configuration.ipaRunways.push_back(std::make_pair(split[1], split[2]));
+        else
+            this->m_configuration.prmRunways.push_back(std::make_pair(split[1], split[2]));
+    }
+
+    return true;
+}
+
 AirportFileFormat::AirportFileFormat(const std::string& filename) :
         m_configuration() {
     IniFileFormat file(filename);
@@ -367,7 +389,9 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
     for (const auto& block : std::as_const(file.m_blocks)) {
         this->m_configuration.valid = true;
 
-        if ("[DEPARTURES]" == block.first)
+        if ("[AIRPORT]" == block.first)
+            this->m_configuration.valid &= this->parseAirportData(block.second);
+        else if ("[DEPARTURES]" == block.first)
             this->m_configuration.valid &= this->parseDepartures(block.second);
         else if ("[STANDS]" == block.first)
             this->m_configuration.valid &= this->parseStands(block.second);
