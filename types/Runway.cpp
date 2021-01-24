@@ -16,13 +16,12 @@ Runway::Runway() :
         m_heading(),
         m_length() { }
 
-Runway::Runway(const std::string& name, const Coordinate& start, const Coordinate& end,
-               const types::Angle& heading, const types::Length& length) :
+Runway::Runway(const std::string& name, const Coordinate& start, const Coordinate& end) :
         m_name(name),
         m_start(start),
         m_end(end),
-        m_heading(heading),
-        m_length(length) { }
+        m_heading(start.bearingTo(end)),
+        m_length(start.distanceTo(end)) { }
 
 const std::string& Runway::name() const {
     return this->m_name;

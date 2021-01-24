@@ -34,11 +34,8 @@ namespace topskytower {
              * @param[in] name The runway's name
              * @param[in] start The runway's start position
              * @param[in] end The runway's end position
-             * @param[in] heading The runway's heading
-             * @param[in] length The runway's length
              */
-            Runway(const std::string& name, const types::Coordinate& start, const types::Coordinate& end,
-                   const types::Angle& heading, const types::Length& length);
+            Runway(const std::string& name, const types::Coordinate& start, const types::Coordinate& end);
 
             /**
              * @brief Returns the runway's name

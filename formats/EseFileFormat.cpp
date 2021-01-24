@@ -187,8 +187,8 @@ void EseFileFormat::parseRunways(const std::vector<std::string>& runways) {
         /* create the relevant information */
         types::Coordinate p0(split[5], split[4]), p1(split[7], split[6]);
         types::Length rwyLength = p0.distanceTo(p1);
-        types::Runway rwy0(std::move(split[0]), p0, p1, static_cast<float>(std::atof(split[2].c_str())) * types::degree, rwyLength);
-        types::Runway rwy1(std::move(split[1]), p1, p0, static_cast<float>(std::atof(split[3].c_str())) * types::degree, rwyLength);
+        types::Runway rwy0(std::move(split[0]), p0, p1);
+        types::Runway rwy1(std::move(split[1]), p1, p0);
 
         /* safe the runways */
         this->m_runways[split[8]].push_back(std::move(rwy0));
