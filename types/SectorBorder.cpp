@@ -20,6 +20,7 @@ SectorBorder::SectorBorder() noexcept :
         m_lowerAltitude(),
         m_upperAltitude(),
         m_centroid(),
+        m_edges(),
         m_shape(),
         m_boundingBox{ { std::numeric_limits<float>::max() * types::degree, -std::numeric_limits<float>::max() * types::degree },
                        { std::numeric_limits<float>::max() * types::degree, -std::numeric_limits<float>::max() * types::degree } } { }
@@ -31,6 +32,7 @@ SectorBorder::SectorBorder(std::string&& owner, std::vector<std::string>&& deput
         m_lowerAltitude(lowerAltitude),
         m_upperAltitude(upperAltitude),
         m_centroid(),
+        m_edges(),
         m_shape(),
         m_boundingBox{ { std::numeric_limits<float>::max() * types::degree, -std::numeric_limits<float>::max() * types::degree },
                        { std::numeric_limits<float>::max() * types::degree, -std::numeric_limits<float>::max() * types::degree } } { }
@@ -41,6 +43,7 @@ SectorBorder::SectorBorder(const SectorBorder& other) noexcept :
         m_lowerAltitude(other.m_lowerAltitude),
         m_upperAltitude(other.m_upperAltitude),
         m_centroid(other.m_centroid),
+        m_edges(other.m_edges),
         m_shape(other.m_shape),
         m_boundingBox{ { other.m_boundingBox[0][0], other.m_boundingBox[0][1] },
                        { other.m_boundingBox[1][0], other.m_boundingBox[1][1] } } { }
@@ -51,6 +54,7 @@ SectorBorder::SectorBorder(SectorBorder&& other) noexcept :
         m_lowerAltitude(other.m_lowerAltitude),
         m_upperAltitude(other.m_upperAltitude),
         m_centroid(std::move(other.m_centroid)),
+        m_edges(std::move(other.m_edges)),
         m_shape(std::move(other.m_shape)),
         m_boundingBox{ { other.m_boundingBox[0][0], other.m_boundingBox[0][1] },
                        { other.m_boundingBox[1][0], other.m_boundingBox[1][1] } } { }
@@ -62,6 +66,7 @@ SectorBorder& SectorBorder::operator=(const SectorBorder& other) noexcept {
         this->m_lowerAltitude = other.m_lowerAltitude;
         this->m_upperAltitude = other.m_upperAltitude;
         this->m_centroid = other.m_centroid;
+        this->m_edges = other.m_edges;
         this->m_shape = other.m_shape;
 
         for (int i = 0; i < 2; ++i) {
@@ -79,6 +84,7 @@ SectorBorder& SectorBorder::operator=(SectorBorder&& other) noexcept {
         this->m_lowerAltitude = other.m_lowerAltitude;
         this->m_upperAltitude = other.m_upperAltitude;
         this->m_centroid = std::move(other.m_centroid);
+        this->m_edges = std::move(other.m_edges);
         this->m_shape = std::move(other.m_shape);
 
         for (int i = 0; i < 2; ++i) {
@@ -106,6 +112,8 @@ const types::Length& SectorBorder::upperAltitude() const {
 }
 
 void SectorBorder::setEdges(const std::list<types::Coordinate>& edges) {
+    this->m_edges.clear();
+
     if (3 > edges.size())
         return;
 
@@ -145,6 +153,12 @@ void SectorBorder::setEdges(const std::list<types::Coordinate>& edges) {
 
     /* finalize the shape */
     bg::correct(this->m_shape);
+
+    this->m_edges = edges;
+}
+
+const std::list<types::Coordinate>& SectorBorder::edges() const {
+    return this->m_edges;
 }
 
 bool SectorBorder::isInsideBorder(const types::Coordinate& coordinate) const {

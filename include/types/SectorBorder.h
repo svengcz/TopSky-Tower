@@ -35,6 +35,7 @@ namespace topskytower {
             types::Length                                                     m_lowerAltitude;
             types::Length                                                     m_upperAltitude;
             types::Coordinate                                                 m_centroid;
+            std::list<types::Coordinate>                                      m_edges;
             bg::model::polygon<bg::model::point<float, 2, bg::cs::cartesian>> m_shape;
             types::Angle                                                      m_boundingBox[2][2];
 
@@ -101,6 +102,11 @@ namespace topskytower {
              * @param[in] edges The edges of the border
              */
             void setEdges(const std::list<types::Coordinate>& edges);
+            /**
+             * @brief Returns the edges of the sector
+             * @return The sector's edges
+             */
+            const std::list<types::Coordinate>& edges() const;
             /**
              * @brief Checks if a coordinate is inside the border and ignores the altitude restrictions
              * @param[in] coordinate The checked coordinate
