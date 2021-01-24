@@ -84,6 +84,10 @@ namespace topskytower {
              * @param[in] center The airport's center position
              */
             MTCDControl(const std::string& airport, const types::Coordinate& center);
+            /**
+             * @brief Destroys all internal structures and registrations
+             */
+            ~MTCDControl();
 
             /**
              * @brief Updates a flight and calculates the MTCA metrices

@@ -70,6 +70,9 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("UI_FontSize" == entry[0]) {
             config.fontSize = static_cast<float>(std::atof(entry[1].c_str()));
         }
+        else if ("UI_NTZColor" == entry[0]) {
+            SettingsFileFormat::parseColor(entry[1], config.uiNtzColor);
+        }
         else if ("SYS_TrackingOnGround" == entry[0]) {
             config.trackingOnGround = '0' != entry[1][0];
         }
@@ -151,6 +154,9 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         }
         else if ("SURV_MTCD_VerticalSpacingSameDestination" == entry[0]) {
             config.mtcdVerticalSeparationSameDestination = static_cast<float>(std::atoi(entry[1].c_str())) * types::feet;
+        }
+        else if ("SURV_STCD_Active" == entry[0]) {
+            config.stdcActive = '0' != entry[1][0];
         }
     }
 

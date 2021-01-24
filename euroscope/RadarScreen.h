@@ -18,6 +18,7 @@
 #include <surveillance/ARIWSControl.h>
 #include <surveillance/CMACControl.h>
 #include <surveillance/MTCDControl.h>
+#include <surveillance/STCDControl.h>
 #include <system/FlightRegistry.h>
 
 #include "ui/UiManager.h"
@@ -59,6 +60,7 @@ namespace topskytower {
             surveillance::ARIWSControl*                                              m_ariwsControl;
             surveillance::CMACControl*                                               m_cmacControl;
             surveillance::MTCDControl*                                               m_mtcdControl;
+            surveillance::STCDControl*                                               m_stcdControl;
             std::mutex                                                               m_guiEuroscopeEventsLock;
             std::list<EuroscopeEvent>                                                m_guiEuroscopeEvents;
             std::chrono::system_clock::time_point                                    m_lastRenderingTime;
@@ -79,6 +81,7 @@ namespace topskytower {
             bool visualizeRoute(const std::string& callsign, Gdiplus::Graphics& graphics);
             void drawData(std::mutex& lock, std::list<std::pair<std::string, std::chrono::system_clock::time_point>>& data,
                           bool surveillanceData, Gdiplus::Graphics& graphics);
+            void drawNoTransgressionZones(Gdiplus::Graphics& graphics);
             std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign);
 
         public:
@@ -185,6 +188,11 @@ namespace topskytower {
              * @return The MTCD control
              */
             surveillance::MTCDControl& mtcdControl() const;
+            /**
+             * @brief Returns the STCD control
+             * @return The STCD control
+             */
+            surveillance::STCDControl& stcdControl() const;
             /**
              * @brief Registers an Euroscope GUI event to trigger the function call during the next rendering step
              * @param[in] entry The new GUI event

@@ -20,7 +20,10 @@ CmacToolbarButton::CmacToolbarButton(RadarScreen* parent) :
 
 void CmacToolbarButton::clicked() {
     bool isActive = this->active();
-    system::ConfigurationRegistry::instance().runtimeConfiguration().cmacActive = !isActive;
+
+    auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
+    configuration.cmacActive = !isActive;
+    system::ConfigurationRegistry::instance().setRuntimeConfiguration(configuration);
 }
 
 bool CmacToolbarButton::active() {

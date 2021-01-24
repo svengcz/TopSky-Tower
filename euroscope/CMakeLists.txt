@@ -44,6 +44,8 @@ SET(SOURCE_FILES_UI
     ui/HoppiesLogonWindow.h
     ui/InsetWindow.cpp
     ui/InsetWindow.h
+    ui/IpaToolbarButton.cpp
+    ui/IpaToolbarButton.h
     ui/LvpToolbarButton.cpp
     ui/LvpToolbarButton.h
     ui/MessageViewerWindow.cpp
@@ -56,6 +58,8 @@ SET(SOURCE_FILES_UI
     ui/PdcMessageViewerWindow.h
     ui/PdcToolbarButton.cpp
     ui/PdcToolbarButton.h
+    ui/StcdToolbarButton.cpp
+    ui/StcdToolbarButton.h
     ui/Toolbar.cpp
     ui/Toolbar.h
     ui/UiManager.cpp

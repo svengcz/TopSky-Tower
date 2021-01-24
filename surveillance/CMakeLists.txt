@@ -11,6 +11,7 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/surveillance/DepartureModel.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/FlightPlanControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/MTCDControl.h
+    ${CMAKE_SOURCE_DIR}/include/surveillance/STCDControl.h
 )
 SET(SOURCE_FILES
     ARIWSControl.cpp
@@ -18,6 +19,7 @@ SET(SOURCE_FILES
     DepartureModel.cpp
     FlightPlanControl.cpp
     MTCDControl.cpp
+    STCDControl.cpp
 )
 
 # define the helper library

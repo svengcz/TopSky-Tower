@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include <types/Runway.h>
 #include <types/Sector.h>
 
 namespace topskytower {
@@ -24,10 +25,12 @@ namespace topskytower {
          */
         class EseFileFormat {
         private:
-            std::list<types::SectorBorder> m_sectorBorders;
-            std::list<types::Sector>       m_sectors;
+            std::list<types::SectorBorder>                  m_sectorBorders;
+            std::list<types::Sector>                        m_sectors;
+            std::map<std::string, std::list<types::Runway>> m_runways;
 
             void parseSectors(const std::vector<std::string>& positions, const std::vector<std::string>& airspace);
+            void parseRunways(const std::vector<std::string>& runways);
 
         public:
             /**
@@ -47,6 +50,12 @@ namespace topskytower {
              * @return The sector borders
              */
             const std::list<types::SectorBorder>& sectorBorders() const;
+            /**
+             * @brief Returns the runways of a specific airport
+             * @param[in] airport The airport's ICAO code
+             * @return The runways of the airport
+             */
+            const std::list<types::Runway>& runways(const std::string& airport) const;
         };
     }
 }

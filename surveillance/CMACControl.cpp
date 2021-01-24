@@ -2,7 +2,7 @@
  * Author:
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
- *   Implements the Autonomous Runway Incursion Warning System
+ *   Implements the Conformance Monitoring Alerts for Controllers System
  */
 
 #include <GeographicLib/Gnomonic.hpp>

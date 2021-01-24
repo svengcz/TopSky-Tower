@@ -20,7 +20,10 @@ MtcdToolbarButton::MtcdToolbarButton(RadarScreen* parent) :
 
 void MtcdToolbarButton::clicked() {
     bool isActive = this->active();
-    system::ConfigurationRegistry::instance().runtimeConfiguration().mtcdActive = !isActive;
+
+    auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
+    configuration.mtcdActive = !isActive;
+    system::ConfigurationRegistry::instance().setRuntimeConfiguration(configuration);
 }
 
 bool MtcdToolbarButton::active() {

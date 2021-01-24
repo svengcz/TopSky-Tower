@@ -134,11 +134,10 @@ static __inline void __markRunwayActive(EuroScopePlugIn::CSectorElement& runway,
 }
 
 void PlugIn::OnAirportRunwayActivityChanged() {
-    auto& departureList = system::ConfigurationRegistry::instance().runtimeConfiguration().activeDepartureRunways;
-    auto& arrivalList = system::ConfigurationRegistry::instance().runtimeConfiguration().activeArrivalRunways;
+    auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
 
-    departureList.clear();
-    arrivalList.clear();
+    configuration.activeDepartureRunways.clear();
+    configuration.activeArrivalRunways.clear();
 
     EuroScopePlugIn::CSectorElement rwy;
     for (rwy = this->SectorFileElementSelectFirst(EuroScopePlugIn::SECTOR_ELEMENT_RUNWAY); true == rwy.IsValid();
@@ -147,9 +146,11 @@ void PlugIn::OnAirportRunwayActivityChanged() {
         std::string airport(rwy.GetAirportName());
         airport = std::regex_replace(airport, std::regex("^ +| +$|( ) +"), "$1");
 
-        __markRunwayActive(rwy, airport, departureList, arrivalList, 0);
-        __markRunwayActive(rwy, airport, departureList, arrivalList, 1);
+        __markRunwayActive(rwy, airport, configuration.activeDepartureRunways, configuration.activeArrivalRunways, 0);
+        __markRunwayActive(rwy, airport, configuration.activeDepartureRunways, configuration.activeArrivalRunways, 1);
     }
+
+    system::ConfigurationRegistry::instance().setRuntimeConfiguration(configuration);
 }
 
 EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayName, bool needsRadarContent, bool geoReferenced,
@@ -551,12 +552,16 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
         itemString[0] = '\0';
 
-        if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
-            std::strcat(itemString, "RIW ");
+        if (true == flightScreen->stcdControl().ntzViolation(flight))
+            std::strcat(itemString, "NTZ");
+        else if (true == flightScreen->stcdControl().separationLoss(flight))
+            std::strcat(itemString, "STC");
+        else if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
+            std::strcat(itemString, "RIW");
         else if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight))
-            std::strcat(itemString, "CMA ");
+            std::strcat(itemString, "CMA");
         else if (true == flightScreen->mtcdControl().conflictsExist(flight))
-            std::strcat(itemString, "MTC ");
+            std::strcat(itemString, "MTC");
 
         break;
     default:
@@ -1170,6 +1175,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 }
 
 void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
+    auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
     auto split = helper::String::splitString(fullMetar, " ");
 
     /* find the wind entry */
@@ -1188,11 +1194,12 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
             if (std::string::npos != windData.find("G"))
                 information.gusts = static_cast<float>(std::atoi(windData.substr(6, 8).c_str())) * types::knot;
 
-            system::ConfigurationRegistry::instance().runtimeConfiguration().windInformation[station] = information;
-
-            return;
+            configuration.windInformation[station] = information;
+            break;
         }
     }
+
+    system::ConfigurationRegistry::instance().setRuntimeConfiguration(configuration);
 }
 
 void PlugIn::pdcMessageReceived() {

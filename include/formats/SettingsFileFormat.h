@@ -59,6 +59,11 @@ namespace topskytower {
          *     <td>0, 0, 200</td><td>R,G,B</td>
          *   </tr>
          *   <tr>
+         *     <td>UI_NTZColor</td>
+         *     <td>Defines the color to visualize NTZ areas.</td>
+         *     <td>200, 0, 0</td><td>R,G,B</td>
+         *   </tr>
+         *   <tr>
          *     <td>SYS_TrackingOnGround</td>
          *     <td>Defines if the ground tracks or not.</td>
          *     <td>1</td><td>Boolean</td>
@@ -176,6 +181,11 @@ namespace topskytower {
          *     <td>SURV_MTCD_VerticalSpacingSameDestination</td>
          *     <td>Defines the vertical spacing between two departures with the same destination.</td>
          *     <td>6000</td><td>Knot</td>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_STCD_Active</td>
+         *     <td>Defines if STCD is active.</td>
+         *     <td>1</td><td>Boolean</td>
          *   </tr>
          * </table>
          */

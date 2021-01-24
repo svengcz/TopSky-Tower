@@ -97,6 +97,8 @@ namespace topskytower {
             std::list<Stand>                                   aircraftStands;         /**< The list of all available aircraft stands */
             std::list<AirlineStandAssignments>                 airlines;               /**< The airline to stand assignments */
             std::list<HoldingPoint>                            holdingPoints;          /**< The holding points of the airport */
+            std::map<std::string, std::list<std::string>>      ipaRunways;             /**< Defines the possible IPA combinations */
+            std::map<std::string, std::list<std::string>>      prmRunways;             /**< Defines the possible PRM combinations */
 
             /**
              * @brief Creates an empty and unintialized airport configuration
@@ -106,7 +108,9 @@ namespace topskytower {
                     sids(),
                     destinationConstraints(),
                     aircraftStands(),
-                    airlines() { }
+                    airlines(),
+                    ipaRunways(),
+                    prmRunways() { }
         };
     }
 }

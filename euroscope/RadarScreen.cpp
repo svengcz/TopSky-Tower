@@ -32,6 +32,7 @@ RadarScreen::RadarScreen() :
         m_ariwsControl(nullptr),
         m_cmacControl(nullptr),
         m_mtcdControl(nullptr),
+        m_stcdControl(nullptr),
         m_guiEuroscopeEventsLock(),
         m_guiEuroscopeEvents(),
         m_lastRenderingTime(),
@@ -49,6 +50,8 @@ RadarScreen::~RadarScreen() {
         delete this->m_cmacControl;
     if (nullptr != this->m_mtcdControl)
         delete this->m_mtcdControl;
+    if (nullptr != this->m_stcdControl)
+        delete this->m_stcdControl;
     if (nullptr != this->m_sectorControl)
         delete this->m_sectorControl;
     if (nullptr != this->m_standControl)
@@ -62,7 +65,12 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
         auto value = this->GetDataFromAsr("Airport");
         if (nullptr != value) {
             this->m_airport = value;
-            system::ConfigurationRegistry::instance().runtimeConfiguration().windInformation[this->m_airport] = types::WindData();
+
+            auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
+            if (configuration.windInformation.cend() == configuration.windInformation.find(this->m_airport)) {
+                configuration.windInformation[this->m_airport] = types::WindData();
+                system::ConfigurationRegistry::instance().setRuntimeConfiguration(configuration);
+            }
         }
         else {
             this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", "No airport in the ASR file defined",
@@ -149,6 +157,8 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
         this->m_cmacControl->updateFlight(flight);
     if (nullptr != this->m_mtcdControl)
         this->m_mtcdControl->updateFlight(flight);
+    //if (nullptr != this->m_stcdControl)
+    //    this->m_stcdControl->updateFlight(flight);
 }
 
 void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) {
@@ -188,6 +198,8 @@ void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan
         this->m_cmacControl->removeFlight(flightPlan.GetCallsign());
     if (nullptr != this->m_mtcdControl)
         this->m_mtcdControl->removeFlight(flightPlan.GetCallsign());
+    //if (nullptr != this->m_stcdControl)
+    //    this->m_stcdControl->removeFlight(flightPlan.GetCallsign());
 
     surveillance::FlightPlanControl::instance().removeFlight(flightPlan.GetCallsign());
 }
@@ -236,6 +248,10 @@ void RadarScreen::initialize() {
             delete this->m_mtcdControl;
         this->m_mtcdControl = new surveillance::MTCDControl(this->m_airport, center);
         this->m_mtcdControl->registerSidExtraction(this, &RadarScreen::extractPredictedSID);
+
+        if (nullptr != this->m_stcdControl)
+            delete this->m_stcdControl;
+        this->m_stcdControl = new surveillance::STCDControl(this->m_airport, center, file.runways(this->m_airport));
 
         this->m_initialized = true;
     }
@@ -458,6 +474,34 @@ void RadarScreen::drawData(std::mutex& lock, std::list<std::pair<std::string, st
     lock.unlock();
 }
 
+void RadarScreen::drawNoTransgressionZones(Gdiplus::Graphics& graphics) {
+    if (nullptr == this->m_stcdControl)
+        return;
+
+    const auto& config = system::ConfigurationRegistry::instance().systemConfiguration();
+    Gdiplus::Pen pen(Gdiplus::Color(config.uiNtzColor[0], config.uiNtzColor[1], config.uiNtzColor[2]), 1.0f);
+
+    /* iterate over every NTZ */
+    const auto& ntzs = this->m_stcdControl->noTransgressionZones();
+    for (const auto& ntz : std::as_const(ntzs)) {
+        /* skip an empty NTZ */
+        if (0 == ntz.edges().size())
+            continue;
+
+        /* draw the lines over all edges */
+        auto prev = this->convertCoordinate(ntz.edges().front());
+        auto current = this->convertCoordinate(ntz.edges().back());
+        graphics.DrawLine(&pen, prev, current);
+        auto it = ntz.edges().cbegin();
+        std::advance(it, 1);
+        for (; ntz.edges().cend() != it; ++it) {
+            current = this->convertCoordinate(*it);
+            graphics.DrawLine(&pen, prev, current);
+            prev = current;
+        }
+    }
+}
+
 void RadarScreen::OnRefresh(HDC hdc, int phase) {
     (void)hdc;
 
@@ -471,6 +515,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
 
     this->drawData(this->m_surveillanceVisualizationsLock, this->m_surveillanceVisualizations, true, graphics);
     this->drawData(this->m_departureRouteVisualizationsLock, this->m_departureRouteVisualizations, false, graphics);
+    this->drawNoTransgressionZones(graphics);
 
     /* visualize everything of the UI manager */
     this->m_userInterface.visualize(&graphics);
@@ -557,6 +602,10 @@ surveillance::MTCDControl& RadarScreen::mtcdControl() const {
     return *this->m_mtcdControl;
 }
 
+surveillance::STCDControl& RadarScreen::stcdControl() const {
+    return *this->m_stcdControl;
+}
+
 void RadarScreen::registerEuroscopeEvent(RadarScreen::EuroscopeEvent&& entry) {
     std::lock_guard guard(this->m_guiEuroscopeEventsLock);
     this->m_guiEuroscopeEvents.push_back(std::move(entry));
@@ -641,7 +690,7 @@ std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::strin
         auto distance = sidExit.distanceTo(position);
 
         /*
-         * Assumtion:
+         * Assumption:
          *  - The distance between the current position and the sidExit decreases until a certain point
          *    where we follow the rest of the route
          */

@@ -88,8 +88,10 @@ const types::SystemConfiguration& ConfigurationRegistry::systemConfiguration() c
     return this->m_systemConfig;
 }
 
-types::RuntimeConfiguration& ConfigurationRegistry::runtimeConfiguration() {
-    return this->m_runtimeConfig;
+void ConfigurationRegistry::setRuntimeConfiguration(const types::RuntimeConfiguration& configuration) {
+    this->m_runtimeConfig = configuration;
+    for (const auto& notification : std::as_const(this->m_notificationCallbacks))
+        notification.second(ConfigurationRegistry::UpdateType::Runtime);
 }
 
 const types::RuntimeConfiguration& ConfigurationRegistry::runtimeConfiguration() const {

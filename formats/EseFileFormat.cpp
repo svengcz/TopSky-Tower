@@ -178,8 +178,27 @@ void EseFileFormat::parseSectors(const std::vector<std::string>& positions, cons
     }
 }
 
+void EseFileFormat::parseRunways(const std::vector<std::string>& runways) {
+    for (const auto& line : std::as_const(runways)) {
+        auto split = helper::String::splitString(line, " ");
+        if (9 != split.size())
+            continue;
+
+        /* create the relevant information */
+        types::Coordinate p0(split[5], split[4]), p1(split[7], split[6]);
+        types::Length rwyLength = p0.distanceTo(p1);
+        types::Runway rwy0(std::move(split[0]), p0, p1);
+        types::Runway rwy1(std::move(split[1]), p1, p0);
+
+        /* safe the runways */
+        this->m_runways[split[8]].push_back(std::move(rwy0));
+        this->m_runways[split[8]].push_back(std::move(rwy1));
+    }
+}
+
 EseFileFormat::EseFileFormat(const std::string& sectorName) :
-        m_sectors() {
+        m_sectors(),
+        m_runways() {
     /* find all SCT-files to anaylize the info-block */
     for (const auto& file : std::filesystem::directory_iterator(".")) {
         if (".sct" == file.path().extension()) {
@@ -201,6 +220,12 @@ EseFileFormat::EseFileFormat(const std::string& sectorName) :
                     if (eseFile.m_blocks.cend() == airspaceIt)
                         throw helper::Exception("ESE File", "Unable to find airspaces in " + esePath.string());
                     this->parseSectors(positionsIt->second, airspaceIt->second);
+
+                    /* parse the runways */
+                    auto runwaysIt = sctFile.m_blocks.find("[RUNWAY]");
+                    if (sctFile.m_blocks.cend() == runwaysIt)
+                        throw helper::Exception("SCT File", "Unable to find the runways in " + file.path().string());
+                    this->parseRunways(runwaysIt->second);
                 }
             }
         }
@@ -213,4 +238,14 @@ const std::list<types::Sector>& EseFileFormat::sectors() const {
 
 const std::list<types::SectorBorder>& EseFileFormat::sectorBorders() const {
     return this->m_sectorBorders;
+}
+
+const std::list<types::Runway>& EseFileFormat::runways(const std::string& airport) const {
+    static std::list<types::Runway> __fallback;
+    auto it = this->m_runways.find(airport);
+
+    if (this->m_runways.cend() != it)
+        return it->second;
+    else
+        return __fallback;
 }

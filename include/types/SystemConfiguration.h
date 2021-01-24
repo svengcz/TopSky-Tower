@@ -24,6 +24,7 @@ namespace topskytower {
             std::uint8_t        uiBackgroundActiveColor[3];            /**< Defines the background color of active UI elements */
             std::uint8_t        uiForegroundActiveColor[3];            /**< Defines the foreground color of active UI elements */
             std::uint8_t        uiScreenClickColor[3];                 /**< Defines the color which is used for click events on the RADAR screen */
+            std::uint8_t        uiNtzColor[3];                         /**< Defines the NTZ color */
             std::string         fontFamily;                            /**< Defines the font family of the visualizations */
             float               fontSize;                              /**< Defines the font size of the visualizations */
             bool                trackingOnGround;                      /**< Defines if the ground controllers track flights */
@@ -47,6 +48,7 @@ namespace topskytower {
             types::Length       mtcdVerticalSeparation;                /**< Defines the vertical separation between flights */
             types::Length       mtcdVerticalSeparationSameDestination; /**< Defines the vertical separation between flights with the same destination */
             types::Length       mtcdHorizontalSeparation;              /**< Defines the horizontal separation between flights */
+            bool                stdcActive;                            /**< Defines if STCD is active or not */
 
             /**
              * @brief Creates an empty and uninitialized system configuration
@@ -59,6 +61,7 @@ namespace topskytower {
                     uiBackgroundActiveColor{ 0, 150, 0 },
                     uiForegroundActiveColor{ 100, 100, 100 },
                     uiScreenClickColor{ 0, 0, 200 },
+                    uiNtzColor{ 200, 0, 0 },
                     fontFamily(),
                     fontSize(3.2f),
                     trackingOnGround(false),
@@ -81,7 +84,8 @@ namespace topskytower {
                     mtcdDepartureClimbRates{ 2000_ftpmin, 1000_ftpmin, 2000_ftpmin, 2000_ftpmin, 2000_ftpmin },
                     mtcdVerticalSeparation(2000_ft),
                     mtcdVerticalSeparationSameDestination(6000_ft),
-                    mtcdHorizontalSeparation(10_nm) { }
+                    mtcdHorizontalSeparation(10_nm),
+                    stdcActive(true) { }
         };
     }
 }
