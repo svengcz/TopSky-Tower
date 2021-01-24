@@ -612,14 +612,14 @@ void PlugIn::updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& radarTarget, co
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchPad.c_str());
 }
 
-void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, RadarScreen* screen, int idx, const std::string& message) {
+void PlugIn::updateFlightStrip(EuroScopePlugIn::CRadarTarget& radarTarget, RadarScreen* screen, int idx, const std::string& message, bool overwrite) {
     if (8 < idx)
         return;
 
     std::string entry(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(idx));
 
     std::size_t pos = entry.find(message);
-    if (std::string::npos != pos) {
+    if (std::string::npos != pos && false == overwrite) {
         entry.erase(pos, message.length());
         radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(idx, entry.c_str());
     }
@@ -760,7 +760,7 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
     }
 
     std::string annotation = "c/" + std::to_string(mask) + "/c";
-    this->updateFlightStrip(target, screen, static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), annotation);
+    this->updateFlightStrip(target, screen, static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), annotation, true);
 }
 
 void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RECT area) {
@@ -866,7 +866,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             else if (0 == std::strncmp(itemString, "Est", 3))
                 PlugIn::updateManuallyAlerts(radarTarget, "EST_");
             else if (0 == std::strncmp(itemString, "Mark", 4))
-                this->updateFlightStrip(radarTarget, flightScreen, 7, "K");
+                this->updateFlightStrip(radarTarget, flightScreen, 7, "K", false);
         }
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
