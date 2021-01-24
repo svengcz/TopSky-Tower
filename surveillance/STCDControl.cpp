@@ -16,11 +16,40 @@ using namespace topskytower;
 using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
+static const std::map<std::pair<types::Aircraft::WTC, types::Aircraft::WTC>, types::Length> __distances = {
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Unknown), 3_nm },
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Light),   3_nm },
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Medium),  3_nm },
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Heavy),   3_nm },
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Super),   3_nm },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Unknown), 3_nm },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Light),   3_nm },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Medium),  3_nm },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Heavy),   3_nm },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Super),   3_nm },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Unknown), 3_nm },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Light),   5_nm },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Medium),  3_nm },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Heavy),   3_nm },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Super),   3_nm },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Unknown), 4_nm },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Light),   6_nm },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Medium),  5_nm },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Heavy),   4_nm },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Super),   4_nm },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Unknown), 6_nm },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Light),   8_nm },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Medium),  7_nm },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Heavy),   6_nm },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Super),   6_nm }
+};
+
 STCDControl::STCDControl(const std::string& airport, const types::Coordinate& center, const std::list<types::Runway>& runways) :
         m_airportIcao(airport),
         m_reference(center),
         m_runways(runways),
-        m_noTransgressionZones() {
+        m_noTransgressionZones(),
+        m_ntzViolations() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &STCDControl::reinitialize);
 
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
@@ -111,8 +140,10 @@ void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
     this->m_noTransgressionZones.clear();
 
     /* no IPA active -> no NTZ-definition needed */
-    if (false == configuration.ipaActive)
+    if (false == configuration.ipaActive) {
+        this->m_ntzViolations.clear();
         return;
+    }
 
     std::list<std::pair<std::string, std::string>> ipaPairs, prmPairs;
 
@@ -154,12 +185,142 @@ void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
         this->createNTZ(pair);
 }
 
-void STCDControl::updateFlight(const types::Flight& flight) {
+static __inline void __normalizeAngle(types::Angle& angle) {
+    while (-1.0f * 180.0_deg > angle)
+        angle += 360.0_deg;
+    while (180.0_deg < angle)
+        angle -= 360.0_deg;
+}
 
+void STCDControl::updateFlight(const types::Flight& flight) {
+    /* we evaluate only the arrivals anf IFRs */
+    if (types::Flight::Type::Arrival != flight.type() || types::FlightPlan::Type::IFR != flight.flightPlan().type())
+        return;
+
+    /* ignore landed or going around flights */
+    if (40_kn > flight.groundSpeed() || types::FlightPlan::AtcCommand::GoAround == flight.flightPlan().arrivalFlag()) {
+        this->removeFlight(flight.callsign());
+        return;
+    }
+
+    /* find the corresponding runway */
+    types::Runway inboundRunway;
+    for (const auto& runway : std::as_const(this->m_runways)) {
+        if (runway.name() == flight.flightPlan().arrivalRunway()) {
+            inboundRunway = runway;
+            break;
+        }
+    }
+    if (0 == inboundRunway.name().length())
+        return;
+
+    /* validate that the flight is close enough and on the correct heading */
+    if (20_nm <= inboundRunway.start().distanceTo(flight.currentPosition().coordinate()))
+        return;
+    auto delta = flight.currentPosition().heading() - inboundRunway.heading();
+    __normalizeAngle(delta);
+    if (15_deg <= delta.abs())
+        return;
+
+    /* flight violated NTZ -> has to go around */
+    auto ntzViolationIt = std::find(this->m_ntzViolations.cbegin(), this->m_ntzViolations.cend(), flight.callsign());
+    if (this->m_ntzViolations.cend() == ntzViolationIt)
+        return;
+
+    /* test if a flight is in the NTZ */
+    for (const auto& ntz : std::as_const(this->m_noTransgressionZones)) {
+        /* flight is inside the NTZ -> mark it and return */
+        if (true == ntz.isInsideBorder(flight.currentPosition().coordinate())) {
+            if (this->m_ntzViolations.cend() == ntzViolationIt)
+                this->m_ntzViolations.push_back(flight.callsign());
+            return;
+        }
+    }
+
+    /* remove the flight from the list */
+    this->removeFlight(flight.callsign());
+
+    /* find nearest flight */
+    const auto& config = system::ConfigurationRegistry::instance().runtimeConfiguration();
+    types::Length minDistance = 50_nm;
+    types::Aircraft::WTC neighborWtc;
+    types::Position neighborPosition;
+    std::string neighborCallsign;
+    for (auto& inbound : std::as_const(this->m_inbounds)) {
+        /* ignore neighboring flights */
+        if (true == config.ipaActive && inbound.flightPlan().arrivalRunway() != flight.flightPlan().arrivalRunway())
+            continue;
+
+        /* validate that the candidate is in front of this flight */
+        delta = flight.currentPosition().coordinate().bearingTo(inbound.currentPosition().coordinate());
+        delta -= flight.currentPosition().heading();
+        __normalizeAngle(delta);
+        if (90_deg < delta.abs())
+            continue;
+
+        /* find the closest flight */
+        auto distance = inbound.currentPosition().coordinate().distanceTo(flight.currentPosition().coordinate());
+        if (distance <= minDistance) {
+            neighborWtc = inbound.flightPlan().aircraft().wtc();
+            neighborPosition = inbound.currentPosition();
+            neighborCallsign = inbound.callsign();
+            minDistance = distance;
+        }
+    }
+
+    /* find the minimum required distance */
+    types::Length minRequiredDistance;
+    if (true == config.ipaActive) {
+        minRequiredDistance = 3_nm;
+    }
+    else {
+        auto id = std::make_pair(neighborWtc, flight.flightPlan().aircraft().wtc());
+        minRequiredDistance = __distances.find(id)->second;
+    }
+
+    /* check the distance with the minDistance with minRequiredDistance */
+    if (minDistance < minRequiredDistance)
+        this->m_conflicts[flight.callsign()] = minRequiredDistance;
 }
 
 void STCDControl::removeFlight(const std::string& callsign) {
+    /* cleanup the NTZ violations */
+    auto ntzViolationIt = std::find(this->m_ntzViolations.begin(), this->m_ntzViolations.end(), callsign);
+    if (this->m_ntzViolations.end() != ntzViolationIt)
+        this->m_ntzViolations.erase(ntzViolationIt);
 
+    /* cleanup the inbounds */
+    for (auto it = this->m_inbounds.begin(); this->m_inbounds.end() != it; ++it) {
+        if (it->callsign() == callsign) {
+            this->m_inbounds.erase(it);
+            break;
+        }
+    }
+
+    /* cleanup the conflicts */
+    auto it = this->m_conflicts.find(callsign);
+    if (this->m_conflicts.end() != it)
+        this->m_conflicts.erase(it);
+}
+
+bool STCDControl::ntzViolation(const types::Flight& flight) const {
+    auto it = std::find(this->m_ntzViolations.cbegin(), this->m_ntzViolations.cend(), flight.callsign());
+    return this->m_ntzViolations.cend() != it;
+}
+
+bool STCDControl::separationLoss(const types::Flight& flight) const {
+    auto it = this->m_conflicts.find(flight.callsign());
+    return this->m_conflicts.cend() != it;
+}
+
+const types::Length& STCDControl::minSeparation(const types::Flight& flight) {
+    static types::Length __fallback;
+
+    auto it = this->m_conflicts.find(flight.callsign());
+    if (this->m_conflicts.cend() != it)
+        return it->second;
+    else
+        return __fallback;
 }
 
 const std::list<types::SectorBorder>& STCDControl::noTransgressionZones() const {

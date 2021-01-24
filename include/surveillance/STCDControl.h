@@ -23,10 +23,13 @@ namespace topskytower {
         class STCDControl {
         private:
 #ifndef DOXYGEN_IGNORE
-            std::string                    m_airportIcao;
-            types::Coordinate              m_reference;
-            std::list<types::Runway>       m_runways;
-            std::list<types::SectorBorder> m_noTransgressionZones;
+            std::string                          m_airportIcao;
+            types::Coordinate                    m_reference;
+            std::list<types::Runway>             m_runways;
+            std::list<types::SectorBorder>       m_noTransgressionZones;
+            std::list<std::string>               m_ntzViolations;
+            std::list<types::Flight>             m_inbounds;
+            std::map<std::string, types::Length> m_conflicts;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
             void createNTZ(const std::pair<std::string, std::string>& runwayPair);
@@ -54,6 +57,9 @@ namespace topskytower {
              * @param[in] callsign The flight's callsign
              */
             void removeFlight(const std::string& callsign);
+            bool ntzViolation(const types::Flight& flight) const;
+            bool separationLoss(const types::Flight& flight) const;
+            const types::Length& minSeparation(const types::Flight& flight);
             /**
              * @brief Returns all defined NTZs
              * @return The NTZs
