@@ -67,6 +67,9 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("UI_FontSize" == entry[0]) {
             config.fontSize = static_cast<float>(std::atof(entry[1].c_str()));
         }
+        else if ("UI_NTZColor" == entry[0]) {
+            SettingsFileFormat::parseColor(entry[1], config.uiNtzColor);
+        }
         else if ("SYS_TrackingOnGround" == entry[0]) {
             config.trackingOnGround = '0' != entry[1][0];
         }

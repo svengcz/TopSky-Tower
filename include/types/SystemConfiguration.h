@@ -23,6 +23,7 @@ namespace topskytower {
             std::uint8_t        uiForegroundColor[3];                  /**< Defines the foreground color of the UI elements */
             std::uint8_t        uiBackgroundActiveColor[3];            /**< Defines the background color of active UI elements */
             std::uint8_t        uiForegroundActiveColor[3];            /**< Defines the foreground color of active UI elements */
+            std::uint8_t        uiNtzColor[3];                         /**< Defines the NTZ color */
             std::string         fontFamily;                            /**< Defines the font family of the visualizations */
             float               fontSize;                              /**< Defines the font size of the visualizations */
             bool                trackingOnGround;                      /**< Defines if the ground controllers track flights */
@@ -58,6 +59,7 @@ namespace topskytower {
                     uiForegroundColor{ 150, 150, 150, },
                     uiBackgroundActiveColor{ 0, 150, 0 },
                     uiForegroundActiveColor{ 100, 100, 100 },
+                    uiNtzColor{ 200, 0, 0 },
                     fontFamily(),
                     fontSize(3.2f),
                     trackingOnGround(false),
