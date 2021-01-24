@@ -544,12 +544,16 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
         itemString[0] = '\0';
 
-        if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
-            std::strcat(itemString, "RIW ");
+        if (true == flightScreen->stcdControl().ntzViolation(flight))
+            std::strcat(itemString, "NTZ");
+        else if (true == flightScreen->stcdControl().separationLoss(flight))
+            std::strcat(itemString, "STC");
+        else if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
+            std::strcat(itemString, "RIW");
         else if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight))
-            std::strcat(itemString, "CMA ");
+            std::strcat(itemString, "CMA");
         else if (true == flightScreen->mtcdControl().conflictsExist(flight))
-            std::strcat(itemString, "MTC ");
+            std::strcat(itemString, "MTC");
 
         break;
     default:

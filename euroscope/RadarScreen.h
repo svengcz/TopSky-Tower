@@ -186,6 +186,11 @@ namespace topskytower {
              */
             surveillance::MTCDControl& mtcdControl() const;
             /**
+             * @brief Returns the STCD control
+             * @return The STCD control
+             */
+            surveillance::STCDControl& stcdControl() const;
+            /**
              * @brief Registers an Euroscope GUI event to trigger the function call during the next rendering step
              * @param[in] entry The new GUI event
              */

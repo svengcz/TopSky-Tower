@@ -551,6 +551,10 @@ surveillance::MTCDControl& RadarScreen::mtcdControl() const {
     return *this->m_mtcdControl;
 }
 
+surveillance::STCDControl& RadarScreen::stcdControl() const {
+    return *this->m_stcdControl;
+}
+
 void RadarScreen::registerEuroscopeEvent(RadarScreen::EuroscopeEvent&& entry) {
     std::lock_guard guard(this->m_guiEuroscopeEventsLock);
     this->m_guiEuroscopeEvents.push_back(std::move(entry));
