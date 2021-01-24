@@ -706,60 +706,60 @@ std::string PlugIn::flightPlanCheckResultLog(const std::list<surveillance::Fligh
 
 void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
                                 RadarScreen* screen, const types::Flight& flight, bool arrival) {
-    std::uint8_t mask;
+    std::uint16_t mask;
 
     if (false == arrival) {
-        mask = static_cast<std::uint8_t>(flight.flightPlan().arrivalFlag());
+        mask = static_cast<std::uint16_t>(flight.flightPlan().arrivalFlag());
 
         if ("ST-UP" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::StartUp);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::StartUp);
             target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("ST-UP");
         }
         else if ("PUSH" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Pushback);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Pushback);
             target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("PUSH");
         }
         else if ("TAXI" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::TaxiOut);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::TaxiOut);
             target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("TAXI");
         }
         else if ("DEICE" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Deicing);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Deicing);
         }
         else if ("LI-UP" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::LineUp);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::LineUp);
         }
         else if ("DEPA" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Departure);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Departure);
             target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("DEPA");
         }
     }
     else {
-        mask = static_cast<std::uint8_t>(flight.flightPlan().departureFlag());
+        mask = static_cast<std::uint16_t>(flight.flightPlan().departureFlag());
 
         if ("APPR" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Approach);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Approach);
             if (true == flight.onMissedApproach())
                 PlugIn::updateManuallyAlerts(target, "MISAP_");
         }
         else if ("LAND" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Land);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Land);
             if (true == flight.onMissedApproach())
                 PlugIn::updateManuallyAlerts(target, "MISAP_");
         }
         else if ("TAXI" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::TaxiIn);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::TaxiIn);
             if (true == flight.onMissedApproach())
                 PlugIn::updateManuallyAlerts(target, "MISAP_");
         }
         else if ("GO-AR" == view) {
-            mask |= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::GoAround);
+            mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::GoAround);
             if (false == flight.onMissedApproach())
                 PlugIn::updateManuallyAlerts(target, "MISAP_");
         }
     }
 
-    std::string annotation = "c/" + std::to_string(mask) + "/c";
+    std::string annotation = std::to_string(mask);
     this->updateFlightStrip(target, screen, static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), annotation, true);
 }
 

@@ -33,23 +33,23 @@ namespace topskytower {
              * @brief Defines the different ATC command flags
              */
             enum class AtcCommand {
-                Unknown   = 0x00, /**< No or an unknown command given */
-                StartUp   = 0x01, /**< The flight received the start-up clearance */
-                Deicing   = 0x02, /**< The flight performs deicing */
-                Pushback  = 0x03, /**< The flight performs a pushback */
-                TaxiOut   = 0x04, /**< The flight is taxiing as a departure */
-                LineUp    = 0x05, /**< The flight is lining up */
-                Departure = 0x06, /**< The flight is departing */
-                Approach  = 0x10, /**< The flight is approaching */
-                Land      = 0x20, /**< The flight is landing */
-                GoAround  = 0x30, /**< The flight is going around */
-                TaxiIn    = 0x40, /**< The flight is taxiing as an arrival */
+                Unknown   = 0x000, /**< No or an unknown command given */
+                StartUp   = 0x001, /**< The flight received the start-up clearance */
+                Deicing   = 0x002, /**< The flight performs deicing */
+                Pushback  = 0x004, /**< The flight performs a pushback */
+                TaxiOut   = 0x008, /**< The flight is taxiing as a departure */
+                LineUp    = 0x010, /**< The flight is lining up */
+                Departure = 0x020, /**< The flight is departing */
+                Approach  = 0x100, /**< The flight is approaching */
+                Land      = 0x200, /**< The flight is landing */
+                GoAround  = 0x400, /**< The flight is going around */
+                TaxiIn    = 0x800, /**< The flight is taxiing as an arrival */
             };
 
         private:
             Type            m_type;
             types::Aircraft m_aircraft;
-            std::uint8_t    m_atcCommand;
+            std::uint16_t   m_atcCommand;
             std::string     m_origin;
             std::string     m_departureRoute;
             std::string     m_departureRunway;

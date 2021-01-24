@@ -149,24 +149,24 @@ const std::string& FlightPlan::arrivalRunway() const {
 }
 
 void FlightPlan::setFlag(FlightPlan::AtcCommand command) {
-    std::uint8_t mask = static_cast<std::uint8_t>(command);
+    std::uint16_t mask = static_cast<std::uint16_t>(command);
 
     /* arrival-command given */
-    if (0 != (mask & 0xf0)) {
-        this->m_atcCommand &= 0x0f;
+    if (0 != (mask & 0xf00)) {
+        this->m_atcCommand &= 0x0ff;
         this->m_atcCommand |= mask;
     }
     /* departure-command given */
     else {
-        this->m_atcCommand &= 0xf0;
+        this->m_atcCommand &= 0xf00;
         this->m_atcCommand |= mask;
     }
 }
 
 FlightPlan::AtcCommand FlightPlan::departureFlag() const {
-    return static_cast<FlightPlan::AtcCommand>(this->m_atcCommand & 0x0f);
+    return static_cast<FlightPlan::AtcCommand>(this->m_atcCommand & 0x0ff);
 }
 
 FlightPlan::AtcCommand FlightPlan::arrivalFlag() const {
-    return static_cast<FlightPlan::AtcCommand>(this->m_atcCommand & 0xf0);
+    return static_cast<FlightPlan::AtcCommand>(this->m_atcCommand & 0xf00);
 }

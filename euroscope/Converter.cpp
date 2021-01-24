@@ -176,21 +176,18 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     /* get the ground status and check if this or an other TopSky-Tower set something */
     __convertEuroScopeAtcStatus(plan.GetGroundState(), retval);
     std::string annotation(plan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand)));
-    auto split = helper::String::splitString(annotation, "/");
-    if (3 == split.size() && 'c' == split[0][0] && 'c' == split[2][0]) {
-        int mask = std::atoi(split[1].c_str());
-        std::uint8_t departure = static_cast<std::uint8_t>(mask & 0x0f);
-        std::uint8_t arrival = static_cast<std::uint8_t>(mask & 0xf0);
+    int mask = std::atoi(annotation.c_str());
+    std::uint16_t departure = static_cast<std::uint16_t>(mask & 0x0ff);
+    std::uint16_t arrival = static_cast<std::uint16_t>(mask & 0xf00);
 
-        /* validate the values to avoid buffer overruns */
-        if (departure <= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::Departure) &&
-            arrival <= static_cast<std::uint8_t>(types::FlightPlan::AtcCommand::TaxiIn))
-        {
-            if (0 != departure && static_cast<int>(departure) >= static_cast<int>(retval.departureFlag()))
-                retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
-            if (0 != arrival)
-                retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
-        }
+    /* validate the values to avoid buffer overruns */
+    if (departure <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Departure) &&
+        arrival <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::TaxiIn))
+    {
+        if (0 != departure && static_cast<std::uint16_t>(departure) >= static_cast<std::uint16_t>(retval.departureFlag()))
+            retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
+        if (0 != arrival)
+            retval.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
     }
 
     /* convert the route */
