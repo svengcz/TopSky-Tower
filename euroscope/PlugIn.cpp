@@ -184,7 +184,7 @@ bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char 
     bool inserted = false;
 
     if (true == flight.onMissedApproach()) {
-        localOffset += 9;
+        localOffset += 5;
         if (localIdx == idx) {
             std::strcat(itemString, "M/A ");
             inserted = true;
@@ -859,7 +859,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::AircraftControlSignal:
         if (false == flight.isTrackedByOther()) {
-            if (0 == std::strncmp(itemString, "M/A", 7))
+            if (0 == std::strncmp(itemString, "M/A", 3))
                 PlugIn::updateManuallyAlerts(radarTarget, "MISAP_");
             else if (0 == std::strncmp(itemString, "Irreg", 5))
                 PlugIn::updateManuallyAlerts(radarTarget, "IRREG_");
