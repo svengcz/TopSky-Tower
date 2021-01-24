@@ -239,3 +239,13 @@ const std::list<types::Sector>& EseFileFormat::sectors() const {
 const std::list<types::SectorBorder>& EseFileFormat::sectorBorders() const {
     return this->m_sectorBorders;
 }
+
+const std::list<types::Runway>& EseFileFormat::runways(const std::string& airport) const {
+    static std::list<types::Runway> __fallback;
+    auto it = this->m_runways.find(airport);
+
+    if (this->m_runways.cend() != it)
+        return it->second;
+    else
+        return __fallback;
+}

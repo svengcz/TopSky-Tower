@@ -50,6 +50,12 @@ namespace topskytower {
              * @return The sector borders
              */
             const std::list<types::SectorBorder>& sectorBorders() const;
+            /**
+             * @brief Returns the runways of a specific airport
+             * @param[in] airport The airport's ICAO code
+             * @return The runways of the airport
+             */
+            const std::list<types::Runway>& runways(const std::string& airport) const;
         };
     }
 }
