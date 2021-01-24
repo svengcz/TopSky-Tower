@@ -38,7 +38,9 @@ RadarScreen::RadarScreen() :
         m_surveillanceVisualizationsLock(),
         m_surveillanceVisualizations(),
         m_departureRouteVisualizationsLock(),
-        m_departureRouteVisualizations() { }
+        m_departureRouteVisualizations(),
+        m_standOnScreenSelection(false),
+        m_standOnScreenSelectionCallsign() { }
 
 RadarScreen::~RadarScreen() {
     if (nullptr != this->m_ariwsControl)
@@ -76,12 +78,28 @@ void RadarScreen::OnAsrContentToBeClosed() {
 void RadarScreen::OnClickScreenObject(int objectType, const char* objectId, POINT pt, RECT area, int button) {
     (void)area;
 
-    /* forward to UI manager */
-    if (RadarScreen::ClickId::UserWindow == static_cast<RadarScreen::ClickId>(objectType)) {
-        /* get the click point */
+    switch (static_cast<RadarScreen::ClickId>(objectType)) {
+    case RadarScreen::ClickId::UserWindow:
+    {
+        /* get the click point and forward it to the UI manager */
         Gdiplus::PointF point(static_cast<Gdiplus::REAL>(pt.x), static_cast<Gdiplus::REAL>(pt.y));
-
         this->m_userInterface.click(objectId, point, static_cast<UiManager::MouseButton>(button));
+        break;
+    }
+    case RadarScreen::ClickId::StandSelect:
+        if (UiManager::MouseButton::Left == static_cast<UiManager::MouseButton>(button)) {
+            EuroscopeEvent esEvent = {
+                static_cast<int>(PlugIn::TagItemFunction::StandControlManualSelect),
+                this->m_standOnScreenSelectionCallsign,
+                objectId,
+                pt,
+                area
+            };
+            this->registerEuroscopeEvent(std::move(esEvent));
+        }
+        break;
+    default:
+        break;
     }
 
     /* reset UI elements, if needed */
@@ -480,6 +498,39 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     std::string_view positionId(plugin->ControllerMyself().GetPositionId());
     if (0 != positionId.length() && "XX" != positionId)
         this->m_sectorControl->setOwnSector(Converter::convert(plugin->ControllerMyself()));
+
+    /* add the UI elements for the ground menu */
+    if (nullptr != this->m_standControl && true == this->m_standOnScreenSelection) {
+        auto stands = this->m_standControl->allStands();
+        auto radarArea = this->GetRadarArea();
+        Gdiplus::Color color(
+            system::ConfigurationRegistry::instance().systemConfiguration().uiScreenClickColor[0],
+            system::ConfigurationRegistry::instance().systemConfiguration().uiScreenClickColor[1],
+            system::ConfigurationRegistry::instance().systemConfiguration().uiScreenClickColor[2]
+        );
+        Gdiplus::Pen pen(color, 1.0f);
+
+        for (const auto& stand : std::as_const(stands)) {
+            /* ignore occupied stands */
+            if (true == stand.second)
+                continue;
+
+            const auto& standData = this->m_standControl->stand(stand.first);
+            const auto pixelPos = this->convertCoordinate(standData.position);
+
+            /* the stand is inside the radar area */
+            if (pixelPos.X >= radarArea.left && pixelPos.X < radarArea.right && pixelPos.Y >= radarArea.top && pixelPos.Y < radarArea.bottom) {
+                RECT rect = {
+                    static_cast<int>(pixelPos.X) - 5, static_cast<int>(pixelPos.Y) - 5,
+                    static_cast<int>(pixelPos.X) + 5, static_cast<int>(pixelPos.Y) + 5
+                };
+                this->AddScreenObject(static_cast<int>(RadarScreen::ClickId::StandSelect), standData.name.c_str(), rect, false, "");
+
+                Gdiplus::Rect gdiRect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+                graphics.DrawEllipse(&pen, gdiRect);
+            }
+        }
+    }
 }
 
 management::SectorControl& RadarScreen::sectorControl() {
@@ -620,4 +671,9 @@ std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::strin
     }
 
     return std::move(retval);
+}
+
+void RadarScreen::activateStandOnScreenSelection(bool activate, const std::string& callsign) {
+    this->m_standOnScreenSelection = activate;
+    this->m_standOnScreenSelectionCallsign = callsign;
 }

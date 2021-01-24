@@ -793,6 +793,8 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     /* nothing to do */
     if (nullptr == flightScreen)
         return;
+    /* disable the screen selection */
+    flightScreen->activateStandOnScreenSelection(false, flight.callsign());
 
     switch (static_cast<PlugIn::TagItemFunction>(functionId)) {
     case PlugIn::TagItemFunction::AircraftControlMenuBar:
@@ -909,7 +911,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         if (true == flightScreen->sectorControl().handoffRequired(flight) || true == flightScreen->sectorControl().handoffPossible(flight)) {
             RadarScreen::EuroscopeEvent eventEntry = {
                 static_cast<int>(PlugIn::TagItemFunction::HandoffSectorChange),
-                callsign,
+                flight.callsign(),
                 "",
                 pt,
                 area
@@ -1072,6 +1074,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             this->AddPopupListElement("Publish", "", static_cast<int>(PlugIn::TagItemFunction::StandControlPublish),
                                       false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, stand == strip, false);
             this->AddPopupListElement("Automatic", "", static_cast<int>(PlugIn::TagItemFunction::StandControlAutomatic));
+            this->AddPopupListElement("Screen select", "", static_cast<int>(PlugIn::TagItemFunction::StandControlScreenSelect));
             this->AddPopupListElement("Manual", "", static_cast<int>(PlugIn::TagItemFunction::StandControlManualEvent));
         }
         break;
@@ -1134,6 +1137,9 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             this->AddPopupListElement("LI-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
             this->AddPopupListElement("DEPA", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
         }
+        break;
+    case PlugIn::TagItemFunction::StandControlScreenSelect:
+        flightScreen->activateStandOnScreenSelection(true, flight.callsign());
         break;
     case PlugIn::TagItemFunction::DepartureGroundStatusSelect:
         this->updateGroundStatus(radarTarget, itemString, flightScreen, flight, false);

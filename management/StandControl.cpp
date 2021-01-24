@@ -351,6 +351,17 @@ std::string StandControl::stand(const types::Flight& flight) const {
         return "";
 }
 
+const types::Stand& StandControl::stand(const std::string& name) const {
+    static types::Stand __fallback;
+
+    for (const auto& stand : std::as_const(this->m_standTree.stands)) {
+        if (name == stand.second.name)
+            return stand.second;
+    }
+
+    return __fallback;
+}
+
 std::list<std::pair<std::string, bool>> StandControl::allStands() const {
     std::list<std::pair<std::string, bool>> retval;
 

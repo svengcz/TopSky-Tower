@@ -109,6 +109,12 @@ namespace topskytower {
              */
             std::string stand(const types::Flight& flight) const;
             /**
+             * @brief Returns the stand structure of a requested stand
+             * @param[in] name The stand's name
+             * @return The stand structure
+             */
+            const types::Stand& stand(const std::string& name) const;
+            /**
              * @brief Returns a list of all stand with a flag that indicates if the stand is occupied or not
              * @return The list of all stands with the occupation state
              */

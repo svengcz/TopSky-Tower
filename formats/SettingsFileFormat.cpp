@@ -61,6 +61,9 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("UI_ForegroundActiveColor" == entry[0]) {
             SettingsFileFormat::parseColor(entry[1], config.uiForegroundActiveColor);
         }
+        else if ("UI_ScreenClickColor" == entry[0]) {
+            SettingsFileFormat::parseColor(entry[1], config.uiScreenClickColor);
+        }
         else if ("UI_FontFamily" == entry[0]) {
             config.fontFamily = entry[1];
         }
