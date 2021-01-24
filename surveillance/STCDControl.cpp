@@ -48,7 +48,6 @@ void STCDControl::createNTZ(const std::pair<std::string, std::string>& runwayPai
     /* calculate the heading between both runways */
     auto ntzHeading = (rwy[0].end().bearingTo(rwy[0].start()) + rwy[1].end().bearingTo(rwy[1].start())) * 0.5f;
 
-    //GeographicLib::Gnomonic projection(GeographicLib::Geodesic::WGS84());
     GeographicLib::LocalCartesian projection(this->m_reference.latitude().convert(types::degree),
                                              this->m_reference.longitude().convert(types::degree));
 
