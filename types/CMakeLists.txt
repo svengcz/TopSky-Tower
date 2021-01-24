@@ -16,6 +16,7 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/types/Quantity.hpp
     ${CMAKE_SOURCE_DIR}/include/types/Route.h
     ${CMAKE_SOURCE_DIR}/include/types/RuntimeConfiguration.h
+    ${CMAKE_SOURCE_DIR}/include/types/Runway.h
     ${CMAKE_SOURCE_DIR}/include/types/Sector.h
     ${CMAKE_SOURCE_DIR}/include/types/SectorBorder.h
     ${CMAKE_SOURCE_DIR}/include/types/SystemConfiguration.h
@@ -29,6 +30,7 @@ SET(SOURCE_FILES
     FlightPlan.cpp
     Position.cpp
     Route.cpp
+    Runway.cpp
     Sector.cpp
     SectorBorder.cpp
     Waypoint.cpp
