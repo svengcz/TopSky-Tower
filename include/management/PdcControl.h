@@ -179,7 +179,7 @@ namespace topskytower {
             void receiveMessages();
             void sendMessage(std::string& message);
             static bool translateToCpdlc(const Message& message, CpdlcMessage& cpdlcMsg);
-            void handleMessage(Message& message);
+            bool handleMessage(Message& message);
             bool prepareCpdlc(std::string& url, const MessagePtr& message);
             bool prepareTelex(std::string& url, const MessagePtr& message);
             static CpdlcMessagePtr prepareClearance(const ClearanceMessagePtr& message);

@@ -186,7 +186,7 @@ bool PdcControl::translateToCpdlc(const PdcControl::Message& message, PdcControl
     return 6 <= split.size();
 }
 
-void PdcControl::handleMessage(PdcControl::Message& message) {
+bool PdcControl::handleMessage(PdcControl::Message& message) {
     auto& channel = this->m_comChannels[message.sender];
 
     /* register the simple telex message */
@@ -198,7 +198,7 @@ void PdcControl::handleMessage(PdcControl::Message& message) {
     else if (PdcControl::MessageType::CPDLC == message.type) {
         PdcControl::CpdlcMessage cpdlcMsg;
         if (false == PdcControl::translateToCpdlc(message, cpdlcMsg))
-            return;
+            return false;
 
         /* received a logon message -> reject it */
         if (std::string::npos != cpdlcMsg.message.find("LOGON")) {
@@ -215,7 +215,7 @@ void PdcControl::handleMessage(PdcControl::Message& message) {
 
             rejectMsg.message = "UNABLE";
             channel.enqueue(std::make_shared<PdcControl::CpdlcMessage>(rejectMsg), false);
-            return;
+            return false;
         }
         /* check if we received an answer */
         else if (true == channel.answerRequested() && cpdlcMsg.repliedToMessageId == channel.expectedAnswerId) {
@@ -231,6 +231,8 @@ void PdcControl::handleMessage(PdcControl::Message& message) {
         /* enqueue the message */
         channel.enqueue(std::make_shared<PdcControl::CpdlcMessage>(cpdlcMsg), true);
     }
+
+    return true;
 }
 
 void PdcControl::receiveMessages() {
@@ -301,9 +303,9 @@ void PdcControl::receiveMessages() {
             }
 
             this->m_comChannelsLock.lock();
-            this->handleMessage(pdcMsg);
+            if (true == this->handleMessage(pdcMsg))
+                messagesReceived = true;
             this->m_comChannelsLock.unlock();
-            messagesReceived = true;
         }
     }
 
