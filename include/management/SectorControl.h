@@ -194,11 +194,6 @@ namespace topskytower {
              * @return True if it is in the sector tree, else false
              */
             bool isInSector(const types::Flight& flight) const;
-            /**
-             * @brief Returns all logged in controllers that are also logged in as observers
-             * @return The controller list
-             */
-            std::list<types::ControllerInfo> findAllRelatedControllers() const;
 #endif
         };
     }

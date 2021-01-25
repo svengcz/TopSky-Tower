@@ -828,7 +828,7 @@ std::list<types::ControllerInfo> SectorControl::findOnlineControllers(const std:
     std::list<types::ControllerInfo> retval;
 
     for (const auto& child : std::as_const(node->children)) {
-        auto children = findOnlineControllers(child);
+        auto children = this->findOnlineControllers(child);
 
         for (const auto& elem : std::as_const(children)) {
             auto it = std::find(retval.cbegin(), retval.cend(), elem);
@@ -844,8 +844,4 @@ std::list<types::ControllerInfo> SectorControl::findOnlineControllers(const std:
     }
 
     return retval;
-}
-
-std::list<types::ControllerInfo> SectorControl::findAllRelatedControllers() const {
-    return this->findOnlineControllers(this->m_rootNode);
 }
