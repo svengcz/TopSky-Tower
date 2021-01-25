@@ -157,8 +157,8 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
         this->m_cmacControl->updateFlight(flight);
     if (nullptr != this->m_mtcdControl)
         this->m_mtcdControl->updateFlight(flight);
-    //if (nullptr != this->m_stcdControl)
-    //    this->m_stcdControl->updateFlight(flight);
+    if (nullptr != this->m_stcdControl)
+        this->m_stcdControl->updateFlight(flight);
 }
 
 void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) {
@@ -198,8 +198,8 @@ void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan
         this->m_cmacControl->removeFlight(flightPlan.GetCallsign());
     if (nullptr != this->m_mtcdControl)
         this->m_mtcdControl->removeFlight(flightPlan.GetCallsign());
-    //if (nullptr != this->m_stcdControl)
-    //    this->m_stcdControl->removeFlight(flightPlan.GetCallsign());
+    if (nullptr != this->m_stcdControl)
+        this->m_stcdControl->removeFlight(flightPlan.GetCallsign());
 
     surveillance::FlightPlanControl::instance().removeFlight(flightPlan.GetCallsign());
 }
