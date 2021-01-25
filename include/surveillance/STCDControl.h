@@ -19,6 +19,26 @@ namespace topskytower {
         /**
          * @brief Describes a Short Term Conflict Detection
          * @ingroup surveillance
+         *
+         * The STCD module monitors all inbounds.
+         * It uses the IPA or PRM-configuration of every airport to adapt the criteria of the separation evaluation.
+         *
+         * If the controller activates the IPA mode, the component calculates the NTZ, if the runways are allowed for
+         * independent parallel approach.
+         *
+         * The system checks for every flight if it violates a NTZ or if the minimum required distance between two aircrafts is fulfilled.
+         *
+         * If an aircraft violates the NTZ, the system indicates it in the surveillance alert tag-entry via a "NTZ" message and the flag
+         * is never removed until the aircraft is marked for a go-around.
+         *
+         * To estimate the separation minimums, the system finds the nearest aircraft that flies in front of the current one
+         * and estimates the required minimum distance.
+         * - In a very beginning is it checked, if the IPA is active or not.
+         *   - If IPA is active does it define the minimum distance based on the WTCs of the preceding and following traffic,
+         *     if both aircrafts are approaching the same runway
+         *   - if IPA is inactive does it checks if both aircrafts are approaching different runways
+         *      - If yes, a 3nm spacing is defined as the minimum
+         *      - If no, it calculates the required spacing based on the WTCs of both flights
          */
         class STCDControl {
         private:
