@@ -70,7 +70,7 @@ namespace topskytower {
             static void copyStandData(const types::Stand& config, StandData& block);
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
             void markStandAsOccupied(std::map<std::string, StandData>::iterator& iter, const types::Flight& flight);
-            std::list<std::string> findAvailableAndUsableStands(const types::Flight& flight) const;
+            std::list<std::string> findAvailableAndUsableStands(const types::Flight& flight, bool ignoreManualFlag) const;
             bool findOptimalStand(const types::Flight& flight, const std::list<std::string>& availableStands);
             bool assignStand(const types::Flight& flight, const std::list<types::StandPriorities>& priorities,
                              const std::list<std::string>& availableStands);
@@ -115,6 +115,12 @@ namespace topskytower {
              * @return The stand structure
              */
             const types::Stand& stand(const std::string& name) const;
+            /**
+             * @brief Returns all possible stands of the flight
+             * @param[in] flight The requested flight
+             * @return The list of all possible and available stands
+             */
+            std::list<std::string> allPossibleAndAvailableStands(const types::Flight& flight) const;
             /**
              * @brief Returns a list of all stand with a flag that indicates if the stand is occupied or not
              * @return The list of all stands with the occupation state

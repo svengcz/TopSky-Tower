@@ -550,7 +550,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
 
     /* add the UI elements for the ground menu */
     if (nullptr != this->m_standControl && true == this->m_standOnScreenSelection) {
-        auto stands = this->m_standControl->allStands();
+        auto stands = this->m_standControl->allPossibleAndAvailableStands(this->m_flightRegistry->flight(this->m_standOnScreenSelectionCallsign));
         auto radarArea = this->GetRadarArea();
         Gdiplus::Color color(
             system::ConfigurationRegistry::instance().systemConfiguration().uiScreenClickColor[0],
@@ -560,11 +560,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
         Gdiplus::Pen pen(color, 1.0f);
 
         for (const auto& stand : std::as_const(stands)) {
-            /* ignore occupied stands */
-            if (true == stand.second)
-                continue;
-
-            const auto& standData = this->m_standControl->stand(stand.first);
+            const auto& standData = this->m_standControl->stand(stand);
             const auto pixelPos = this->convertCoordinate(standData.position);
 
             /* the stand is inside the radar area */

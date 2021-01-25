@@ -1069,12 +1069,10 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     }
     case PlugIn::TagItemFunction::StandControlManual:
     {
-        auto stands = flightScreen->standControl().allStands();
+        auto stands = flightScreen->standControl().allPossibleAndAvailableStands(flight);
         this->OpenPopupList(area, "Stands", 1);
-        for (const auto& stand : std::as_const(stands)) {
-            this->AddPopupListElement(stand.first.c_str(), "", static_cast<int>(PlugIn::TagItemFunction::StandControlManualSelect),
-                                      false, EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == stand.second, false);
-        }
+        for (const auto& stand : std::as_const(stands))
+            this->AddPopupListElement(stand.c_str(), "", static_cast<int>(PlugIn::TagItemFunction::StandControlManualSelect));
         break;
     }
     case PlugIn::TagItemFunction::StandControlManualSelect:

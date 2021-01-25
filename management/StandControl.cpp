@@ -126,13 +126,13 @@ static __inline bool __outOfRange(const types::Length borders[2], const types::L
         return false;
 }
 
-std::list<std::string> StandControl::findAvailableAndUsableStands(const types::Flight& flight) const {
+std::list<std::string> StandControl::findAvailableAndUsableStands(const types::Flight& flight, bool ignoreManualFlag) const {
     std::list<std::string> retval;
 
     /* test all stands */
     for (const auto& stand : std::as_const(this->m_standTree.stands)) {
         /* ingore the stand for the automatic assignment */
-        if (true == stand.second.manualAssignment)
+        if (false == ignoreManualFlag && true == stand.second.manualAssignment)
             continue;
 
         /* stand is occupied */
@@ -289,7 +289,7 @@ void StandControl::updateFlight(const types::Flight& flight) {
         if (this->m_aircraftStandRelation.cend() != it)
             return;
 
-        auto availableStands = this->findAvailableAndUsableStands(flight);
+        auto availableStands = this->findAvailableAndUsableStands(flight, false);
 
         std::string airlineIcao;
         if (3 < flight.callsign().length())
@@ -381,6 +381,13 @@ const types::Stand& StandControl::stand(const std::string& name) const {
     }
 
     return __fallback;
+}
+
+std::list<std::string> StandControl::allPossibleAndAvailableStands(const types::Flight& flight) const {
+    auto retval = this->findAvailableAndUsableStands(flight, true);
+    if (0 != this->m_gatPosition.name.length())
+        retval.push_front(this->m_gatPosition.name);
+    return retval;
 }
 
 std::list<std::pair<std::string, bool>> StandControl::allStands() const {
