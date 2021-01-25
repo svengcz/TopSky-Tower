@@ -228,7 +228,7 @@ void STCDControl::updateFlight(const types::Flight& flight) {
 
     /* flight violated NTZ -> has to go around */
     auto ntzViolationIt = std::find(this->m_ntzViolations.cbegin(), this->m_ntzViolations.cend(), flight.callsign());
-    if (this->m_ntzViolations.cend() == ntzViolationIt)
+    if (this->m_ntzViolations.cend() != ntzViolationIt)
         return;
 
     /* test if a flight is in the NTZ */
@@ -287,6 +287,8 @@ void STCDControl::updateFlight(const types::Flight& flight) {
     /* check the distance with the minDistance with minRequiredDistance */
     if (minDistance < minRequiredDistance)
         this->m_conflicts[flight.callsign()] = minRequiredDistance;
+
+    this->m_inbounds.push_back(flight);
 }
 
 void STCDControl::removeFlight(const std::string& callsign) {
