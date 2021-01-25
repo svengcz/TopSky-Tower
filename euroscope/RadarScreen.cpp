@@ -544,6 +544,10 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     if (0 != positionId.length() && "XX" != positionId)
         this->m_sectorControl->setOwnSector(Converter::convert(plugin->ControllerMyself()));
 
+    /* update all states of the flights */
+    for (auto rt = plugin->RadarTargetSelectFirst(); true == rt.IsValid(); rt = plugin->RadarTargetSelectNext(rt))
+        this->m_flightRegistry->updateFlight(Converter::convert(rt, *this));
+
     /* add the UI elements for the ground menu */
     if (nullptr != this->m_standControl && true == this->m_standOnScreenSelection) {
         auto stands = this->m_standControl->allStands();
