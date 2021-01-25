@@ -197,6 +197,9 @@ static __inline void __normalizeAngle(types::Angle& angle) {
 }
 
 void STCDControl::updateFlight(const types::Flight& flight) {
+    if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().stcdActive)
+        return;
+
     /* we evaluate only the arrivals anf IFRs */
     if (types::Flight::Type::Arrival != flight.type() || types::FlightPlan::Type::IFR != flight.flightPlan().type())
         return;
