@@ -246,6 +246,7 @@ void STCDControl::updateFlight(const types::Flight& flight) {
     types::Aircraft::WTC neighborWtc;
     types::Position neighborPosition;
     std::string neighborCallsign;
+    std::string neighborRunway;
     for (auto& inbound : std::as_const(this->m_inbounds)) {
         /* ignore neighboring flights */
         if (true == config.ipaActive && inbound.flightPlan().arrivalRunway() != flight.flightPlan().arrivalRunway())
@@ -264,13 +265,14 @@ void STCDControl::updateFlight(const types::Flight& flight) {
             neighborWtc = inbound.flightPlan().aircraft().wtc();
             neighborPosition = inbound.currentPosition();
             neighborCallsign = inbound.callsign();
+            neighborRunway = inbound.flightPlan().arrivalRunway();
             minDistance = distance;
         }
     }
 
     /* find the minimum required distance */
     types::Length minRequiredDistance;
-    if (true == config.ipaActive) {
+    if (true == config.ipaActive && neighborRunway != flight.flightPlan().arrivalRunway()) {
         minRequiredDistance = 3_nm;
     }
     else {
