@@ -65,6 +65,7 @@ namespace topskytower {
             std::map<std::string, std::string>                    m_aircraftStandRelation;
             types::Coordinate                                     m_centerPosition;
             std::map<std::string, types::AirlineStandAssignments> m_standPriorities;
+            types::Stand                                          m_gatPosition;
 
             static void copyStandData(const types::Stand& config, StandData& block);
             void reinitialize(system::ConfigurationRegistry::UpdateType type);

@@ -22,7 +22,8 @@ StandControl::StandControl(const std::string& airport, const types::Coordinate& 
         m_standTree(),
         m_standTreeAdaptor(nullptr),
         m_aircraftStandRelation(),
-        m_centerPosition(center) {
+        m_centerPosition(center),
+        m_gatPosition() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &StandControl::reinitialize);
 
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
@@ -76,6 +77,12 @@ void StandControl::reinitialize(system::ConfigurationRegistry::UpdateType type) 
     /* copy the stand data into the new structure and convert the coordinate to Cartesian coordinates */
     GeographicLib::Gnomonic projection(GeographicLib::Geodesic::WGS84());
     for (const auto& stand : std::as_const(config.aircraftStands)) {
+        /* the GAT is a special stand */
+        if ("GAT" == stand.name) {
+            this->m_gatPosition = stand;
+            continue;
+        }
+
         StandData data;
         StandControl::copyStandData(stand, data);
 
@@ -299,6 +306,10 @@ void StandControl::updateFlight(const types::Flight& flight) {
         /* assing based on list in a generic way */
         this->findOptimalStand(flight, availableStands);
     }
+    else if (types::FlightPlan::Type::VFR == flight.flightPlan().type() && types::Flight::Type::Arrival == flight.type()) {
+        if (0 != this->m_gatPosition.name.length())
+            this->m_aircraftStandRelation[flight.callsign()] = this->m_gatPosition.name;
+    }
 }
 
 void StandControl::removeFlight(const std::string& callsign) {
@@ -338,9 +349,14 @@ void StandControl::removeFlight(const std::string& callsign) {
 void StandControl::assignManually(const types::Flight& flight, const std::string& stand) {
     this->removeFlight(flight.callsign());
 
-    auto it = this->m_standTree.stands.find(stand);
-    if (this->m_standTree.stands.end() != it)
-        this->markStandAsOccupied(it, flight);
+    if (0 != this->m_gatPosition.name.length() && this->m_gatPosition.name == stand) {
+        this->m_aircraftStandRelation[flight.callsign()] = stand;
+    }
+    else {
+        auto it = this->m_standTree.stands.find(stand);
+        if (this->m_standTree.stands.end() != it)
+            this->markStandAsOccupied(it, flight);
+    }
 }
 
 std::string StandControl::stand(const types::Flight& flight) const {
@@ -354,9 +370,14 @@ std::string StandControl::stand(const types::Flight& flight) const {
 const types::Stand& StandControl::stand(const std::string& name) const {
     static types::Stand __fallback;
 
-    for (const auto& stand : std::as_const(this->m_standTree.stands)) {
-        if (name == stand.second.name)
-            return stand.second;
+    if ("GAT" == name && 0 != this->m_gatPosition.name.length()) {
+        return this->m_gatPosition;
+    }
+    else {
+        for (const auto& stand : std::as_const(this->m_standTree.stands)) {
+            if (name == stand.second.name)
+                return stand.second;
+        }
     }
 
     return __fallback;
@@ -364,6 +385,9 @@ const types::Stand& StandControl::stand(const std::string& name) const {
 
 std::list<std::pair<std::string, bool>> StandControl::allStands() const {
     std::list<std::pair<std::string, bool>> retval;
+
+    if (0 != this->m_gatPosition.name.length())
+        retval.push_back(std::make_pair(this->m_gatPosition.name, false));
 
     for (const auto& stand : std::as_const(this->m_standTree.stands))
         retval.push_back(std::make_pair(stand.first, 0 != stand.second.occupancyFlights.size()));
