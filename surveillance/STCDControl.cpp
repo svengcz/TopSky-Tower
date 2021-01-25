@@ -149,6 +149,10 @@ void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
 
     const auto& airportConfig = system::ConfigurationRegistry::instance().airportConfiguration(this->m_airportIcao);
 
+    /* no active arrival runways found configuration found */
+    if (configuration.activeArrivalRunways.cend() == configuration.activeArrivalRunways.find(this->m_airportIcao))
+        return;
+
     /* get the IPA and PRM pairs that are possible based on the static and runtime configuration */
     const auto& arrivalRunways = configuration.activeArrivalRunways.find(this->m_airportIcao)->second;
     for (auto it = arrivalRunways.cbegin(); arrivalRunways.cend() != it; ++it) {

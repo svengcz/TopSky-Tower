@@ -25,6 +25,10 @@ void IpaToolbarButton::clicked() {
     const auto& airportConfig = system::ConfigurationRegistry::instance().airportConfiguration(this->m_parent->airportIcao());
     configuration.ipaActive = false;
 
+    /* no active arrival runways found configuration found */
+    if (configuration.activeArrivalRunways.cend() == configuration.activeArrivalRunways.find(this->m_parent->airportIcao()))
+        return;
+
     const auto& arrivalRunways = configuration.activeArrivalRunways.find(this->m_parent->airportIcao())->second;
     bool ipaAvailable = false, prmAvailable = false;
     for (auto it = arrivalRunways.cbegin(); arrivalRunways.cend() != it; ++it) {
