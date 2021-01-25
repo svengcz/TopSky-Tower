@@ -272,7 +272,7 @@ void STCDControl::updateFlight(const types::Flight& flight) {
 
     /* find the minimum required distance */
     types::Length minRequiredDistance;
-    if (true == config.ipaActive && neighborRunway != flight.flightPlan().arrivalRunway()) {
+    if (neighborRunway != flight.flightPlan().arrivalRunway()) {
         minRequiredDistance = 3_nm;
     }
     else {
