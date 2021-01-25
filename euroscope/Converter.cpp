@@ -106,7 +106,7 @@ static __inline void __convertTopSkyTowerAtcPad(const std::string& entry, types:
     if (departure <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Departure) &&
         arrival <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::TaxiIn))
     {
-        if (0 != departure && static_cast<std::uint16_t>(departure) >= static_cast<std::uint16_t>(flightPlan.departureFlag()))
+        if (0 != departure)
             flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
         if (0 != arrival)
             flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
@@ -135,11 +135,44 @@ void Converter::convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, type
     std::string annotation(plan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand)));
     __convertTopSkyTowerAtcPad(annotation, flightPlan);
 
+    std::string scratchpad = plan.GetControllerAssignedData().GetScratchPadString();
+    bool updated = true;
+    std::size_t pos;
+
     /* check if the scratch pad contains a new message */
-    auto command = Converter::findScratchPadEntry(plan, "TST", "A");
-    if (0 != command.length()) {
-        __convertTopSkyTowerAtcPad(command, flightPlan);
-        plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), command.c_str());
+    if (std::string::npos != (pos = scratchpad.find("DE-ICE"))) {
+        flightPlan.setFlag(types::FlightPlan::AtcCommand::Deicing);
+        scratchpad.erase(pos, 6);
+    }
+    else if (std::string::npos != (pos = scratchpad.find("LINEUP"))) {
+        flightPlan.setFlag(types::FlightPlan::AtcCommand::LineUp);
+        scratchpad.erase(pos, 6);
+    }
+    else if (std::string::npos != (pos = scratchpad.find("APPROACH"))) {
+        flightPlan.setFlag(types::FlightPlan::AtcCommand::Approach);
+        scratchpad.erase(pos, 8);
+    }
+    else if (std::string::npos != (pos = scratchpad.find("LANDING"))) {
+        flightPlan.setFlag(types::FlightPlan::AtcCommand::Land);
+        scratchpad.erase(pos, 7);
+    }
+    else if (std::string::npos != (pos = scratchpad.find("TAXIIN"))) {
+        flightPlan.setFlag(types::FlightPlan::AtcCommand::TaxiIn);
+        scratchpad.erase(pos, 6);
+    }
+    else if (std::string::npos != (pos = scratchpad.find("GOAROUND"))) {
+        flightPlan.setFlag(types::FlightPlan::AtcCommand::GoAround);
+        scratchpad.erase(pos, 8);
+    }
+    else {
+        updated = false;
+    }
+
+    /* update the internal entries and the scratch pad */
+    if (true == updated) {
+        std::uint16_t mask = static_cast<std::uint16_t>(flightPlan.departureFlag()) | static_cast<std::uint16_t>(flightPlan.arrivalFlag());
+        plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), std::to_string(mask).c_str());
+        plan.GetControllerAssignedData().SetScratchPadString(scratchpad.c_str());
     }
 }
 
