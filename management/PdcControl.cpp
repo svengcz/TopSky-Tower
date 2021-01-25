@@ -93,7 +93,8 @@ PdcControl::PdcControl() :
         m_hoppiesThread(&PdcControl::run, this),
         m_comChannelsLock(),
         m_comChannels(),
-        m_notification() {
+        m_notification(),
+        m_flightChecker() {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     this->m_cpdlcCounter = std::rand() % 10000 + 1789;
 }
@@ -187,6 +188,10 @@ bool PdcControl::translateToCpdlc(const PdcControl::Message& message, PdcControl
 }
 
 bool PdcControl::handleMessage(PdcControl::Message& message) {
+    /* ignore unknown flights */
+    if (nullptr != this->m_flightChecker && false == this->m_flightChecker(message.sender))
+        return false;
+
     auto& channel = this->m_comChannels[message.sender];
 
     /* register the simple telex message */

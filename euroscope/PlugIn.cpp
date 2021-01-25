@@ -104,6 +104,7 @@ PlugIn::PlugIn() :
         if (true == fs::is_regular_file(entry) && "TopSkyTower-Pdc.wav" == entry.path().filename().string()) {
             this->m_pdcNotificationSound = entry.path().string();
             management::PdcControl::instance().registerNotificationCallback(this, &PlugIn::pdcMessageReceived);
+            management::PdcControl::instance().registerFlightCheckCallback(this, &PlugIn::flightExists);
             break;
         }
     }
@@ -1149,6 +1150,15 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
 
 void PlugIn::pdcMessageReceived() {
     PlaySoundA(this->m_pdcNotificationSound.c_str(), NULL, SND_ASYNC);
+}
+
+bool PlugIn::flightExists(const std::string& callsign) const {
+    for (auto& screen : std::as_const(this->m_screens)) {
+        if (true == screen->isInitialized() && true == screen->flightRegistry().flightExists(callsign))
+            return true;
+    }
+
+    return false;
 }
 
 void PlugIn::removeRadarScreen(RadarScreen* screen) {
