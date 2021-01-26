@@ -74,6 +74,21 @@ namespace topskytower {
          *     <td>https://raw.githubusercontent.com/svengcz/Versioning/master/TopSky-Tower.txt</td><td></td>
          *   </tr>
          *   <tr>
+         *     <td>HTTP_NotamURL</td>
+         *     <td>Defines the URL to receive current NOTAMs. The %AIRPORT% marker must be defined for the airport</td>
+         *     <td>https://www.notams.faa.gov/PilotWeb/notamRetrievalByICAOAction.do?method=displayByICAOs&reportType=RAW&formatType=DOMESTIC&retrieveLocId=%AIRPORT%&actionType=notamRetrievalByICAOs</td><td></td>
+         *   </tr>
+         *   <tr>
+         *     <td>HTTP_NotamsMarkerStart</td>
+         *     <td>Defines the start marker of a NOTAM message</td>
+         *     <td>\<PRE\></td><td></td>
+         *   </tr>
+         *   <tr>
+         *     <td>HTTP_NotamsMarkerEnd</td>
+         *     <td>Defines the end marker of a NOTAM message</td>
+         *     <td>\</PRE\></td><td></td>
+         *   </tr>
+         *   <tr>
          *     <td>SYS_TrackingOnGround</td>
          *     <td>Defines if the ground tracks or not.</td>
          *     <td>1</td><td>Boolean</td>

@@ -79,6 +79,15 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("HTTP_VersionCheckURL" == entry[0]) {
             config.versionCheckUrl = entry[1];
         }
+        else if ("HTTP_NotamURL" == entry[0]) {
+            config.notamUrl = entry[1];
+        }
+        else if ("HTTP_NotamsMarkerStart" == entry[0]) {
+            config.notamMarkerStart = entry[1];
+        }
+        else if ("HTTP_NotamsMarkerEnd" == entry[0]) {
+            config.notamMarkerEnd = entry[1];
+        }
         else if ("SYS_TrackingOnGround" == entry[0]) {
             config.trackingOnGround = '0' != entry[1][0];
         }
