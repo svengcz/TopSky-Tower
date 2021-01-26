@@ -9,6 +9,7 @@
 
 #include <formats/AirportFileFormat.h>
 #include <formats/EseFileFormat.h>
+#include <management/NotamControl.h>
 #include <management/PdcControl.h>
 
 #include "ui/elements/Text.h"
@@ -65,6 +66,7 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
         auto value = this->GetDataFromAsr("Airport");
         if (nullptr != value) {
             this->m_airport = value;
+            management::NotamControl::instance().addAirport(this->m_airport);
 
             auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
             if (configuration.windInformation.cend() == configuration.windInformation.find(this->m_airport)) {
