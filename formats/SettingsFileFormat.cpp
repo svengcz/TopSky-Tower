@@ -73,6 +73,12 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("UI_NTZColor" == entry[0]) {
             SettingsFileFormat::parseColor(entry[1], config.uiNtzColor);
         }
+        else if ("HTTP_HoppiesURL" == entry[0]) {
+            config.hoppiesUrl = entry[1];
+        }
+        else if ("HTTP_VersionCheckURL" == entry[0]) {
+            config.versionCheckUrl = entry[1];
+        }
         else if ("SYS_TrackingOnGround" == entry[0]) {
             config.trackingOnGround = '0' != entry[1][0];
         }

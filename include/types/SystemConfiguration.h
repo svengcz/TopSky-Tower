@@ -25,6 +25,8 @@ namespace topskytower {
             std::uint8_t        uiForegroundActiveColor[3];            /**< Defines the foreground color of active UI elements */
             std::uint8_t        uiScreenClickColor[3];                 /**< Defines the color which is used for click events on the RADAR screen */
             std::uint8_t        uiNtzColor[3];                         /**< Defines the NTZ color */
+            std::string         hoppiesUrl;                            /**< Defines the Hoppies URL to enable PDC */
+            std::string         versionCheckUrl;                       /**< Deifnes the version check URL */
             std::string         fontFamily;                            /**< Defines the font family of the visualizations */
             float               fontSize;                              /**< Defines the font size of the visualizations */
             bool                trackingOnGround;                      /**< Defines if the ground controllers track flights */
@@ -62,6 +64,8 @@ namespace topskytower {
                     uiForegroundActiveColor{ 100, 100, 100 },
                     uiScreenClickColor{ 0, 0, 200 },
                     uiNtzColor{ 200, 0, 0 },
+                    hoppiesUrl("http://www.hoppie.nl/acars/system/connect.html?logon=%LOGON%&from=%SENDER%"),
+                    versionCheckUrl("https://raw.githubusercontent.com/svengcz/Versioning/master/TopSky-Tower.txt"),
                     fontFamily(),
                     fontSize(3.2f),
                     trackingOnGround(false),
