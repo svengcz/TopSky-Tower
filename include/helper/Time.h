@@ -65,13 +65,13 @@ namespace topskytower {
              * @param[in] time The timepoint which needs to be converted in UTC
              * @return The converted time
              */
-            static __inline std::string timeToString(const std::chrono::system_clock::time_point& time) {
-                char buf[11];
+            static __inline std::string timeToString(const std::chrono::system_clock::time_point& time, const std::string& format = "%y%m%d%H%M") {
+                char buf[100];
 
                 std::time_t value = std::chrono::system_clock::to_time_t(time);
                 std::tm local = *std::localtime(&value);
 
-                std::strftime(buf, 11, "%y%m%d%H%M", &local);
+                std::strftime(buf, 100, format.c_str(), &local);
 
                 return std::string(buf);
             }
