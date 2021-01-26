@@ -76,6 +76,13 @@ namespace topskytower {
              */
             void setTextColor(std::size_t rowIdx, std::size_t columnIdx, const Gdiplus::Color& color);
             /**
+             * @brief Returns the content of a cell
+             * @param[in] rowIdx The row index
+             * @param[in] columnIdx The column index
+             * @return The content of the cell
+             */
+            const std::string& entry(std::size_t rowIdx, std::size_t columnIdx) const;
+            /**
              * @brief Handles the click events
              * @param[in] pt The position of the mouse
              * @param[in] button The clicked mouse button

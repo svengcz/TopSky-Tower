@@ -72,6 +72,17 @@ void TableViewer::setTextColor(std::size_t rowIdx, std::size_t columnIdx, const 
     }
 }
 
+const std::string& TableViewer::entry(std::size_t rowIdx, std::size_t columnIdx) const {
+    if (rowIdx < this->m_rowContent.size() && columnIdx < this->m_header.size()) {
+        auto it = this->m_rowContent.cbegin();
+        std::advance(it, rowIdx);
+        return (*it)[columnIdx];
+    }
+
+    static std::string __fallback;
+    return __fallback;
+}
+
 bool TableViewer::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     if (UiManager::MouseButton::Left != button)
         return false;
