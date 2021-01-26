@@ -22,7 +22,11 @@ TableViewer::TableViewer(RadarScreen* parent, const std::vector<std::string>& he
         m_visibleRowOffset(0),
         m_scrollUp(),
         m_scrollDown(),
-        m_sliderRectangle() {
+        m_sliderRectangle(),
+        m_columnWidths(header.size(), 0.0f),
+        m_rowHeight(0.0f),
+        m_clickedRow(std::numeric_limits<std::size_t>::max()),
+        m_clickedColumn(std::numeric_limits<std::size_t>::max()) {
     this->m_header.reserve(header.size());
 
     for (std::size_t i = 0; i < header.size(); ++i) {
@@ -97,28 +101,65 @@ bool TableViewer::click(const Gdiplus::PointF& pt, UiManager::MouseButton button
     if (UiManager::MouseButton::Left != button)
         return false;
 
-    if (true == UiElement::isInRectangle(pt, this->m_scrollUp) && 0 != this->m_visibleRowOffset)
+    if (true == UiElement::isInRectangle(pt, this->m_scrollUp) && 0 != this->m_visibleRowOffset) {
         this->m_visibleRowOffset -= 1;
-    if (true == UiElement::isInRectangle(pt, this->m_scrollDown) && this->m_rows.size() > (this->m_visibleRowOffset + this->m_visibleRows))
+    }
+    if (true == UiElement::isInRectangle(pt, this->m_scrollDown) && this->m_rows.size() > (this->m_visibleRowOffset + this->m_visibleRows)) {
         this->m_visibleRowOffset += 1;
-    else
-        return UiElement::isInRectangle(pt, this->m_area);
+    }
+    else {
+        auto retval = UiElement::isInRectangle(pt, this->m_area);
+
+        if (true == retval) {
+            float xPos = pt.X - this->m_area.X;
+            float yPos = pt.Y - this->m_area.Y;
+
+            /* clicked on the header*/
+            if (yPos < this->m_rowHeight) {
+                this->m_clickedRow = this->m_clickedColumn = std::numeric_limits<std::size_t>::max();
+            }
+            else {
+                this->m_clickedRow = static_cast<std::size_t>((yPos - this->m_rowHeight) / this->m_rowHeight);
+                this->m_clickedRow += this->m_visibleRowOffset;
+
+                this->m_clickedColumn = 0;
+                for (const auto& width : std::as_const(this->m_columnWidths)) {
+                    if (xPos < width)
+                        break;
+
+                    this->m_clickedColumn += 1;
+                    xPos -= width;
+                }
+            }
+        }
+
+        return retval;
+    }
 
     return true;
 }
 
-float TableViewer::calculateRequiredArea(std::vector<float>& columnWidths, Gdiplus::Graphics* graphics, float& height) {
+bool TableViewer::clickedEntry(std::size_t& rowIdx, std::size_t columnIdx) const {
+    if (this->m_clickedRow >= this->m_rows.size() || this->m_clickedColumn >= this->m_header.size())
+        return false;
+
+    rowIdx = this->m_clickedRow;
+    columnIdx = this->m_clickedColumn;
+
+    return true;
+}
+
+float TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
     /* contains the per-column widths */
-    columnWidths = std::vector<float>(this->m_header.size(), 0.0f);
+    this->m_columnWidths = std::vector<float>(this->m_header.size(), 0.0f);
     std::size_t emptyLines = 0;
-    height = 0.0f;
 
     /* get the widths of the header */
     for (std::size_t i = 0; i < this->m_header.size(); ++i) {
         this->m_header[i].setGraphics(graphics);
         this->m_header[i].setText(this->m_headerContent[i]);
-        columnWidths[i] = std::max(columnWidths[i], this->m_header[i].rectangle().Width);
-        height = std::max(height, this->m_header[i].rectangle().Height);
+        this->m_columnWidths[i] = std::max(this->m_columnWidths[i], this->m_header[i].rectangle().Width);
+        this->m_rowHeight = std::max(this->m_rowHeight, this->m_header[i].rectangle().Height);
     }
 
     /* get the width of every row element */
@@ -130,8 +171,8 @@ float TableViewer::calculateRequiredArea(std::vector<float>& columnWidths, Gdipl
         for (std::size_t i = 0; i < it->size(); ++i) {
             (*it)[i].setGraphics(graphics);
             (*it)[i].setText((*cit)[i]);
-            columnWidths[i] = std::max(columnWidths[i], (*it)[i].rectangle().Width);
-            height = std::max(height, (*it)[i].rectangle().Height);
+            this->m_columnWidths[i] = std::max(this->m_columnWidths[i], (*it)[i].rectangle().Width);
+            this->m_rowHeight = std::max(this->m_rowHeight, (*it)[i].rectangle().Height);
             if (false == helper::Math::almostEqual(0.0f, (*it)[i].rectangle().Width))
                 emptyRow = false;
         }
@@ -146,27 +187,21 @@ float TableViewer::calculateRequiredArea(std::vector<float>& columnWidths, Gdipl
 
     /* get the overall width */
     float overallWidth = 0.0f;
-    for (const auto& width : std::as_const(columnWidths))
+    for (const auto& width : std::as_const(this->m_columnWidths))
         overallWidth += width;
 
     this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 12.0f + 3.0f * (this->m_header.size() - 1),
-                                  (0 == maxRowCount ? (this->m_visibleRows + 1) : (this->m_rows.size() - emptyLines + 1)) * height);
+                                  (0 == maxRowCount ? (this->m_visibleRows + 1) : (this->m_rows.size() - emptyLines + 1)) * this->m_rowHeight);
 
     return overallWidth + 3.0f * (this->m_header.size() - 1);
 }
 
 void TableViewer::prepareVisualization(Gdiplus::Graphics* graphics) {
-    std::vector<float> columnWidths;
-    float height;
-
-    this->calculateRequiredArea(columnWidths, graphics, height);
+    this->calculateRequiredArea(graphics);
 }
 
 bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
-    std::vector<float> columnWidths;
-    float height;
-
-    float overallWidth = this->calculateRequiredArea(columnWidths, graphics, height);
+    float overallWidth = this->calculateRequiredArea(graphics);
     float offsetX = this->m_area.X;
     float offsetY = this->m_area.Y;
 
@@ -181,9 +216,9 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
         this->m_header[i].setPosition(Gdiplus::PointF(offsetX, offsetY));
         this->m_header[i].setGraphics(graphics);
         this->m_header[i].visualize();
-        offsetX += columnWidths[i] + 3.0f;
+        offsetX += this->m_columnWidths[i] + 3.0f;
     }
-    offsetY += height;
+    offsetY += this->m_rowHeight;
     graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + overallWidth, offsetY));
 
     /* draw the rows */
@@ -201,12 +236,12 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
                 (*it)[i].visualize();
                 emptyRow = false;
             }
-            offsetX += columnWidths[i] + 3.0f;
+            offsetX += this->m_columnWidths[i] + 3.0f;
         }
 
         if (false == emptyRow) {
             graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + overallWidth, offsetY));
-            offsetY += height;
+            offsetY += this->m_rowHeight;
             maxRowCount -= 1;
         }
 
@@ -234,7 +269,6 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
         float height = ratio * maxHeight;
         float freePixels = maxHeight - height;
         float pixelsPerStep = freePixels / (this->m_rows.size() - this->m_visibleRows);
-        float sliderOffsetY = pixelsPerStep * this->m_visibleRowOffset;
 
         this->m_sliderRectangle = Gdiplus::RectF(offsetX, this->m_scrollUp.Y + this->m_scrollUp.Height + 2.0f + pixelsPerStep * this->m_visibleRowOffset,
                                                  8.0f, height);

@@ -31,8 +31,12 @@ namespace topskytower {
             Gdiplus::RectF                      m_scrollUp;
             Gdiplus::RectF                      m_scrollDown;
             Gdiplus::RectF                      m_sliderRectangle;
+            std::vector<float>                  m_columnWidths;
+            float                               m_rowHeight;
+            std::size_t                         m_clickedRow;
+            std::size_t                         m_clickedColumn;
 
-            float calculateRequiredArea(std::vector<float>& columnWidths, Gdiplus::Graphics* graphics, float& height);
+            float calculateRequiredArea(Gdiplus::Graphics* graphics);
 
         public:
             /**
@@ -99,6 +103,13 @@ namespace topskytower {
              * @return True if the click was handled, else false
              */
             bool click(const Gdiplus::PointF& pt, UiManager::MouseButton button) override;
+            /**
+             * @brief Returns the clicked entry
+             * @param[out] rowIdx The clicked row index
+             * @param[out] columnIdx The clicked column index
+             * @return True if it was clicked, else false
+             */
+            bool clickedEntry(std::size_t& rowIdx, std::size_t columnIdx) const;
             /**
              * @brief prepares the visualization data
              * @param[in] graphics The graphic-interface
