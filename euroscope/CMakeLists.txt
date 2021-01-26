@@ -52,6 +52,8 @@ SET(SOURCE_FILES_UI
     ui/MessageViewerWindow.h
     ui/MtcdToolbarButton.cpp
     ui/MtcdToolbarButton.h
+    ui/NotamOverviewWindow.cpp
+    ui/NotamOverviewWindow.h
     ui/PdcDepartureClearanceWindow.cpp
     ui/PdcDepartureClearanceWindow.h
     ui/PdcMessageViewerWindow.cpp
