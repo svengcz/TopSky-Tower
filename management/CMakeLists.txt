@@ -7,12 +7,14 @@
 
 SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/management/HoldingPointMap.h
+    ${CMAKE_SOURCE_DIR}/include/management/NotamControl.h
     ${CMAKE_SOURCE_DIR}/include/management/PdcControl.h
     ${CMAKE_SOURCE_DIR}/include/management/SectorControl.h
     ${CMAKE_SOURCE_DIR}/include/management/StandControl.h
 )
 SET(SOURCE_FILES
     PdcControl.cpp
+    NotamControl.cpp
     SectorControl.cpp
     StandControl.cpp
 )
