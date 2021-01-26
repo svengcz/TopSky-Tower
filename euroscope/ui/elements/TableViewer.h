@@ -28,6 +28,9 @@ namespace topskytower {
             std::list<std::vector<Text>>        m_rows;
             std::size_t                         m_visibleRows;
             std::size_t                         m_visibleRowOffset;
+            Gdiplus::RectF                      m_scrollUp;
+            Gdiplus::RectF                      m_scrollDown;
+            Gdiplus::RectF                      m_sliderRectangle;
 
             float calculateRequiredArea(std::vector<float>& columnWidths, Gdiplus::Graphics* graphics, float& height);
 
