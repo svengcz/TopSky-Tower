@@ -22,7 +22,6 @@ using namespace std::chrono;
 using namespace topskytower;
 using namespace topskytower::management;
 
-static std::string __datalink = "http://www.hoppie.nl/acars/system/connect.html?logon=%LOGON%&from=%SENDER%";
 static std::string __receivedData;
 
 PdcControl::MessageQueue::MessageQueue() :
@@ -254,7 +253,10 @@ void PdcControl::receiveMessages() {
     /* iterate over the airports */
     for (const auto& airport : std::as_const(airports)) {
         /* create the URL to receive the data and get it */
-        auto message = __datalink + "&to=SERVER&type=POLL";
+        auto message = system::ConfigurationRegistry::instance().systemConfiguration().hoppiesUrl;
+        if (0 == message.length())
+            return;
+        message += "&to=SERVER&type=POLL";
         helper::String::stringReplace(message, "%SENDER%", airport);
         this->sendMessage(message);
 
@@ -390,7 +392,9 @@ bool PdcControl::sendMessage(const PdcControl::MessagePtr& message) {
         return false;
 
     /* create the message */
-    auto url = __datalink;
+    auto url = system::ConfigurationRegistry::instance().systemConfiguration().hoppiesUrl;
+    if (0 == url.length())
+        return false;
     url += "&to=" + message->receiver + "&type=" + __translateMessageType(message->type);
     helper::String::stringReplace(url, "%SENDER%", message->sender);
 

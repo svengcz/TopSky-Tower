@@ -11,6 +11,7 @@
 #include <curl/curl.h>
 
 #include <helper/String.h>
+#include <system/ConfigurationRegistry.h>
 
 #include "ui/MessageViewerWindow.h"
 #include "version.h"
@@ -18,7 +19,6 @@
 
 using namespace topskytower::euroscope;
 
-static std::string __versionURL = "https://raw.githubusercontent.com/svengcz/Versioning/master/TopSky-Tower.txt";
 static std::string __receivedVersion;
 
 static std::size_t receiveCurl(void* ptr, std::size_t size, std::size_t nmemb, void* stream) {
@@ -36,7 +36,7 @@ void VersionChecker::checkForUpdates(RadarScreen* screen) {
     curl = curl_easy_init();
     if (nullptr != curl) {
         /* configure the connection */
-        curl_easy_setopt(curl, CURLOPT_URL, __versionURL.c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, system::ConfigurationRegistry::instance().systemConfiguration().versionCheckUrl.c_str());
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, receiveCurl);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2L);
