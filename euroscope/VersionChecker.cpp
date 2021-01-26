@@ -41,7 +41,7 @@ void VersionChecker::checkForUpdates(RadarScreen* screen) {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, receiveCurl);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2L);
 
-        /* request the NOTAMs */
+        /* request the current version */
         result = curl_easy_perform(curl);
 
         /* handle the return code of the receive-function */
