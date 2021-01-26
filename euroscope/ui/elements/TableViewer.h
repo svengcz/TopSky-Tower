@@ -26,6 +26,8 @@ namespace topskytower {
             std::vector<Text>                   m_header;
             std::list<std::vector<std::string>> m_rowContent;
             std::list<std::vector<Text>>        m_rows;
+            std::size_t                         m_visibleRows;
+            std::size_t                         m_visibleRowOffset;
 
             float calculateRequiredArea(std::vector<float>& columnWidths, Gdiplus::Graphics* graphics, float& height);
 
@@ -52,6 +54,11 @@ namespace topskytower {
              * @return The column count
              */
             std::size_t numberOfColumns() const;
+            /**
+             * @brief Sets the maximum number of visible rows
+             * @param[in] count The number of maximum visible rows
+             */
+            void setMaxVisibleRows(std::size_t count);
             /**
              * @brief Adds an empty row
              */

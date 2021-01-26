@@ -17,7 +17,9 @@ TableViewer::TableViewer(RadarScreen* parent, const std::vector<std::string>& he
         m_headerContent(header),
         m_header(),
         m_rowContent(),
-        m_rows() {
+        m_rows(),
+        m_visibleRows(std::numeric_limits<std::size_t>::max()),
+        m_visibleRowOffset(0) {
     this->m_header.reserve(header.size());
 
     for (std::size_t i = 0; i < header.size(); ++i) {
@@ -33,6 +35,11 @@ std::size_t TableViewer::numberOfRows() const {
 
 std::size_t TableViewer::numberOfColumns() const {
     return this->m_header.size();
+}
+
+void TableViewer::setMaxVisibleRows(std::size_t count) {
+    this->m_visibleRowOffset = 0;
+    this->m_visibleRows = count;
 }
 
 void TableViewer::addRow() {
@@ -105,6 +112,7 @@ float TableViewer::calculateRequiredArea(std::vector<float>& columnWidths, Gdipl
     }
 
     /* get the width of every row element */
+    std::size_t maxRowCount = this->m_visibleRows;
     auto cit = this->m_rowContent.cbegin();
     for (auto& row : this->m_rows) {
         bool emptyRow = true;
@@ -120,6 +128,11 @@ float TableViewer::calculateRequiredArea(std::vector<float>& columnWidths, Gdipl
 
         if (true == emptyRow)
             emptyLines += 1;
+        else
+            maxRowCount -= 1;
+
+        if (0 == maxRowCount)
+            break;
 
         std::advance(cit, 1);
     }
@@ -130,7 +143,7 @@ float TableViewer::calculateRequiredArea(std::vector<float>& columnWidths, Gdipl
         overallWidth += width;
 
     this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 3.0f * (this->m_header.size() - 1),
-                                  (this->m_rows.size() - emptyLines + 1) * height);
+                                  (0 == maxRowCount ? (this->m_visibleRows + 1) : (this->m_rows.size() - emptyLines + 1)) * height);
 
     return overallWidth + 3.0f * (this->m_header.size() - 1);
 }
@@ -167,18 +180,33 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
     graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + overallWidth, offsetY));
 
     /* draw the rows */
-    for (auto& row : this->m_rows) {
+    auto it = this->m_rows.begin();
+    std::advance(it, this->m_visibleRowOffset);
+    std::size_t maxRowCount = this->m_visibleRows;
+    while (this->m_rows.cend() != it) {
         offsetX = this->m_area.X;
+        bool emptyRow = true;
 
         for (std::size_t i = 0; i < this->m_header.size(); ++i) {
-            row[i].setPosition(Gdiplus::PointF(offsetX, offsetY));
-            row[i].setGraphics(graphics);
-            row[i].visualize();
+            if (false == helper::Math::almostEqual(0.0f, (*it)[i].rectangle().Height)) {
+                (*it)[i].setPosition(Gdiplus::PointF(offsetX, offsetY));
+                (*it)[i].setGraphics(graphics);
+                (*it)[i].visualize();
+                emptyRow = false;
+            }
             offsetX += columnWidths[i] + 3.0f;
         }
 
-        offsetY += height;
-        graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + overallWidth, offsetY));
+        if (false == emptyRow) {
+            graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + overallWidth, offsetY));
+            offsetY += height;
+            maxRowCount -= 1;
+        }
+
+        if (0 == maxRowCount)
+            break;
+
+        std::advance(it, 1);
     }
 
     return true;
