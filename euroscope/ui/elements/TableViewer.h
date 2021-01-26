@@ -109,7 +109,7 @@ namespace topskytower {
              * @param[out] columnIdx The clicked column index
              * @return True if it was clicked, else false
              */
-            bool clickedEntry(std::size_t& rowIdx, std::size_t columnIdx) const;
+            bool clickedEntry(std::size_t& rowIdx, std::size_t& columnIdx) const;
             /**
              * @brief prepares the visualization data
              * @param[in] graphics The graphic-interface

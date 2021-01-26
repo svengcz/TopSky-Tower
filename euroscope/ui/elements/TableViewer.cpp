@@ -139,7 +139,7 @@ bool TableViewer::click(const Gdiplus::PointF& pt, UiManager::MouseButton button
     return true;
 }
 
-bool TableViewer::clickedEntry(std::size_t& rowIdx, std::size_t columnIdx) const {
+bool TableViewer::clickedEntry(std::size_t& rowIdx, std::size_t& columnIdx) const {
     if (this->m_clickedRow >= this->m_rows.size() || this->m_clickedColumn >= this->m_header.size())
         return false;
 

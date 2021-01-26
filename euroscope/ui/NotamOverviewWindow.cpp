@@ -13,6 +13,7 @@
 #include <system/ConfigurationRegistry.h>
 
 #include "../RadarScreen.h"
+#include "MessageViewerWindow.h"
 #include "NotamOverviewWindow.h"
 
 using namespace topskytower;
@@ -92,6 +93,37 @@ void NotamOverviewWindow::setOverviewContent() {
         for (const auto& idx : std::as_const(missingRows))
             this->m_notamOverview->removeRow(idx);
     }
+}
+
+bool NotamOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
+    if (true == UiElement::isInRectangle(pt, this->m_contentArea)) {
+        if (true == this->m_notamOverview->click(pt, button)) {
+            std::size_t row, column;
+
+            if (true == this->m_notamOverview->clickedEntry(row, column)) {
+                const auto& airport = this->m_notamOverview->entry(row, 0);
+                const auto& title = this->m_notamOverview->entry(row, 1);
+
+                auto notamsIt = management::NotamControl::instance().notams().find(airport);
+                if (management::NotamControl::instance().notams().cend() != notamsIt) {
+                    for (const auto& notam : std::as_const(notamsIt->second)) {
+                        if (notam.title == title && false == this->m_parent->uiManager().windowIsActive(title)) {
+                            auto viewer = new MessageViewerWindow(this->m_parent, title, notam.rawMessage);
+                            viewer->setActive(true);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+        else if (true == this->m_activeFilter->click(pt, button) || true == this->m_airportFilter->click(pt, button)) {
+            return true;
+        }
+    }
+
+    return InsetWindow::click(pt, button);
 }
 
 bool NotamOverviewWindow::visualize(Gdiplus::Graphics* graphics) {
