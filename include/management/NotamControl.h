@@ -74,6 +74,11 @@ namespace topskytower {
              */
             void removeAirport(const std::string& airport);
             /**
+             * @brief Returns all received NOTAMs
+             * @return The NOTAMs
+             */
+            const std::map<std::string, std::list<Notam>>& notams() const;
+            /**
              * @brief Returns the NOTAM control singleton
              * @return The NOTAM control system
              */

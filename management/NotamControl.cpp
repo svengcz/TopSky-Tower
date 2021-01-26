@@ -206,6 +206,10 @@ void NotamControl::removeAirport(const std::string& airport) {
     this->m_dequeuePending.push_back(airport);
 }
 
+const std::map<std::string, std::list<NotamControl::Notam>>& NotamControl::notams() const {
+    return this->m_notams;
+}
+
 NotamControl& NotamControl::instance() {
     static NotamControl __instance;
     return __instance;
