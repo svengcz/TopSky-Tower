@@ -55,6 +55,7 @@ namespace topskytower {
 
                 struct std::tm tm;
                 stream >> std::get_time(&tm, "%y %m %d %H %M");
+                tm.tm_wday = tm.tm_yday = tm.tm_isdst = tm.tm_sec = 0;
                 return std::chrono::system_clock::from_time_t(std::mktime(&tm));
             }
 
@@ -66,14 +67,10 @@ namespace topskytower {
              * @return The converted time
              */
             static __inline std::string timeToString(const std::chrono::system_clock::time_point& time, const std::string& format = "%y%m%d%H%M") {
-                char buf[100];
-
                 std::time_t value = std::chrono::system_clock::to_time_t(time);
-                std::tm local = *std::localtime(&value);
-
-                std::strftime(buf, 100, format.c_str(), &local);
-
-                return std::string(buf);
+                std::stringstream stream;
+                stream << std::put_time(std::gmtime(&value), format.c_str());
+                return stream.str();
             }
         };
     }
