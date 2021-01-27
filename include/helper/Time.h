@@ -55,7 +55,16 @@ namespace topskytower {
 
                 struct std::tm tm;
                 stream >> std::get_time(&tm, "%y %m %d %H %M");
-                tm.tm_wday = tm.tm_yday = tm.tm_isdst = tm.tm_sec = 0;
+                tm.tm_wday = tm.tm_yday = tm.tm_sec = 0;
+                tm.tm_isdst = -1;
+
+                /* estimate the local time offset */
+                static const std::time_t epochTest = 60 * 60 * 11;
+                static auto localHours = std::localtime(&epochTest)->tm_hour;
+                static auto utcHours = std::gmtime(&epochTest)->tm_hour;
+                static auto diffHours = localHours - utcHours;
+                tm.tm_hour += diffHours;
+
                 return std::chrono::system_clock::from_time_t(std::mktime(&tm));
             }
 
