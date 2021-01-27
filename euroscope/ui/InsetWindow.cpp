@@ -7,7 +7,9 @@
 
 #include "stdafx.h"
 
+#pragma warning(disable: 5054)
 #include <Eigen/Core>
+#pragma warning(default: 5054)
 
 #include "../RadarScreen.h"
 #include "InsetWindow.h"
