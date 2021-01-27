@@ -25,8 +25,6 @@ namespace topskytower {
             Text        m_titleVisualization;
             bool        m_checked;
 
-            void uiCallback(const std::string& string);
-
         public:
             /**
              * @brief Creates a new checkbox
@@ -37,10 +35,10 @@ namespace topskytower {
             Checkbox(RadarScreen* parent, const std::string& title, const Gdiplus::RectF& dimension);
 
             /**
-             * @brief Returns the content of the edit field
-             * @return The content of the edit field
+             * @brief Returns if the field is checked or not
+             * @return True if the field is checked, else false
              */
-            bool clicked() const;
+            bool checked() const;
             /**
              * @brief Handles the click events
              * @param[in] pt The position of the mouse

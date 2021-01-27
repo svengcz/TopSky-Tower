@@ -22,7 +22,7 @@ Checkbox::Checkbox(RadarScreen* parent, const std::string& title, const Gdiplus:
     this->m_titleVisualization.setFontColor(UiElement::foregroundColor());
 }
 
-bool Checkbox::clicked() const {
+bool Checkbox::checked() const {
     return this->m_checked;
 }
 
