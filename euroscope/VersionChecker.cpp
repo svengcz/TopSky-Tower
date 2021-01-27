@@ -35,8 +35,10 @@ void VersionChecker::checkForUpdates(RadarScreen* screen) {
 
     curl = curl_easy_init();
     if (nullptr != curl) {
+        const auto& url = system::ConfigurationRegistry::instance().systemConfiguration().versionCheckUrl;
+
         /* configure the connection */
-        curl_easy_setopt(curl, CURLOPT_URL, system::ConfigurationRegistry::instance().systemConfiguration().versionCheckUrl.c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, receiveCurl);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2L);
