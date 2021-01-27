@@ -45,6 +45,7 @@ namespace topskytower {
             Toolbar*                            m_toolbar;
             std::map<std::string, InsetWindow*> m_customWindows;
             std::list<InsetWindow*>             m_renderQueue;
+            std::list<InsetWindow*>             m_newWindowsQueue;
 
             void updateRenderQueue(InsetWindow* element);
             bool click(InsetWindow* element, const Gdiplus::PointF& pt, MouseButton button);
@@ -82,6 +83,12 @@ namespace topskytower {
              * @return True if the move was handled, else false
              */
             bool move(const std::string_view& objectName, const Gdiplus::PointF& pt, bool released);
+            /**
+             * @brief Checks if a window is active or not
+             * @param[in] name The window's name
+             * @return True if the window is active, else false
+             */
+            bool windowIsActive(const std::string& name) const;
             /**
              * @brief Adds a custom window into the manager
              * @param[in] window The custom window

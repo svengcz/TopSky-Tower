@@ -18,7 +18,8 @@ UiManager::UiManager(RadarScreen* parent) :
         m_parent(parent),
         m_toolbar(nullptr),
         m_customWindows(),
-        m_renderQueue() { }
+        m_renderQueue(),
+        m_newWindowsQueue() { }
 
 UiManager::~UiManager() {
     this->m_renderQueue.clear();
@@ -84,12 +85,17 @@ bool UiManager::move(const std::string_view& objectName, const Gdiplus::PointF& 
     return false;
 }
 
+bool UiManager::windowIsActive(const std::string& name) const {
+    auto customIt = this->m_customWindows.find(name);
+    return this->m_customWindows.cend() != customIt;
+}
+
 void UiManager::addCustomWindow(InsetWindow* window) {
     auto customIt = this->m_customWindows.find(window->title());
     if (this->m_customWindows.end() != customIt)
         this->removeCustomWindow(window);
 
-    this->m_renderQueue.push_back(window);
+    this->m_newWindowsQueue.push_back(window);
     this->m_customWindows[window->title()] = window;
 }
 
@@ -114,6 +120,11 @@ void UiManager::visualize(Gdiplus::Graphics* graphics) {
     if (nullptr == this->m_toolbar)
         this->m_toolbar = new Toolbar(this->m_parent, this);
     this->m_toolbar->visualize(graphics);
+
+    if (0 != this->m_newWindowsQueue.size()) {
+        this->m_renderQueue.insert(this->m_renderQueue.end(), this->m_newWindowsQueue.begin(), this->m_newWindowsQueue.end());
+        this->m_newWindowsQueue.clear();
+    }
 
     for (auto& window : this->m_renderQueue)
         window->visualize(graphics);

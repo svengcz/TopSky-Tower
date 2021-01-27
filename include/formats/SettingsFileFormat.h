@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <helper/String.h>
+#include <types/Aircraft.h>
 #include <types/SystemConfiguration.h>
 
 namespace topskytower {
@@ -62,6 +64,31 @@ namespace topskytower {
          *     <td>UI_NTZColor</td>
          *     <td>Defines the color to visualize NTZ areas.</td>
          *     <td>200, 0, 0</td><td>R,G,B</td>
+         *   </tr>
+         *   <tr>
+         *     <td>HTTP_HoppiesURL</td>
+         *     <td>Defines the Hoppies URL. It requires the marker %LOGON% for the Hoppies code and %SENDER% for the station.</td>
+         *     <td>http://www.hoppie.nl/acars/system/connect.html?logon=%LOGON%&from=%SENDER%</td><td></td>
+         *   </tr>
+         *   <tr>
+         *     <td>HTTP_VersionCheckURL</td>
+         *     <td>Defines the URL which contains TopSky-Tower version information</td>
+         *     <td>https://raw.githubusercontent.com/svengcz/Versioning/master/TopSky-Tower.txt</td><td></td>
+         *   </tr>
+         *   <tr>
+         *     <td>HTTP_NotamURL</td>
+         *     <td>Defines the URL to receive current NOTAMs. The %AIRPORT% marker must be defined for the airport</td>
+         *     <td>https://www.notams.faa.gov/PilotWeb/notamRetrievalByICAOAction.do?method=displayByICAOs&reportType=RAW&formatType=DOMESTIC&retrieveLocId=%AIRPORT%&actionType=notamRetrievalByICAOs</td><td></td>
+         *   </tr>
+         *   <tr>
+         *     <td>HTTP_NotamsMarkerStart</td>
+         *     <td>Defines the start marker of a NOTAM message</td>
+         *     <td>\<PRE\></td><td></td>
+         *   </tr>
+         *   <tr>
+         *     <td>HTTP_NotamsMarkerEnd</td>
+         *     <td>Defines the end marker of a NOTAM message</td>
+         *     <td>\</PRE\></td><td></td>
          *   </tr>
          *   <tr>
          *     <td>SYS_TrackingOnGround</td>

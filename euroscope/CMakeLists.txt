@@ -52,6 +52,8 @@ SET(SOURCE_FILES_UI
     ui/MessageViewerWindow.h
     ui/MtcdToolbarButton.cpp
     ui/MtcdToolbarButton.h
+    ui/NotamOverviewWindow.cpp
+    ui/NotamOverviewWindow.h
     ui/PdcDepartureClearanceWindow.cpp
     ui/PdcDepartureClearanceWindow.h
     ui/PdcMessageViewerWindow.cpp
@@ -68,8 +70,12 @@ SET(SOURCE_FILES_UI
 SET(SOURCE_FILES_UI_ELEMENTS
     ui/elements/Button.cpp
     ui/elements/Button.h
+    ui/elements/Checkbox.cpp
+    ui/elements/Checkbox.h
     ui/elements/EditText.cpp
     ui/elements/EditText.h
+    ui/elements/TableViewer.cpp
+    ui/elements/TableViewer.h
     ui/elements/Text.cpp
     ui/elements/Text.h
     ui/elements/TextViewer.cpp

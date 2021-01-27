@@ -17,6 +17,7 @@
 #include "LvpToolbarButton.h"
 #include "PdcToolbarButton.h"
 #include "MtcdToolbarButton.h"
+#include "NotamOverviewWindow.h"
 #include "StcdToolbarButton.h"
 #include "Toolbar.h"
 #include "UiManager.h"
@@ -117,6 +118,7 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
 
     switch (Toolbar::findClickedElement(this->m_toplevel, pt)) {
     case Toolbar::ClickId::Settings:
+    case Toolbar::ClickId::Windows:
         resetUi = false;
         break;
     case Toolbar::ClickId::Reload:
@@ -134,6 +136,12 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     case Toolbar::ClickId::ReloadAircrafts:
         system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
                                                             system::ConfigurationRegistry::UpdateType::Aircrafts);
+        break;
+    case Toolbar::ClickId::Notams:
+        if (false == this->m_parent->uiManager().windowIsActive("NOTAMs")) {
+            auto viewer = new NotamOverviewWindow(this->m_parent);
+            viewer->setActive(true);
+        }
         break;
     case Toolbar::ClickId::Group:
     case Toolbar::ClickId::Undefined:
@@ -275,6 +283,11 @@ void Toolbar::initialize() {
     this->m_toplevel = std::shared_ptr<Toolbar::Level>(new Toolbar::Level());
 
     this->m_toplevel->active = true;
+
+    /* set the windows menu */
+    Toolbar::createElement("WINDOWS", Toolbar::ClickId::Windows, this->m_toplevel);
+    this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
+    Toolbar::createElement("NOTAMS", Toolbar::ClickId::Notams, this->m_toplevel->elements.back().child);
 
     /* set the settings menu */
     Toolbar::createElement("SETTINGS", Toolbar::ClickId::Settings, this->m_toplevel);

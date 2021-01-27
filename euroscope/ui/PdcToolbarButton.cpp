@@ -24,7 +24,7 @@ void PdcToolbarButton::clicked() {
     if (true == isActive) {
         management::PdcControl::instance().removeAirport(this->m_parent->airportIcao());
     }
-    else {
+    else if (false == this->m_parent->uiManager().windowIsActive("PDC")) {
         this->m_window = new HoppiesLogonWindow(this->m_parent);
         this->m_window->setActive(true);
     }
