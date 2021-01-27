@@ -46,9 +46,10 @@ NotamOverviewWindow::~NotamOverviewWindow() {
 }
 
 void NotamOverviewWindow::setOverviewContent() {
-    std::string filter = this->m_airportFilter->content();
-    std::list<std::size_t> foundIndices;
     std::size_t oldSize = this->m_notamOverview->numberOfRows();
+    std::string filter = this->m_airportFilter->content();
+    auto currentTime = helper::Time::currentUtc();
+    std::list<std::size_t> foundIndices;
 
 #pragma warning(disable: 4244)
     std::transform(filter.begin(), filter.end(), filter.begin(), ::toupper);
@@ -60,6 +61,12 @@ void NotamOverviewWindow::setOverviewContent() {
 
         for (const auto& notam : std::as_const(notams.second)) {
             bool found = false;
+
+            /* check if the NOTAM is active or not */
+            if (true == this->m_activeFilter->checked()) {
+                if (notam.startTime > currentTime || notam.endTime < currentTime)
+                    continue;
+            }
 
             /* check if the NOTAM exists */
             for (std::size_t row = 0; row < this->m_notamOverview->numberOfRows(); ++row) {
@@ -74,8 +81,8 @@ void NotamOverviewWindow::setOverviewContent() {
                 this->m_notamOverview->addRow();
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 0, notams.first);
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 1, notam.title);
-                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 2, helper::Time::timeToString(notam.startTime, "%Y-%m-%d %H:%Mz"));
-                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 3, helper::Time::timeToString(notam.endTime, "%Y-%m-%d %H:%Mz"));
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 2, helper::Time::timeToString(notam.startTime, "%Y-%m-%d %H:%M"));
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 3, helper::Time::timeToString(notam.endTime, "%Y-%m-%d %H:%M"));
             }
         }
     }
