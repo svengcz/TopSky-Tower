@@ -5,8 +5,10 @@
  *   Implements the Autonomous Runway Incursion Warning System
  */
 
+#pragma warning(disable: 5054)
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#pragma warning(default:5054)
 #include <GeographicLib/Gnomonic.hpp>
 #include <GeographicLib/LocalCartesian.hpp>
 
