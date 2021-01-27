@@ -45,6 +45,7 @@ namespace topskytower {
             Toolbar*                            m_toolbar;
             std::map<std::string, InsetWindow*> m_customWindows;
             std::list<InsetWindow*>             m_renderQueue;
+            std::list<InsetWindow*>             m_newWindowsQueue;
 
             void updateRenderQueue(InsetWindow* element);
             bool click(InsetWindow* element, const Gdiplus::PointF& pt, MouseButton button);

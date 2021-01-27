@@ -18,7 +18,8 @@ UiManager::UiManager(RadarScreen* parent) :
         m_parent(parent),
         m_toolbar(nullptr),
         m_customWindows(),
-        m_renderQueue() { }
+        m_renderQueue(),
+        m_newWindowsQueue() { }
 
 UiManager::~UiManager() {
     this->m_renderQueue.clear();
@@ -94,7 +95,7 @@ void UiManager::addCustomWindow(InsetWindow* window) {
     if (this->m_customWindows.end() != customIt)
         this->removeCustomWindow(window);
 
-    this->m_renderQueue.push_back(window);
+    this->m_newWindowsQueue.push_back(window);
     this->m_customWindows[window->title()] = window;
 }
 
@@ -119,6 +120,11 @@ void UiManager::visualize(Gdiplus::Graphics* graphics) {
     if (nullptr == this->m_toolbar)
         this->m_toolbar = new Toolbar(this->m_parent, this);
     this->m_toolbar->visualize(graphics);
+
+    if (0 != this->m_newWindowsQueue.size()) {
+        this->m_renderQueue.insert(this->m_renderQueue.end(), this->m_newWindowsQueue.begin(), this->m_newWindowsQueue.end());
+        this->m_newWindowsQueue.clear();
+    }
 
     for (auto& window : this->m_renderQueue)
         window->visualize(graphics);
