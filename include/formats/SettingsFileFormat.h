@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <helper/String.h>
+#include <types/Aircraft.h>
 #include <types/SystemConfiguration.h>
 
 namespace topskytower {
