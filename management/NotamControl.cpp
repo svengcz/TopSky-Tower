@@ -57,23 +57,35 @@ bool NotamControl::createNotam(const std::string& notamText, NotamControl::Notam
             notam.title = line;
 
         /* found the time-entries */
-        if (0 == line.find("A)")) {
+        if (std::string::npos != line.find("B)") || std::string::npos != line.find("C)")) {
             auto split = helper::String::splitString(line, " ");
-            if (6 > split.size())
+
+            std::size_t startMarker = split.size();
+            std::size_t endMarker = split.size();
+
+            for (std::size_t i = 0; i < split.size(); ++i) {
+                if ("B)" == split[i] && (i + 1) < split.size())
+                    startMarker = i + 1;
+                else if ("C)" == split[i] && (i + 1) < split.size())
+                    endMarker = i + 1;
+            }
+
+            if (split.size() <= startMarker && split.size() <= endMarker)
                 return false;
 
-            if ("B)" == split[2])
-                notam.startTime = helper::Time::stringToTime(split[3]);
-            if ("C)" == split[4]) {
-                if ("PERM" == split[5])
+            if (split.size() > startMarker)
+                notam.startTime = helper::Time::stringToTime(split[startMarker]);
+            if (split.size() > endMarker) {
+                if ("PERM" == split[endMarker])
                     notam.endTime = helper::Time::stringToTime("6812312359"); /* 31.12.2068 23:59 */
                 else
-                    notam.endTime = helper::Time::stringToTime(split[5]);
+                    notam.endTime = helper::Time::stringToTime(split[endMarker]);
             }
         }
-        else if (0 == line.find("E)")) {
-            line = line.erase(0, 3);
-            notam.message = line + "\n";
+        else if (std::string::npos != line.find("E)")) {
+            line.erase(0, line.find("E)") + 3);
+            if (0 != line.length())
+                notam.message = line + "\n";
             content = true;
         }
         else if (true == content) {
