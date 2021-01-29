@@ -1,10 +1,10 @@
 /*
  * Author:
  *   Sven Czarnian <devel@svcz.de>
+ * Copyright:
+ *   2020-2021 Sven Czarnian
  * License:
- *   LGPLv3
- * Brief:
- *   Implements the exception
+ *   GNU General Public License v3 (GPLv3)
  */
 
 #include <helper/Exception.h>

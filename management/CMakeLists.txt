@@ -1,7 +1,9 @@
 # Author:
 #   Sven Czarnian <devel@svcz.de>
+# Copyright:
+#   2020-2021 Sven Czarnian
 # License:
-#   Closed Source
+#   GNU General Public License (GPLv3)
 # Brief:
 #   Creates the management library
 

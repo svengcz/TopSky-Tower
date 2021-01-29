@@ -3,6 +3,10 @@
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
  *   Implements the coordinate to abstract global coordinates
+ * Copyright:
+ *   2020-2021 Sven Czarnian
+ * License:
+ *   GNU General Public License v3 (GPLv3)
  */
 
 #define _USE_MATH_DEFINES

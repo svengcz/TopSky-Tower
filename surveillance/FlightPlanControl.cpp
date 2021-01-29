@@ -3,6 +3,10 @@
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
  *   Implements the flight plan check system
+ * Copyright:
+ *   2020-2021 Sven Czarnian
+ * License:
+ *   GNU General Public License v3 (GPLv3)
  */
 
 #include <algorithm>

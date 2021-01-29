@@ -2,6 +2,8 @@
  * @brief Defines the base for all other configuration files in the EuroScope format
  * @file configuration/EuroscopeFileFormat.h
  * @author Sven Czarnian <devel@svcz.de>
+ * @copyright Copyright 2020-2021 Sven Czarnian
+ * @license This project is published under the GNU General Public License v3 (GPLv3)
  */
 
 #pragma once

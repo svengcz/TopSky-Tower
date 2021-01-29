@@ -3,6 +3,10 @@
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
  *   Implements the flight structure
+ * Copyright:
+ *   2020-2021 Sven Czarnian
+ * License:
+ *   GNU General Public License v3 (GPLv3)
  */
 
 #include <types/Flight.h>

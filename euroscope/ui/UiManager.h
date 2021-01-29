@@ -2,6 +2,8 @@
  * @brief Defines the UI manager that contains all UI elements
  * @file ui/UiManager.h
  * @author Sven Czarnian <devel@svcz.de>
+ * @copyright Copyright 2020-2021 Sven Czarnian
+ * @license This project is published under the GNU General Public License v3 (GPLv3)
  */
 
 #pragma once

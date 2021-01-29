@@ -1,6 +1,10 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
+/*
+ * @brief Defines the include header for all euroscope files
+ * @file euroscope/stdafx.h
+ * @author Sven Czarnian <devel@svcz.de>
+ * @copyright Copyright 2020-2021 Sven Czarnian
+ * @license This project is published under the GNU General Public License v3 (GPLv3)
+ */
 
 #pragma once
 

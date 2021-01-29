@@ -2,6 +2,8 @@
  * @brief Defines the structure of the airport configuration
  * @file types/AirportConfiguration.h
  * @author Sven Czarnian <devel@svcz.de>
+ * @copyright Copyright 2020-2021 Sven Czarnian
+ * @license This project is published under the GNU General Public License v3 (GPLv3)
  */
 
 #pragma once
