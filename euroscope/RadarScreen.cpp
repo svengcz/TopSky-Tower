@@ -146,8 +146,11 @@ void RadarScreen::OnControllerDisconnect(EuroScopePlugIn::CController controller
 }
 
 void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) {
-    auto flight = Converter::convert(radarTarget, *this);
+    bool newSts;
+    auto flight = Converter::convert(radarTarget, *this, newSts);
     this->m_flightRegistry->updateFlight(flight);
+    if (true == newSts)
+        this->m_flightRegistry->updateGroundStatus(flight);
 
     if (nullptr != this->m_sectorControl)
         this->m_sectorControl->updateFlight(flight);
@@ -167,8 +170,11 @@ void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan 
     if (false == flightPlan.GetCorrelatedRadarTarget().IsValid() || false == this->isInitialized())
         return;
 
-    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this);
+    bool newSts;
+    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this, newSts);
     this->m_flightRegistry->updateFlight(flight);
+    if (true == newSts)
+        this->m_flightRegistry->updateGroundStatus(flight);
 }
 
 void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan, int type) {
@@ -183,10 +189,13 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
     if (false == flightPlan.GetCorrelatedRadarTarget().IsValid() || false == this->isInitialized())
         return;
 
-    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this);
+    bool newSts;
+    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this, newSts);
 
     /* update the internal structures that are effected by the flight plan changes */
     this->m_flightRegistry->updateFlight(flight);
+    if (true == newSts)
+        this->m_flightRegistry->updateGroundStatus(flight);
     this->m_ariwsControl->updateFlight(flight);
     this->m_cmacControl->updateFlight(flight);
 }
@@ -572,8 +581,14 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
         this->m_sectorControl->setOwnSector(Converter::convert(plugin->ControllerMyself()));
 
     /* update all states of the flights */
-    for (auto rt = plugin->RadarTargetSelectFirst(); true == rt.IsValid(); rt = plugin->RadarTargetSelectNext(rt))
-        this->m_flightRegistry->updateFlight(Converter::convert(rt, *this));
+    for (auto rt = plugin->RadarTargetSelectFirst(); true == rt.IsValid(); rt = plugin->RadarTargetSelectNext(rt)) {
+        bool newSts;
+        auto flight = Converter::convert(rt, *this, newSts);
+
+        this->m_flightRegistry->updateFlight(flight);
+        if (true == newSts)
+            this->m_flightRegistry->updateGroundStatus(flight);
+    }
 
     /* add the UI elements for the ground menu */
     if (nullptr != this->m_standControl && true == this->m_standOnScreenSelection) {

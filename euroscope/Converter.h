@@ -26,7 +26,7 @@ namespace topskytower {
         class Converter {
         private:
             static std::string findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker, const std::string& entry);
-            static void convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan);
+            static bool convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan);
             static void convertStandAssignment(const EuroScopePlugIn::CFlightPlan& plan, const types::Flight& flight, RadarScreen& screen);
 
         public:
@@ -39,16 +39,18 @@ namespace topskytower {
             /**
              * @brief Converts an ES flight plan into a TopSky-Tower flight structure
              * @param[in] plan The flight plan
+             * @param[out] overwriteStatus Marks if we have to overwrite the ground status without heuristics
              * @return The converted flight plan
              */
-            static types::FlightPlan convert(const EuroScopePlugIn::CFlightPlan& plan);
+            static types::FlightPlan convert(const EuroScopePlugIn::CFlightPlan& plan, bool& overwriteStatus);
             /**
              * @brief Converts an ES radar target into a TopSky-Tower flight structure
              * @param[in] target The radar target
              * @param[in] screen The corresponding RADAR screen
+             * @param[out] overwriteStatus Marks if we have to overwrite the ground status without heuristics
              * @return The converted flight structure
              */
-            static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target, RadarScreen& screen);
+            static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target, RadarScreen& screen, bool& overwriteStatus);
             /**
              * @brief Converts an ES controller structure into a TopSky-Tower controller information
              * @param[in] controller The ES controller

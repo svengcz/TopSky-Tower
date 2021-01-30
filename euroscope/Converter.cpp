@@ -106,8 +106,7 @@ static __inline void __convertTopSkyTowerAtcPad(const std::string& entry, types:
     if (departure <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Departure) &&
         arrival <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::TaxiIn))
     {
-        if (static_cast<std::uint16_t>(departure) >= static_cast<std::uint16_t>(flightPlan.departureFlag()))
-            flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
+        flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
         flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
     }
 }
@@ -128,21 +127,22 @@ std::string Converter::findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& p
     return "";
 }
 
-void Converter::convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan) {
+bool Converter::convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan) {
     /* get the ground status and check if this or an other TopSky-Tower set something */
     __convertEuroScopeAtcStatus(plan.GetGroundState(), flightPlan);
-    std::string annotation(plan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand)));
-    __convertTopSkyTowerAtcPad(annotation, flightPlan);
 
     /* check if the scratch pad contains a new message */
     auto command = Converter::findScratchPadEntry(plan, "TST", "A");
     if (0 != command.length()) {
         __convertTopSkyTowerAtcPad(command, flightPlan);
-        plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), command.c_str());
+        return true;
+    }
+    else {
+        return false;
     }
 }
 
-types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
+types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan, bool& overwriteStatus) {
     types::FlightPlan retval;
 
     switch (plan.GetFlightPlanData().GetPlanType()[0]) {
@@ -218,7 +218,7 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     retval.setClearanceLimit(static_cast<float>(plan.GetControllerAssignedData().GetClearedAltitude()) * types::feet);
     retval.setClearanceFlag(plan.GetClearenceFlag());
 
-    Converter::convertAtcCommand(plan, retval);
+    overwriteStatus = Converter::convertAtcCommand(plan, retval);
 
     /* convert the route */
     std::vector<types::Waypoint> waypoints;
@@ -244,8 +244,9 @@ void Converter::convertStandAssignment(const EuroScopePlugIn::CFlightPlan& plan,
     }
 }
 
-types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, RadarScreen& screen) {
+types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, RadarScreen& screen, bool& overwriteStatus) {
     types::Flight retval(target.GetCallsign());
+    overwriteStatus = false;
 
     retval.setGroundSpeed(static_cast<float>(target.GetPosition().GetReportedGS()) * types::knot);
     retval.setVerticalSpeed(static_cast<float>(target.GetVerticalSpeed()) * (types::feet / types::minute));
@@ -283,7 +284,7 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, Ra
         __analyzeScratchPad(scratch, retval);
 
         /* create the flight plan */
-        retval.setFlightPlan(Converter::convert(flightPlan));
+        retval.setFlightPlan(Converter::convert(flightPlan, overwriteStatus));
 
         if (origin == destination) {
             if (retval.flightPlan().departureFlag() == types::FlightPlan::AtcCommand::Departure)
