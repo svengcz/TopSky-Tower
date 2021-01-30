@@ -106,10 +106,9 @@ static __inline void __convertTopSkyTowerAtcPad(const std::string& entry, types:
     if (departure <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Departure) &&
         arrival <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::TaxiIn))
     {
-        if (0 != departure && static_cast<std::uint16_t>(departure) >= static_cast<std::uint16_t>(flightPlan.departureFlag()))
+        if (static_cast<std::uint16_t>(departure) >= static_cast<std::uint16_t>(flightPlan.departureFlag()))
             flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
-        if (0 != arrival)
-            flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
+        flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
     }
 }
 
