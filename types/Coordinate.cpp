@@ -44,7 +44,7 @@ static __inline Angle __coordinateToDecimal(const std::string& coordinate) {
         signFactor = -1.0;
         break;
     default:
-        throw helper::Exception("Coordinate", "Invalid N,E,S,W entry found.");
+        return Angle();
     }
 
     /* convert the values */
