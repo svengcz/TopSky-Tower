@@ -184,7 +184,11 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
         return;
 
     auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this);
+
+    /* update the internal structures that are effected by the flight plan changes */
     this->m_flightRegistry->updateFlight(flight);
+    this->m_ariwsControl->updateFlight(flight);
+    this->m_cmacControl->updateFlight(flight);
 }
 
 void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) {
