@@ -78,6 +78,10 @@ const FlightPlan& Flight::flightPlan() const {
     return this->m_flightPlan;
 }
 
+FlightPlan& Flight::flightPlan() {
+    return this->m_flightPlan;
+}
+
 void Flight::setType(Flight::Type type) {
     this->m_type = type;
 }

@@ -103,6 +103,11 @@ namespace topskytower {
              */
             const FlightPlan& flightPlan() const;
             /**
+             * @brief Returns a changable flight plan
+             * @return The changable flight plan
+             */
+            FlightPlan& flightPlan();
+            /**
              * @brief Sets the flight type
              * @param[in] type The type
              */
