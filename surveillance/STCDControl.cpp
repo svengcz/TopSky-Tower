@@ -197,6 +197,12 @@ static __inline void __normalizeAngle(types::Angle& angle) {
 }
 
 void STCDControl::updateFlight(const types::Flight& flight) {
+    /* flight violated NTZ -> has to go around */
+    auto ntzViolationIt = std::find(this->m_ntzViolations.cbegin(), this->m_ntzViolations.cend(), flight.callsign());
+    bool violatesNtz = this->m_ntzViolations.cend() != ntzViolationIt;
+
+    this->removeFlight(flight.callsign());
+
     if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().stcdActive)
         return;
 
@@ -205,10 +211,8 @@ void STCDControl::updateFlight(const types::Flight& flight) {
         return;
 
     /* ignore landed or going around flights */
-    if (40_kn > flight.groundSpeed() || types::FlightPlan::AtcCommand::GoAround == flight.flightPlan().arrivalFlag()) {
-        this->removeFlight(flight.callsign());
+    if (40_kn > flight.groundSpeed() || types::FlightPlan::AtcCommand::GoAround == flight.flightPlan().arrivalFlag())
         return;
-    }
 
     /* find the corresponding runway */
     types::Runway inboundRunway;
@@ -230,9 +234,10 @@ void STCDControl::updateFlight(const types::Flight& flight) {
         return;
 
     /* flight violated NTZ -> has to go around */
-    auto ntzViolationIt = std::find(this->m_ntzViolations.cbegin(), this->m_ntzViolations.cend(), flight.callsign());
-    if (this->m_ntzViolations.cend() != ntzViolationIt)
+    if (true == violatesNtz) {
+        this->m_ntzViolations.push_back(flight.callsign());
         return;
+    }
 
     /* test if a flight is in the NTZ */
     for (const auto& ntz : std::as_const(this->m_noTransgressionZones)) {
@@ -243,9 +248,6 @@ void STCDControl::updateFlight(const types::Flight& flight) {
             return;
         }
     }
-
-    /* remove the flight from the list */
-    this->removeFlight(flight.callsign());
 
     /* find nearest flight */
     const auto& config = system::ConfigurationRegistry::instance().runtimeConfiguration();
