@@ -14,7 +14,30 @@ FlightRegistry::FlightRegistry() : m_flights() { }
 
 void FlightRegistry::updateFlight(const types::Flight& flight) {
     std::string callsign(flight.callsign());
-    this->m_flights[callsign] = flight;
+    auto it = this->m_flights.find(callsign);
+
+    if (this->m_flights.end() != it) {
+        auto depFlags = it->second.flightPlan().departureFlag();
+        auto arrFlags = it->second.flightPlan().arrivalFlag();
+
+        it->second = flight;
+
+        /* keep the old status flags */
+        it->second.flightPlan().setFlag(depFlags);
+        it->second.flightPlan().setFlag(arrFlags);
+    }
+    else {
+        this->m_flights[callsign] = flight;
+    }
+}
+
+void FlightRegistry::updateGroundStatus(const types::Flight& flight) {
+    auto it = this->m_flights.find(flight.callsign());
+
+    if (this->m_flights.end() != it) {
+        it->second.flightPlan().setFlag(flight.flightPlan().departureFlag());
+        it->second.flightPlan().setFlag(flight.flightPlan().arrivalFlag());
+    }
 }
 
 void FlightRegistry::removeFlight(const std::string& callsign) {

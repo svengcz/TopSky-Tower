@@ -38,6 +38,11 @@ namespace topskytower {
              */
             void updateFlight(const types::Flight& flight);
             /**
+             * @brief Updates the ground status of a given flight
+             * @param[in] flight The updated flight with the new ground status flags
+             */
+            void updateGroundStatus(const types::Flight& flight);
+            /**
              * @brief Removes a flight out of the registry
              * @param[in] callsign The flight's callsign
              */
