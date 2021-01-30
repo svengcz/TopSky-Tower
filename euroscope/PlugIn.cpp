@@ -680,9 +680,11 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
         }
         else if ("DEICE" == view) {
             mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Deicing);
+            target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("ST-UP");
         }
         else if ("LI-UP" == view) {
             mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::LineUp);
+            target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString("TAXI");
         }
         else if ("DEPA" == view) {
             mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Departure);
