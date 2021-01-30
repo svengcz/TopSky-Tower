@@ -33,7 +33,6 @@ namespace topskytower {
                 Unknown    = -1, /**< The annotation is unknown */
                 Stand      = 6,  /**< Defines the stand annotation */
                 Marker     = 7,  /**< Defines the marker annotation */
-                AtcCommand = 8   /**< Defines the ATC command annotation */
             };
 
             /**
