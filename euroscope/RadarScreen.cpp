@@ -9,6 +9,7 @@
 
 #include <formats/AirportFileFormat.h>
 #include <formats/EseFileFormat.h>
+#include <helper/Exception.h>
 #include <management/PdcControl.h>
 
 #include "ui/elements/Text.h"
@@ -226,8 +227,17 @@ void RadarScreen::initialize() {
 
     /* received the correct sector filename identifier */
     if (nullptr != sctFilename && 0 != std::strlen(sctFilename)) {
-        formats::EseFileFormat file(sctFilename);
-        if (0 == file.sectors().size()) {
+        formats::EseFileFormat file;
+
+        try {
+            file = formats::EseFileFormat(sctFilename);
+            if (0 == file.sectors().size() || 0 == file.runways(this->m_airport).size()) {
+                this->m_sectorFileIsMissing = true;
+                return;
+            }
+        }
+        catch (const helper::Exception& ex) {
+            this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", ex.message().c_str(), true, true, true, true, false);
             this->m_sectorFileIsMissing = true;
             return;
         }
