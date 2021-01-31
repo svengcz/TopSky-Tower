@@ -33,14 +33,12 @@ namespace topskytower {
             /**
              * @brief Creates a controller information
              * @param[in] identifier The controller's identifier
-             * @param[in] prefix The controller's callsign prefix
-             * @param[in] midfix The controller's callsign midfix
-             * @param[in] suffix The controller's callsign suffix
+             * @param[in] callsign The controller's callsign
              * @param[in] primaryFrequency The controller's primary frequency
              * @param[in] fullName The controller's full name
              */
-            ControllerInfo(const std::string& identifier, const std::string& prefix, const std::string& midfix,
-                           const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName);
+            ControllerInfo(const std::string& identifier, const std::string& callsign,
+                           const std::string& primaryFrequency, const std::string& fullName);
             /**
              * @brief Creates a controller information
              * @param[in] identifier The controller's identifier

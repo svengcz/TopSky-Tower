@@ -21,15 +21,27 @@ ControllerInfo::ControllerInfo() :
         m_controllerName(),
         m_center() { }
 
-ControllerInfo::ControllerInfo(const std::string& identifier, const std::string& prefix, const std::string& midfix,
-                               const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName) :
+ControllerInfo::ControllerInfo(const std::string& identifier, const std::string& callsign,
+                               const std::string& primaryFrequency, const std::string& fullName) :
         m_identifier(identifier),
-        m_prefix(prefix),
-        m_midfix(midfix),
-        m_suffix(suffix),
+        m_prefix(),
+        m_midfix(),
+        m_suffix(),
+        m_callsign(callsign),
         m_primaryFrequency(primaryFrequency),
         m_controllerName(fullName),
-        m_center() { }
+        m_center() {
+    auto split = helper::String::splitString(callsign, "_");
+    if (3 == split.size() && 0 != split[1].length()) {
+        this->m_prefix = split[0];
+        this->m_midfix = split[1];
+        this->m_suffix = split[2];
+    }
+    else {
+        this->m_prefix = split.front();
+        this->m_suffix = split.back();
+    }
+}
 
 ControllerInfo::ControllerInfo(const std::string& identifier, const std::string& prefix, const std::string& midfix,
                                const std::string& suffix, const std::string& primaryFrequency, const std::string& fullName,

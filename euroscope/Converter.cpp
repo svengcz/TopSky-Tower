@@ -306,22 +306,16 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, Ra
 }
 
 types::ControllerInfo Converter::convert(const EuroScopePlugIn::CController& controller) {
-    auto elements = helper::String::splitString(controller.GetCallsign(), "_");
-    std::string prefix(elements[0]), midfix, suffix(elements.back());
-    if (3 == elements.size())
-        midfix = elements[1];
+    std::string callsign(controller.GetCallsign());
 
     /* transform callsign to upper cases */
 #pragma warning(disable: 4244)
-    std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::toupper);
-    std::transform(midfix.begin(), midfix.end(), midfix.begin(), ::toupper);
-    std::transform(suffix.begin(), suffix.end(), suffix.begin(), ::toupper);
+    std::transform(callsign.begin(), callsign.end(), callsign.begin(), ::toupper);
 #pragma warning(default: 4244)
 
     /* transform the frequency into a string */
     std::stringstream stream;
     stream << std::fixed << std::setprecision(3) << controller.GetPrimaryFrequency();
 
-    return types::ControllerInfo(controller.GetPositionId(), prefix, midfix, suffix,
-                                 stream.str(), controller.GetFullName());
+    return types::ControllerInfo(controller.GetPositionId(), callsign, stream.str(), controller.GetFullName());
 }
