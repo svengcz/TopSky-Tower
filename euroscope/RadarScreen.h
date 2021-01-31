@@ -54,6 +54,7 @@ namespace topskytower {
 
         private:
             bool                                                                     m_initialized;
+            bool                                                                     m_sectorFileIsMissing;
             std::string                                                              m_airport;
             UiManager                                                                m_userInterface;
             system::FlightRegistry*                                                  m_flightRegistry;

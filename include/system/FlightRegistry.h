@@ -20,7 +20,7 @@ namespace topskytower {
          */
         class FlightRegistry {
         private:
-            std::map<std::string, types::Flight> m_flights;
+            std::map<std::string, std::pair<types::Flight, types::FlightPlan::AtcCommand>> m_flights;
 
         public:
             /**

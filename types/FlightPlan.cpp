@@ -153,6 +153,10 @@ const std::string& FlightPlan::arrivalRunway() const {
 }
 
 void FlightPlan::setFlag(FlightPlan::AtcCommand command) {
+    /* avoid cleanups */
+    if (FlightPlan::AtcCommand::Unknown == command)
+        return;
+
     std::uint16_t mask = static_cast<std::uint16_t>(command);
 
     /* arrival-command given */

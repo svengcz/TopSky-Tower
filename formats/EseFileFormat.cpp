@@ -200,6 +200,10 @@ void EseFileFormat::parseRunways(const std::vector<std::string>& runways) {
     }
 }
 
+EseFileFormat::EseFileFormat() :
+        m_sectors(),
+        m_runways() { }
+
 EseFileFormat::EseFileFormat(const std::string& sectorName) :
         m_sectors(),
         m_runways() {

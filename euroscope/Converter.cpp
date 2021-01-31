@@ -110,10 +110,8 @@ static __inline void __convertTopSkyTowerAtcPad(const std::string& entry, types:
     if (departure <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Departure) &&
         arrival <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::TaxiIn))
     {
-        if (0 != departure)
-            flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
-        if (0 != arrival)
-            flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
+        flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
+        flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
     }
 }
 
@@ -136,14 +134,11 @@ std::string Converter::findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& p
 void Converter::convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan) {
     /* get the ground status and check if this or an other TopSky-Tower set something */
     __convertEuroScopeAtcStatus(plan.GetGroundState(), flightPlan);
-    std::string annotation(plan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand)));
-    __convertTopSkyTowerAtcPad(annotation, flightPlan);
 
     std::string scratchpad = plan.GetControllerAssignedData().GetScratchPadString();
     bool updated = true;
     std::size_t pos;
 
-    /* check if the scratch pad contains a new message */
     if (std::string::npos != (pos = scratchpad.find("DE-ICE"))) {
         flightPlan.setFlag(types::FlightPlan::AtcCommand::Deicing);
         scratchpad.erase(pos, 6);
@@ -173,11 +168,8 @@ void Converter::convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, type
     }
 
     /* update the internal entries and the scratch pad */
-    if (true == updated) {
-        std::uint16_t mask = static_cast<std::uint16_t>(flightPlan.departureFlag()) | static_cast<std::uint16_t>(flightPlan.arrivalFlag());
-        plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), std::to_string(mask).c_str());
+    if (true == updated)
         plan.GetControllerAssignedData().SetScratchPadString(scratchpad.c_str());
-    }
 }
 
 types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
@@ -343,22 +335,16 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, Ra
 }
 
 types::ControllerInfo Converter::convert(const EuroScopePlugIn::CController& controller) {
-    auto elements = helper::String::splitString(controller.GetCallsign(), "_");
-    std::string prefix(elements[0]), midfix, suffix(elements.back());
-    if (3 == elements.size())
-        midfix = elements[1];
+    std::string callsign(controller.GetCallsign());
 
     /* transform callsign to upper cases */
 #pragma warning(disable: 4244)
-    std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::toupper);
-    std::transform(midfix.begin(), midfix.end(), midfix.begin(), ::toupper);
-    std::transform(suffix.begin(), suffix.end(), suffix.begin(), ::toupper);
+    std::transform(callsign.begin(), callsign.end(), callsign.begin(), ::toupper);
 #pragma warning(default: 4244)
 
     /* transform the frequency into a string */
     std::stringstream stream;
     stream << std::fixed << std::setprecision(3) << controller.GetPrimaryFrequency();
 
-    return types::ControllerInfo(controller.GetPositionId(), prefix, midfix, suffix,
-                                 stream.str(), controller.GetFullName());
+    return types::ControllerInfo(controller.GetPositionId(), callsign, stream.str(), controller.GetFullName());
 }

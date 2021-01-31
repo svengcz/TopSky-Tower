@@ -43,7 +43,7 @@ void Sector::parseSectorType() {
 
 Sector::Sector(std::string&& identifier, std::string&& prefix, std::string&& midfix,
                std::string&& suffix, std::string&& frequency) :
-        m_info(identifier, prefix, midfix, suffix, frequency, ""),
+        m_info(identifier, (0 != midfix.length() ? prefix + "_" + midfix + "_" + suffix : prefix + "_" + suffix), frequency, ""),
         m_type(Type::Undefined),
         m_borders() {
     this->parseSectorType();

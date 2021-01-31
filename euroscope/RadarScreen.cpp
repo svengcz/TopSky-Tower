@@ -13,6 +13,7 @@
 
 #include <formats/AirportFileFormat.h>
 #include <formats/EseFileFormat.h>
+#include <helper/Exception.h>
 #include <management/NotamControl.h>
 #include <management/PdcControl.h>
 
@@ -29,6 +30,7 @@ using namespace topskytower::types;
 RadarScreen::RadarScreen() :
         EuroScopePlugIn::CRadarScreen(),
         m_initialized(false),
+        m_sectorFileIsMissing(false),
         m_airport(),
         m_userInterface(this),
         m_flightRegistry(new system::FlightRegistry()),
@@ -168,11 +170,10 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
 }
 
 void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) {
-    if (false == flightPlan.GetCorrelatedRadarTarget().IsValid())
+    if (false == flightPlan.GetCorrelatedRadarTarget().IsValid() || false == this->isInitialized())
         return;
 
-    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this);
-    this->m_flightRegistry->updateFlight(flight);
+    this->m_flightRegistry->updateFlight(Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this));
 }
 
 void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan, int type) {
@@ -184,11 +185,14 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
         return;
     }
 
-    if (false == flightPlan.GetCorrelatedRadarTarget().IsValid())
+    if (false == flightPlan.GetCorrelatedRadarTarget().IsValid() || false == this->isInitialized())
         return;
 
+    /* update the internal structures that are effected by the flight plan changes */
     auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this);
     this->m_flightRegistry->updateFlight(flight);
+    this->m_ariwsControl->updateFlight(flight);
+    this->m_cmacControl->updateFlight(flight);
 }
 
 void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) {
@@ -218,12 +222,33 @@ void RadarScreen::initialize() {
         return;
 
     auto sctFilename = this->GetPlugIn()->ControllerMyself().GetSectorFileName();
+    if (true == this->m_sectorFileIsMissing) {
+        static bool errorLog = false;
+
+        if (false == errorLog) {
+            this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", "Unable to find the sector file", true, true, true, true, false);
+            errorLog = true;
+        }
+
+        return;
+    }
 
     /* received the correct sector filename identifier */
     if (nullptr != sctFilename && 0 != std::strlen(sctFilename)) {
-        formats::EseFileFormat file(sctFilename);
-        if (0 == file.sectors().size())
+        formats::EseFileFormat file;
+
+        try {
+            file = formats::EseFileFormat(sctFilename);
+            if (0 == file.sectors().size() || 0 == file.runways(this->m_airport).size()) {
+                this->m_sectorFileIsMissing = true;
+                return;
+            }
+        }
+        catch (const helper::Exception& ex) {
+            this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", ex.message().c_str(), true, true, true, true, false);
+            this->m_sectorFileIsMissing = true;
             return;
+        }
 
         if (nullptr != this->m_sectorControl)
             delete this->m_sectorControl;

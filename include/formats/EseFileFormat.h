@@ -36,6 +36,10 @@ namespace topskytower {
 
         public:
             /**
+             * @brief Creates an empty file format
+             */
+            EseFileFormat();
+            /**
              * @brief Parses an ESE file and extracts all required information
              * If the file does not exist, the constructor throws an exeption.
              * @param[in] sectorName The sector's name which is used to find the sector file

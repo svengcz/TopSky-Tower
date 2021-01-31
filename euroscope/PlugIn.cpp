@@ -693,7 +693,8 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
         }
         else if ("LI-UP" == view) {
             mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::LineUp);
-            scratchPadExtend = "LINEUP";
+            scratchPadExtend = "TAXI;LINEUP";
+            overwrite = true;
         }
         else if ("DEPA" == view) {
             mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Departure);
@@ -731,18 +732,20 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
     }
 
     if (0 != scratchPadExtend.length()) {
-        std::string scratchpad;
+        auto split = helper::String::splitString(scratchPadExtend, ";");
+        for (const auto& entry : std::as_const(split)) {
+            std::string scratchpad;
 
-        if (false == overwrite) {
-            scratchpad = target.GetCorrelatedFlightPlan().GetControllerAssignedData().GetScratchPadString();
-            scratchpad += scratchPadExtend;
-        }
-        else {
-            scratchpad = scratchPadExtend;
-        }
+            if (false == overwrite) {
+                scratchpad = target.GetCorrelatedFlightPlan().GetControllerAssignedData().GetScratchPadString();
+                scratchpad += entry;
+            }
+            else {
+                scratchpad = entry;
+            }
 
-        target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::AtcCommand), std::to_string(mask).c_str());
-        target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchpad.c_str());
+            target.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchpad.c_str());
+        }
     }
 }
 
