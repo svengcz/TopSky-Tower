@@ -18,6 +18,7 @@ SectorControl::SectorControl() :
         m_unicom(new Node(types::Sector("UNICOM", "", "", "FSS", "122.800"))),
         m_rootNode(nullptr),
         m_ownSector(nullptr),
+        m_sectorAssociations(),
         m_handoffs(),
         m_sectorsOfFlights(),
         m_handoffOfFlightsToMe() { }
@@ -26,6 +27,7 @@ SectorControl::SectorControl(const std::string& airport, const std::list<types::
         m_unicom(new Node(types::Sector("UNICOM", "", "", "FSS", "122.800"))),
         m_rootNode(nullptr),
         m_ownSector(nullptr),
+        m_sectorAssociations(),
         m_handoffs(),
         m_sectorsOfFlights() {
     std::list<types::Sector> airportSectors;
@@ -401,22 +403,34 @@ void SectorControl::controllerUpdate(const types::ControllerInfo& info) {
             }
         }
 
+        /* remove the controller if the position switch was too fast for Euroscope */
+        this->controllerOffline(info);
+
+        this->m_sectorAssociations[info.callsign()] = info.identifier();
         node->controllers.push_back(info);
+    }
+    else {
+        /* remove the controller if he deactivated the corresponding primary */
+        this->controllerOffline(info);
     }
 }
 
 void SectorControl::controllerOffline(const types::ControllerInfo& info) {
-    auto node = SectorControl::findNodeBasedOnInformation(this->m_rootNode, info);
-
-    if (nullptr != node) {
-        /* remove the controller info */
-        for (auto it = node->controllers.begin(); node->controllers.end() != it; ++it) {
-            if (it->controllerName() == info.controllerName()) {
-                node->controllers.erase(it);
-                this->cleanupHandoffList(node);
-                return;
+    auto assocIt = this->m_sectorAssociations.find(info.callsign());
+    if (this->m_sectorAssociations.end() != assocIt) {
+        auto node = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, assocIt->second);
+        if (nullptr != node) {
+            /* remove the controller info */
+            for (auto it = node->controllers.begin(); node->controllers.end() != it; ++it) {
+                if (it->callsign() == info.callsign()) {
+                    node->controllers.erase(it);
+                    this->cleanupHandoffList(node);
+                    return;
+                }
             }
         }
+
+        this->m_sectorAssociations.erase(assocIt);
     }
 }
 
@@ -732,17 +746,10 @@ std::list<std::string> SectorControl::handoffStations(const types::Flight& fligh
         return retval;
 
     for (const auto& controller : std::as_const(it->second.nextSector->controllers)) {
-        if (0 != controller.prefix().size()) {
-            std::string controllerCallsign(controller.prefix() + "_");
-            if (0 != controller.midfix().length())
-                controllerCallsign += controller.midfix() + "_";
-            controllerCallsign += controller.suffix();
-
-            retval.push_back(std::move(controllerCallsign));
-        }
-        else {
+        if (0 != controller.prefix().size())
+            retval.push_back(controller.callsign());
+        else
             retval.push_back("");
-        }
     }
 
     return retval;
