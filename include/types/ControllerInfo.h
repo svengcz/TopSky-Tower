@@ -20,6 +20,7 @@ namespace topskytower {
             std::string       m_prefix;
             std::string       m_midfix;
             std::string       m_suffix;
+            std::string       m_callsign;
             std::string       m_primaryFrequency;
             std::string       m_controllerName;
             types::Coordinate m_center;
@@ -73,6 +74,11 @@ namespace topskytower {
              * @return The identifier
              */
             const std::string& identifier() const;
+            /**
+             * @brief Returns the callsign
+             * @return The callsign
+             */
+            const std::string& callsign() const;
             /**
              * @brief Returns the callsign's prefix
              * @return The callsign's prefix

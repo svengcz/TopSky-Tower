@@ -5,6 +5,7 @@
  *   Implements the controller information
  */
 
+#include <helper/String.h>
 #include <types/ControllerInfo.h>
 
 using namespace topskytower;
@@ -15,6 +16,7 @@ ControllerInfo::ControllerInfo() :
         m_prefix(),
         m_midfix(),
         m_suffix(),
+        m_callsign(),
         m_primaryFrequency(),
         m_controllerName(),
         m_center() { }
@@ -50,6 +52,10 @@ bool ControllerInfo::operator!=(const ControllerInfo& other) const {
 
 const std::string& ControllerInfo::identifier() const {
     return this->m_identifier;
+}
+
+const std::string& ControllerInfo::callsign() const {
+    return this->m_callsign;
 }
 
 const std::string& ControllerInfo::prefix() const {
