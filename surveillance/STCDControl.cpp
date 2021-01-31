@@ -50,8 +50,10 @@ static const std::map<std::pair<types::Aircraft::WTC, types::Aircraft::WTC>, typ
     { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Super),   6_nm }
 };
 
-STCDControl::STCDControl(const std::string& airport, const types::Coordinate& center, const std::list<types::Runway>& runways) :
+STCDControl::STCDControl(const std::string& airport, const types::Length& elevation, const types::Coordinate& center,
+                         const std::list<types::Runway>& runways) :
         m_airportIcao(airport),
+        m_airportElevation(elevation + 100_ft),
         m_reference(center),
         m_runways(runways),
         m_noTransgressionZones(),
@@ -217,7 +219,8 @@ void STCDControl::updateFlight(const types::Flight& flight) {
         return;
 
     /* ignore landed or going around flights */
-    if (40_kn > flight.groundSpeed() || types::FlightPlan::AtcCommand::GoAround == flight.flightPlan().arrivalFlag())
+    bool landed = 40_kn > flight.groundSpeed() || this->m_airportElevation >= flight.currentPosition().altitude();
+    if (true == landed || types::FlightPlan::AtcCommand::GoAround == flight.flightPlan().arrivalFlag())
         return;
 
     /* find the corresponding runway */

@@ -32,6 +32,7 @@ RadarScreen::RadarScreen() :
         m_initialized(false),
         m_sectorFileIsMissing(false),
         m_airport(),
+        m_elevation(),
         m_userInterface(this),
         m_flightRegistry(new system::FlightRegistry()),
         m_sectorControl(nullptr),
@@ -82,6 +83,15 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
         }
         else {
             this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", "No airport in the ASR file defined",
+                                                  true, true, false, false, false);
+        }
+
+        value = this->GetDataFromAsr("Elevation");
+        if (nullptr != value) {
+            this->m_elevation = static_cast<float>(std::atof(value)) * types::feet;
+        }
+        else {
+            this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", "No elevation in the ASR file defined",
                                                   true, true, false, false, false);
         }
     }
@@ -282,7 +292,7 @@ void RadarScreen::initialize() {
 
         if (nullptr != this->m_stcdControl)
             delete this->m_stcdControl;
-        this->m_stcdControl = new surveillance::STCDControl(this->m_airport, center, file.runways(this->m_airport));
+        this->m_stcdControl = new surveillance::STCDControl(this->m_airport, this->m_elevation, center, file.runways(this->m_airport));
 
         this->m_initialized = true;
     }

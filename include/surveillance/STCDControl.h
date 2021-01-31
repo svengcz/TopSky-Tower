@@ -46,6 +46,7 @@ namespace topskytower {
         private:
 #ifndef DOXYGEN_IGNORE
             std::string                          m_airportIcao;
+            types::Length                        m_airportElevation;
             types::Coordinate                    m_reference;
             std::list<types::Runway>             m_runways;
             std::list<types::SectorBorder>       m_noTransgressionZones;
@@ -60,10 +61,12 @@ namespace topskytower {
             /**
              * @brief Creates a STCD control instance
              * @param[in] airport The airport's ICAO code
+             * @param[in] elevation The airport's elevation
              * @param[in] center The reference point for the gnonomic transformation
              * @param[in] runways The runways of the airport
              */
-            STCDControl(const std::string& airport, const types::Coordinate& center, const std::list<types::Runway>& runways);
+            STCDControl(const std::string& airport, const types::Length& elevation, const types::Coordinate& center,
+                        const std::list<types::Runway>& runways);
             /**
              * @brief Destroys all internal structures and registrations
              */
