@@ -53,9 +53,10 @@ The plug-in needs to be loaded into EuroScope via the plugin-menu.
 
 ![Load plugin](doc/imgs/PluginLoad.png)
 
-The used ASR-file needs an extension at the end of the field that TopSky-Tower identifies which airport is used.
+The used ASR-file needs an extension at the end of the field that TopSky-Tower identifies which airport and elevation of the airport is used.
 @code{.xml}
 PLUGIN:TopSky-Tower:Airport:ICAO
+PLUGIN:TopSky-Tower:Elevation:FEET
 @endcode
 The ICAO code is the code of the controlled airport.
 
