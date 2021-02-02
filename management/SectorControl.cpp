@@ -492,12 +492,13 @@ const types::ControllerInfo& SectorControl::ownSector() const {
 }
 
 std::shared_ptr<SectorControl::Node> SectorControl::findOnlineResponsible(const types::Flight& flight,
+                                                                          types::Flight::Type type,
                                                                           const types::Position& position,
                                                                           bool ignoreClearanceFlag) const {
     std::list<std::shared_ptr<Node>> candidates;
 
     for (const auto& parent : std::as_const(this->m_ownSector->parents)) {
-        auto candidate = SectorControl::findLowestSector(parent, flight, position, ignoreClearanceFlag);
+        auto candidate = SectorControl::findLowestSector(parent, flight, position, type, ignoreClearanceFlag);
         if (nullptr != candidate) {
             candidates.push_back(candidate);
 
@@ -515,11 +516,11 @@ std::shared_ptr<SectorControl::Node> SectorControl::findOnlineResponsible(const 
     /* check if a departure or an approach is more helpful */
     if (1 < candidates.size()) {
         for (const auto& candidate : std::as_const(candidates)) {
-            if (candidate->sector.type() == types::Sector::Type::Departure && flight.type() == types::Flight::Type::Departure) {
+            if (candidate->sector.type() == types::Sector::Type::Departure && type == types::Flight::Type::Departure) {
                 node = candidate;
                 break;
             }
-            else if (candidate->sector.type() == types::Sector::Type::Approach && flight.type() == types::Flight::Type::Arrival) {
+            else if (candidate->sector.type() == types::Sector::Type::Approach && type == types::Flight::Type::Arrival) {
                 node = candidate;
                 break;
             }
@@ -556,13 +557,13 @@ std::shared_ptr<SectorControl::Node> SectorControl::findOnlineResponsible(const 
 
 std::shared_ptr<SectorControl::Node> SectorControl::findLowestSector(const std::shared_ptr<SectorControl::Node>& node,
                                                                      const types::Flight& flight, const types::Position& position,
-                                                                     bool ignoreClearanceFlag) {
+                                                                     types::Flight::Type type, bool ignoreClearanceFlag) {
     /* check the children */
     for (const auto& child : std::as_const(node->children)) {
-        auto retval = SectorControl::findLowestSector(child, flight, position, ignoreClearanceFlag);
+        auto retval = SectorControl::findLowestSector(child, flight, position, type, ignoreClearanceFlag);
         if (nullptr != retval) {
             /* non-departures do not go to the delivery */
-            if (types::Flight::Type::Departure != flight.type() && types::Sector::Type::Delivery == retval->sector.type())
+            if (types::Flight::Type::Departure != type && types::Sector::Type::Delivery == retval->sector.type())
                 continue;
             /* Delivery is only allowed if the clearance flag is not set */
             else if (types::Sector::Type::Delivery != retval->sector.type() || false == flight.flightPlan().clearanceFlag())
@@ -580,15 +581,16 @@ std::shared_ptr<SectorControl::Node> SectorControl::findLowestSector(const std::
     return nullptr;
 }
 
-bool SectorControl::isInOwnSectors(const types::Flight& flight, const types::Position& position, bool ignoreClearanceFlag) const {
-    auto node = this->findOnlineResponsible(flight, position, ignoreClearanceFlag);
+bool SectorControl::isInOwnSectors(const types::Flight& flight, const types::Position& position,
+                                   types::Flight::Type type, bool ignoreClearanceFlag) const {
+    auto node = this->findOnlineResponsible(flight, type, position, ignoreClearanceFlag);
     if (nullptr == node)
         return false;
 
     return this->m_ownSector == node && nullptr != this->m_ownSector;
 }
 
-void SectorControl::updateFlight(const types::Flight& flight) {
+void SectorControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
     if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
         return;
 
@@ -601,12 +603,12 @@ void SectorControl::updateFlight(const types::Flight& flight) {
     }
 
     /* get current sector of the flight */
-    this->m_sectorsOfFlights[flight.callsign()] = this->findLowestSector(this->m_rootNode, flight, flight.currentPosition(), false);
+    this->m_sectorsOfFlights[flight.callsign()] = this->findLowestSector(this->m_rootNode, flight, flight.currentPosition(), type, false);
     if (nullptr == this->m_sectorsOfFlights[flight.callsign()])
         this->m_sectorsOfFlights.erase(flight.callsign());
 
     bool ignoreClearanceFlag = types::Sector::Type::Delivery == this->m_ownSector->sector.type();
-    bool insideOwnBorder = this->isInOwnSectors(flight, flight.currentPosition(), ignoreClearanceFlag);
+    bool insideOwnBorder = this->isInOwnSectors(flight, flight.currentPosition(), type, ignoreClearanceFlag);
     if (false == manuallyChanged && false == handoffDone && (true == insideOwnBorder || true == flight.isTracked()))
     {
         types::Position predicted;
@@ -636,7 +638,7 @@ void SectorControl::updateFlight(const types::Flight& flight) {
         }
 
         /* the aircraft remains in own sector */
-        if (true == this->isInOwnSectors(flight, predicted, false)) {
+        if (true == this->isInOwnSectors(flight, predicted, type, false)) {
             /* check if an old handoff exists */
             it = this->m_handoffs.find(flight.callsign());
             if (this->m_handoffs.end() != it)
@@ -645,7 +647,7 @@ void SectorControl::updateFlight(const types::Flight& flight) {
         }
 
         /* get the next responsible node and the next online station */
-        auto nextNode = this->findOnlineResponsible(flight, predicted, false);
+        auto nextNode = this->findOnlineResponsible(flight, type, predicted, false);
 
         /* found a possible handoff candidate */
         if (nullptr != nextNode && nextNode != this->m_ownSector) {
@@ -664,7 +666,7 @@ void SectorControl::updateFlight(const types::Flight& flight) {
     /* check if we have to remove the handoff information */
     else if (this->m_handoffs.end() != it && true == it->second.handoffPerformed) {
         /* find the current online controller but ignore the clearance flag to avoid too early deletions, if Delivery is online */
-        auto currentNode = this->findOnlineResponsible(flight, flight.currentPosition(), ignoreClearanceFlag);
+        auto currentNode = this->findOnlineResponsible(flight, type, flight.currentPosition(), ignoreClearanceFlag);
 
         /* check if an other controller is responsible */
         if (currentNode != this->m_ownSector && false == flight.isTracked())
@@ -686,14 +688,14 @@ void SectorControl::removeFlight(const std::string& callsign) {
         this->m_handoffOfFlightsToMe.erase(hit);
 }
 
-bool SectorControl::isInOwnSector(const types::Flight& flight) {
+bool SectorControl::isInOwnSector(const types::Flight& flight, types::Flight::Type type) {
     auto it = this->m_sectorsOfFlights.find(flight.callsign());
 
     if (this->m_sectorsOfFlights.cend() != it) {
         if (it->second == this->m_ownSector)
             return true;
 
-        return this->isInOwnSectors(flight, flight.currentPosition(), false);
+        return this->isInOwnSectors(flight, flight.currentPosition(), type, false);
     }
 
     return false;
@@ -713,11 +715,11 @@ bool SectorControl::handoffRequired(const std::string& callsign) const {
     return false;
 }
 
-bool SectorControl::handoffPossible(const types::Flight& flight) const {
+bool SectorControl::handoffPossible(const types::Flight& flight, types::Flight::Type type) const {
     if (nullptr == this->m_rootNode || nullptr == this->m_ownSector)
         return false;
 
-    bool inOwnSector = this->isInOwnSectors(flight, flight.currentPosition(), false);
+    bool inOwnSector = this->isInOwnSectors(flight, flight.currentPosition(), type, false);
     return true == inOwnSector || true == flight.isTracked();
 }
 

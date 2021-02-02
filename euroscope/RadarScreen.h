@@ -58,7 +58,6 @@ namespace topskytower {
             std::string                                                              m_airport;
             types::Length                                                            m_elevation;
             UiManager                                                                m_userInterface;
-            system::FlightRegistry*                                                  m_flightRegistry;
             management::SectorControl*                                               m_sectorControl;
             management::StandControl*                                                m_standControl;
             surveillance::ARIWSControl*                                              m_ariwsControl;
@@ -141,11 +140,6 @@ namespace topskytower {
              */
             void OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) override;
             /**
-             * @brief Called as soon as a flight plan is updated
-             * @param[in] flightPlan The updated flight plan
-             */
-            void OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) override;
-            /**
              * @brief Called as soon as a controller updated the flight plan
              * @param[in] flightPlan The updated flight plan
              * @param[in] type The changed information
@@ -167,11 +161,6 @@ namespace topskytower {
              * @return The controller manager
              */
             management::SectorControl& sectorControl();
-            /**
-             * @brief Returns the flight registry
-             * @return The flight registry
-             */
-            system::FlightRegistry& flightRegistry() const;
             /**
              * @brief Returns the stand control
              * @return The stand control
@@ -238,6 +227,12 @@ namespace topskytower {
              * @param[in] callsign The flight's callsign
              */
             void activateStandOnScreenSelection(bool activate, const std::string& callsign);
+            /**
+             * @brief Identifies the flight category
+             * @param[in] flight The requested flight
+             * @return The identified type
+             */
+            types::Flight::Type identifyType(const types::Flight& flight);
         };
     }
 }

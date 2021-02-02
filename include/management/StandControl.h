@@ -39,8 +39,8 @@ namespace topskytower {
         private:
 #ifndef DOXYGEN_IGNORE
             struct StandData : public types::Stand {
-                float                    cartesianPosition[2];
-                std::list<types::Flight> occupancyFlights;
+                float                                                    cartesianPosition[2];
+                std::list<std::pair<types::Flight, types::Flight::Type>> occupancyFlights;
             };
             struct StandTree {
                 std::map<std::string, StandData> stands;
@@ -71,10 +71,11 @@ namespace topskytower {
 
             static void copyStandData(const types::Stand& config, StandData& block);
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
-            void markStandAsOccupied(std::map<std::string, StandData>::iterator& iter, const types::Flight& flight);
+            void markStandAsOccupied(std::map<std::string, StandData>::iterator& iter, const types::Flight& flight,
+                                     types::Flight::Type type);
             std::list<std::string> findAvailableAndUsableStands(const types::Flight& flight, bool ignoreManualFlag) const;
-            bool findOptimalStand(const types::Flight& flight, const std::list<std::string>& availableStands);
-            bool assignStand(const types::Flight& flight, const std::list<types::StandPriorities>& priorities,
+            bool findOptimalStand(const types::Flight& flight, types::Flight::Type type, const std::list<std::string>& availableStands);
+            bool assignStand(const types::Flight& flight, types::Flight::Type type, const std::list<types::StandPriorities>& priorities,
                              const std::list<std::string>& availableStands);
 
         public:
@@ -92,8 +93,9 @@ namespace topskytower {
             /**
              * @brief Updates a flight and assigns a stand if the aircraft is close enough
              * @param[in] flight The updatable flight
+             * @param[in] type The flight's type
              */
-            void updateFlight(const types::Flight& flight);
+            void updateFlight(const types::Flight& flight, types::Flight::Type type);
             /**
              * @brief Removes a flight out of the list
              * @param[in] callsign The deletable callsign
@@ -102,9 +104,16 @@ namespace topskytower {
             /**
              * @brief Assigns a stand manually to a flight
              * @param[in] flight The assignable flight
+             * @param[in] type The flight's type
              * @param[in] stand The stand's identifier
              */
-            void assignManually(const types::Flight& flight, const std::string& stand);
+            void assignManually(const types::Flight& flight, types::Flight::Type type, const std::string& stand);
+            /**
+             * @brief Checks if a stand exists or not
+             * @param[in] name The requested stand
+             * @return True if the stand exists, else false
+             */
+            bool standExists(const std::string& name) const;
             /**
              * @brief Returns the assigned or occupied stand of a flight
              * @param[in] flight The requested flight

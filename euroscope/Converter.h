@@ -29,7 +29,7 @@ namespace topskytower {
         private:
             static std::string findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker, const std::string& entry);
             static void convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan);
-            static void convertStandAssignment(const EuroScopePlugIn::CFlightPlan& plan, const types::Flight& flight, RadarScreen& screen);
+            static void convertStandAssignment(const EuroScopePlugIn::CFlightPlan& plan);
 
         public:
             /**
@@ -47,10 +47,9 @@ namespace topskytower {
             /**
              * @brief Converts an ES radar target into a TopSky-Tower flight structure
              * @param[in] target The radar target
-             * @param[in] screen The corresponding RADAR screen
              * @return The converted flight structure
              */
-            static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target, RadarScreen& screen);
+            static types::Flight convert(const EuroScopePlugIn::CRadarTarget& target);
             /**
              * @brief Converts an ES controller structure into a TopSky-Tower controller information
              * @param[in] controller The ES controller

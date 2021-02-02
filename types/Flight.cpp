@@ -16,7 +16,7 @@ using namespace topskytower::types;
 Flight::Flight() :
         m_flightPlan(),
         m_callsign(),
-        m_type(Flight::Type::Unknown),
+        m_airborne(false),
         m_currentPosition(),
         m_groundSpeed(),
         m_verticalSpeed(),
@@ -30,8 +30,8 @@ Flight::Flight() :
 
 Flight::Flight(const std::string& callsign) :
         m_flightPlan(),
+        m_airborne(false),
         m_callsign(callsign),
-        m_type(Flight::Type::Unknown),
         m_currentPosition(),
         m_groundSpeed(),
         m_verticalSpeed(),
@@ -42,12 +42,12 @@ Flight::Flight(const std::string& callsign) :
         m_isTrackedByOtherController(false),
         m_handoffReceivedBy() { }
 
-Flight::Type Flight::type() const {
-    return this->m_type;
-}
-
 const std::string& Flight::callsign() const {
     return this->m_callsign;
+}
+
+bool Flight::airborne() const {
+    return this->m_airborne;
 }
 
 const Position& Flight::currentPosition() const {
@@ -86,8 +86,8 @@ FlightPlan& Flight::flightPlan() {
     return this->m_flightPlan;
 }
 
-void Flight::setType(Flight::Type type) {
-    this->m_type = type;
+void Flight::setAirborne(bool airborne) {
+    this->m_airborne = airborne;
 }
 
 void Flight::setCurrentPosition(const Position& position) {

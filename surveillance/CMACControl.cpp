@@ -21,7 +21,7 @@ using namespace topskytower::types;
 CMACControl::CMACControl() :
         m_tracks() { }
 
-void CMACControl::updateFlight(const types::Flight& flight) {
+void CMACControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
     /* check if the system is active */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().cmacActive ||
         false == system::ConfigurationRegistry::instance().runtimeConfiguration().cmacActive)
@@ -82,7 +82,7 @@ void CMACControl::updateFlight(const types::Flight& flight) {
         delta -= 360.0_deg;
 
     /* compare the expected with the current ATC command */
-    if (types::Flight::Type::Departure == flight.type()) {
+    if (types::Flight::Type::Departure == type) {
         if (90.0_deg < delta && 270.0_deg > delta)
             it->second.expectedCommand = types::FlightPlan::AtcCommand::Pushback;
         else
@@ -101,7 +101,7 @@ void CMACControl::removeFlight(const std::string& callsign) {
         this->m_tracks.erase(it);
 }
 
-bool CMACControl::conformanceMonitoringAlert(const types::Flight& flight) const {
+bool CMACControl::conformanceMonitoringAlert(const types::Flight& flight, types::Flight::Type type) const {
     /* check if the system is active */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().cmacActive ||
         false == system::ConfigurationRegistry::instance().runtimeConfiguration().cmacActive)
@@ -112,7 +112,7 @@ bool CMACControl::conformanceMonitoringAlert(const types::Flight& flight) const 
     auto it = this->m_tracks.find(flight.callsign());
 
     if (this->m_tracks.cend() != it && types::FlightPlan::AtcCommand::Unknown != it->second.expectedCommand) {
-        if (types::Flight::Type::Departure == flight.type()) {
+        if (types::Flight::Type::Departure == type) {
             if (types::FlightPlan::AtcCommand::Pushback == it->second.expectedCommand)
                 return flight.flightPlan().departureFlag() != it->second.expectedCommand;
             else
