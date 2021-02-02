@@ -108,8 +108,6 @@ namespace topskytower {
                                                  char* itemString, int* colorCode);
             static std::string flightPlanCheckResultLog(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes);
             void pdcMessageReceived();
-            bool flightExists(const std::string& callsign) const;
-            RadarScreen* findScreenAndFlight(const std::string& callsign, types::Flight& flight) const;
             void updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
                                     const types::Flight& flight, bool arrival);
 
@@ -166,6 +164,27 @@ namespace topskytower {
              * @param[in] fullMetar The new metar
              */
             void OnNewMetarReceived(const char* station, const char* fullMetar) override;
+            /**
+             * @brief Called as soon as a radar target position is updated
+             * @param[in] radarTarget The updated radar target
+             */
+            void OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) override;
+            /**
+             * @brief Called as soon as a flight plan is updated
+             * @param[in] flightPlan The updated flight plan
+             */
+            void OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) override;
+            /**
+             * @brief Called as soon as a controller updated the flight plan
+             * @param[in] flightPlan The updated flight plan
+             * @param[in] type The changed information
+             */
+            void OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan, int type) override;
+            /**
+             * @brief Called as soon as a flight plan is offline
+             * @param[in] flightPlan The disconnected flight plan
+             */
+            void OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) override;
             /**
              * @brief Returns the path of the settings files
              * @return The path to the settings files

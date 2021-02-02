@@ -25,6 +25,7 @@
 
 using namespace topskytower;
 using namespace topskytower::euroscope;
+using namespace topskytower::types;
 
 types::Coordinate Converter::convert(const EuroScopePlugIn::CPosition& position) {
     return types::Coordinate(static_cast<float>(position.m_Longitude) * types::degree,
@@ -266,18 +267,17 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     return retval;
 }
 
-void Converter::convertStandAssignment(const EuroScopePlugIn::CFlightPlan& plan, const types::Flight& flight, RadarScreen& screen) {
+void Converter::convertStandAssignment(const EuroScopePlugIn::CFlightPlan& plan) {
     auto stand = Converter::findScratchPadEntry(plan, "GRP", "S");
-    if (0 != stand.length()) {
-        screen.standControl().assignManually(flight, stand);
+    if (0 != stand.length())
         plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), ("s/" + stand + "/s").c_str());
-    }
 }
 
-types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, RadarScreen& screen) {
+types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target) {
     types::Flight retval(target.GetCallsign());
 
     retval.setGroundSpeed(static_cast<float>(target.GetPosition().GetReportedGS()) * types::knot);
+    retval.setAirborne(40_kn < retval.groundSpeed());
     retval.setVerticalSpeed(static_cast<float>(target.GetVerticalSpeed()) * (types::feet / types::minute));
     types::Position position(Converter::convert(target.GetPosition().GetPosition()),
                              static_cast<float>(target.GetPosition().GetPressureAltitude()) * types::feet,
@@ -299,8 +299,8 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, Ra
                 retval.setHandoffInitiatedId(flightPlan.GetTrackingControllerId());
         }
         /* get the old handoff information */
-        else if (true == screen.flightRegistry().flightExists(retval.callsign()) && true == retval.isTracked()) {
-            retval.setHandoffInitiatedId(screen.flightRegistry().flight(retval.callsign()).handoffInitiatedId());
+        else if (true == system::FlightRegistry::instance().flightExists(retval.callsign()) && true == retval.isTracked()) {
+            retval.setHandoffInitiatedId(system::FlightRegistry::instance().flight(retval.callsign()).handoffInitiatedId());
         }
 
         /* check if the flight is marked by a controller */
@@ -314,22 +314,9 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target, Ra
 
         /* create the flight plan */
         retval.setFlightPlan(Converter::convert(flightPlan));
-
-        if (origin == destination) {
-            if (retval.flightPlan().departureFlag() == types::FlightPlan::AtcCommand::Departure)
-                retval.setType(types::Flight::Type::Arrival);
-            else
-                retval.setType(types::Flight::Type::Departure);
-        }
-        else if (screen.airportIcao() == origin) {
-            retval.setType(types::Flight::Type::Departure);
-        }
-        else if (screen.airportIcao() == destination) {
-            retval.setType(types::Flight::Type::Arrival);
-        }
     }
 
-    Converter::convertStandAssignment(target.GetCorrelatedFlightPlan(), retval, screen);
+    Converter::convertStandAssignment(target.GetCorrelatedFlightPlan());
 
     return retval;
 }

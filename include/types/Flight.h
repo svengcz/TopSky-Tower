@@ -31,7 +31,7 @@ namespace topskytower {
         private:
             FlightPlan      m_flightPlan;
             std::string     m_callsign;
-            Type            m_type;
+            bool            m_airborne;
             Position        m_currentPosition;
             Velocity        m_groundSpeed;
             Velocity        m_verticalSpeed;
@@ -55,15 +55,15 @@ namespace topskytower {
             explicit Flight(const std::string& callsign);
 
             /**
-             * @brief Returns the flight's type
-             * @return The type
-             */
-            Flight::Type type() const;
-            /**
              * @brief Returns the flight's callsign
              * @return The callsign
              */
             const std::string& callsign() const;
+            /**
+             * @brief Returns if the flight was airborne in the past or not
+             * @return True if the flight was airborne, else false
+             */
+            bool airborne() const;
             /**
              * @brief Returns the current position
              * @return The current position
@@ -110,10 +110,10 @@ namespace topskytower {
              */
             FlightPlan& flightPlan();
             /**
-             * @brief Sets the flight type
-             * @param[in] type The type
+             * @brief Sets the airborne state
+             * @param[in] airborne The airborne state
              */
-            void setType(Flight::Type type);
+            void setAirborne(bool airborne);
             /**
              * @brief Sets the current position
              * @param[in] position The current position

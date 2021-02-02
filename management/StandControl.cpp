@@ -110,16 +110,16 @@ void StandControl::reinitialize(system::ConfigurationRegistry::UpdateType type) 
         this->m_standPriorities[airline.airlineIcao] = airline;
 }
 
-void StandControl::markStandAsOccupied(std::map<std::string, StandData>::iterator& iter, const types::Flight& flight) {
+void StandControl::markStandAsOccupied(std::map<std::string, StandData>::iterator& iter, const types::Flight& flight, types::Flight::Type type) {
     /* mark the direct stand as occupied */
-    iter->second.occupancyFlights.push_back(flight);
+    iter->second.occupancyFlights.push_back(std::make_pair(flight, type));
     this->m_aircraftStandRelation[flight.callsign()] = iter->first;
 
     /* mark the blocking stands as occupied */
     for (const auto& neighbor : std::as_const(iter->second.blockingStands)) {
         auto neighborIt = this->m_standTree.stands.find(neighbor);
         if (this->m_standTree.stands.end() != neighborIt)
-            neighborIt->second.occupancyFlights.push_back(flight);
+            neighborIt->second.occupancyFlights.push_back(std::make_pair(flight, type));
     }
 }
 
@@ -172,7 +172,7 @@ std::list<std::string> StandControl::findAvailableAndUsableStands(const types::F
     return retval;
 }
 
-bool StandControl::findOptimalStand(const types::Flight& flight, const std::list<std::string>& availableStands) {
+bool StandControl::findOptimalStand(const types::Flight& flight, types::Flight::Type type, const std::list<std::string>& availableStands) {
     types::Length minDistance = 1000.0_nm;
     types::Aircraft::WTC bestWtc = types::Aircraft::WTC::Super;
     std::string bestStand;
@@ -201,14 +201,14 @@ bool StandControl::findOptimalStand(const types::Flight& flight, const std::list
     /* found a stand -> assign it */
     if (0 != bestStand.length()) {
         auto it = this->m_standTree.stands.find(bestStand);
-        this->markStandAsOccupied(it, flight);
+        this->markStandAsOccupied(it, flight, type);
         return true;
     }
 
     return false;
 }
 
-bool StandControl::assignStand(const types::Flight& flight, const std::list<types::StandPriorities>& priorities,
+bool StandControl::assignStand(const types::Flight& flight, types::Flight::Type type, const std::list<types::StandPriorities>& priorities,
                                const std::list<std::string>& availableStands) {
     std::list<std::string> finalCandidates;
 
@@ -224,7 +224,7 @@ bool StandControl::assignStand(const types::Flight& flight, const std::list<type
 
         /* find the best stand */
         if (0 != finalCandidates.size()) {
-            if (true == this->findOptimalStand(flight, finalCandidates))
+            if (true == this->findOptimalStand(flight, type, finalCandidates))
                 return true;
         }
     }
@@ -232,13 +232,13 @@ bool StandControl::assignStand(const types::Flight& flight, const std::list<type
     return false;
 }
 
-void StandControl::updateFlight(const types::Flight& flight) {
+void StandControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
     const auto& maxDist = system::ConfigurationRegistry::instance().systemConfiguration().standAssociationDistance;
     if (maxDist < flight.currentPosition().coordinate().distanceTo(this->m_centerPosition))
         return;
 
     /* unknown and departures have the priority */
-    if (types::Flight::Type::Arrival != flight.type()) {
+    if (types::Flight::Type::Arrival != type) {
         /* check if we have to delete the old assignment due to push-back or taxi */
         auto relIt = this->m_aircraftStandRelation.find(flight.callsign());
         if (this->m_aircraftStandRelation.end() != relIt) {
@@ -276,18 +276,18 @@ void StandControl::updateFlight(const types::Flight& flight) {
             /* remove arrival flights out of the stand */
             std::list<std::string> arrivalCallsigns;
             for (auto oit = it->second.occupancyFlights.cbegin(); it->second.occupancyFlights.cend() != oit; ++oit) {
-                if (types::Flight::Type::Arrival == oit->type())
-                    arrivalCallsigns.push_back(oit->callsign());
+                if (types::Flight::Type::Arrival == oit->second)
+                    arrivalCallsigns.push_back(oit->first.callsign());
             }
             for (const auto& cs : std::as_const(arrivalCallsigns))
                 this->removeFlight(cs);
 
             /* reserve the stand */
-            this->markStandAsOccupied(it, flight);
+            this->markStandAsOccupied(it, flight, type);
         }
     }
     /* handle only IFR arrival flights */
-    else if (types::FlightPlan::Type::IFR == flight.flightPlan().type() && types::Flight::Type::Arrival == flight.type()) {
+    else if (types::FlightPlan::Type::IFR == flight.flightPlan().type() && types::Flight::Type::Arrival == type) {
         /* check if we need to assign a new stand */
         auto it = this->m_aircraftStandRelation.find(flight.callsign());
         if (this->m_aircraftStandRelation.cend() != it)
@@ -303,14 +303,14 @@ void StandControl::updateFlight(const types::Flight& flight) {
         auto airlineIt = this->m_standPriorities.find(airlineIcao);
         if (this->m_standPriorities.cend() != airlineIt) {
             /* try to assign a stand based on the priorities */
-            if (true == this->assignStand(flight, airlineIt->second.standPriorities, availableStands))
+            if (true == this->assignStand(flight, type, airlineIt->second.standPriorities, availableStands))
                 return;
         }
 
         /* assing based on list in a generic way */
-        this->findOptimalStand(flight, availableStands);
+        this->findOptimalStand(flight, type, availableStands);
     }
-    else if (types::FlightPlan::Type::VFR == flight.flightPlan().type() && types::Flight::Type::Arrival == flight.type()) {
+    else if (types::FlightPlan::Type::VFR == flight.flightPlan().type() && types::Flight::Type::Arrival == type) {
         if (0 != this->m_gatPosition.name.length())
             this->m_aircraftStandRelation[flight.callsign()] = this->m_gatPosition.name;
     }
@@ -325,7 +325,7 @@ void StandControl::removeFlight(const std::string& callsign) {
         if (this->m_standTree.stands.end() != standIt) {
             /* mark the stand as free */
             for (auto csIt = standIt->second.occupancyFlights.begin(); csIt != standIt->second.occupancyFlights.end(); ++csIt) {
-                if (csIt->callsign() == callsign) {
+                if (csIt->first.callsign() == callsign) {
                     standIt->second.occupancyFlights.erase(csIt);
                     break;
                 }
@@ -336,7 +336,7 @@ void StandControl::removeFlight(const std::string& callsign) {
                 auto neighborIt = this->m_standTree.stands.find(neighbor);
                 if (this->m_standTree.stands.end() != neighborIt) {
                     for (auto csIt = neighborIt->second.occupancyFlights.begin(); csIt != neighborIt->second.occupancyFlights.end(); ++csIt) {
-                        if (csIt->callsign() == callsign) {
+                        if (csIt->first.callsign() == callsign) {
                             neighborIt->second.occupancyFlights.erase(csIt);
                             break;
                         }
@@ -350,7 +350,7 @@ void StandControl::removeFlight(const std::string& callsign) {
     }
 }
 
-void StandControl::assignManually(const types::Flight& flight, const std::string& stand) {
+void StandControl::assignManually(const types::Flight& flight, types::Flight::Type type, const std::string& stand) {
     this->removeFlight(flight.callsign());
 
     if (0 != this->m_gatPosition.name.length() && this->m_gatPosition.name == stand) {
@@ -359,7 +359,17 @@ void StandControl::assignManually(const types::Flight& flight, const std::string
     else {
         auto it = this->m_standTree.stands.find(stand);
         if (this->m_standTree.stands.end() != it)
-            this->markStandAsOccupied(it, flight);
+            this->markStandAsOccupied(it, flight, type);
+    }
+}
+
+bool StandControl::standExists(const std::string& name) const {
+    if (0 != this->m_gatPosition.name.length() && this->m_gatPosition.name == name) {
+        return true;
+    }
+    else {
+        auto it = this->m_standTree.stands.find(name);
+        return this->m_standTree.stands.end() != it;
     }
 }
 

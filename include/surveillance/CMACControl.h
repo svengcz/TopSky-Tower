@@ -48,8 +48,9 @@ namespace topskytower {
             /**
              * @brief Updates a flight and calculates the ARIWS metrices
              * @param[in] flight The updated flight
+             * @param[in] type The flight's type
              */
-            void updateFlight(const types::Flight& flight);
+            void updateFlight(const types::Flight& flight, types::Flight::Type type);
             /**
              * @brief Removes a flight out of the internal system
              * @param[in] callsign The removable callsign
@@ -58,9 +59,10 @@ namespace topskytower {
             /**
              * @brief Checks if a flight is marked as CMA relevant
              * @param[in] flight The requested flight
+             * @param[in] type The flight's type
              * @return True if CMA is valid, else false
              */
-            bool conformanceMonitoringAlert(const types::Flight& flight) const;
+            bool conformanceMonitoringAlert(const types::Flight& flight, types::Flight::Type type) const;
 #endif
         };
     }

@@ -75,14 +75,25 @@ namespace topskytower {
             /**
              * @brief Updates a flight and calculates the metrices for this flight
              * @param[in] flight The updatable flight
+             * @param[in] type The flight's type
              */
-            void updateFlight(const types::Flight& flight);
+            void updateFlight(const types::Flight& flight, types::Flight::Type type);
             /**
              * @brief Removes the flight of this callsign
              * @param[in] callsign The flight's callsign
              */
             void removeFlight(const std::string& callsign);
+            /**
+             * @brief Checks if the NTZ was violated
+             * @param[in] flight The requested flight
+             * @return True if the NTZ was violated, else false
+             */
             bool ntzViolation(const types::Flight& flight) const;
+            /**
+             * brief Checks if the separation to the preceding traffic is lost
+             * @param[in] flight The requested flight
+             * @return True if the separation is lost, else false
+             */
             bool separationLoss(const types::Flight& flight) const;
             const types::Length& minSeparation(const types::Flight& flight);
             /**

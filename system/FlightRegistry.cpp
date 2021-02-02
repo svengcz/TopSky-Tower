@@ -23,8 +23,11 @@ void FlightRegistry::updateFlight(const types::Flight& flight) {
     if (this->m_flights.end() != it) {
         auto depFlags = it->second.first.flightPlan().departureFlag();
         auto arrFlags = it->second.first.flightPlan().arrivalFlag();
+        bool airborne = it->second.first.airborne();
 
         it->second.first = flight;
+        if (true == airborne)
+            it->second.first.setAirborne(true);
 
         /* an update of the departure flag is possible */
         if (types::FlightPlan::AtcCommand::Unknown != flight.flightPlan().departureFlag()) {
@@ -77,4 +80,9 @@ const types::Flight& FlightRegistry::flight(const std::string& callsign) const {
         return it->second.first;
     else
         return fallback;
+}
+
+FlightRegistry& FlightRegistry::instance() {
+    static FlightRegistry __instance;
+    return __instance;
 }

@@ -204,7 +204,7 @@ static __inline void __normalizeAngle(types::Angle& angle) {
         angle -= 360.0_deg;
 }
 
-void STCDControl::updateFlight(const types::Flight& flight) {
+void STCDControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
     /* flight violated NTZ -> has to go around */
     auto ntzViolationIt = std::find(this->m_ntzViolations.cbegin(), this->m_ntzViolations.cend(), flight.callsign());
     bool violatesNtz = this->m_ntzViolations.cend() != ntzViolationIt;
@@ -215,7 +215,7 @@ void STCDControl::updateFlight(const types::Flight& flight) {
         return;
 
     /* we evaluate only the arrivals anf IFRs */
-    if (types::Flight::Type::Arrival != flight.type() || types::FlightPlan::Type::IFR != flight.flightPlan().type())
+    if (types::Flight::Type::Arrival != type || types::FlightPlan::Type::IFR != flight.flightPlan().type())
         return;
 
     /* ignore landed or going around flights */

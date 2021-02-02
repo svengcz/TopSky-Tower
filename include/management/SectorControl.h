@@ -58,14 +58,16 @@ namespace topskytower {
             static std::shared_ptr<Node> findSectorInList(const std::list<std::shared_ptr<Node>>& nodes,
                                                           const types::Position& position,
                                                           types::Flight::Type type, bool lowerSectors);
-            std::shared_ptr<Node> findOnlineResponsible(const types::Flight& flight, const types::Position& position,
-                                                        bool ignoreClearanceFlag) const;
+            std::shared_ptr<Node> findOnlineResponsible(const types::Flight& flight, types::Flight::Type type,
+                                                        const types::Position& position, bool ignoreClearanceFlag) const;
             std::list<std::shared_ptr<Node>> findSectorCandidates(const std::shared_ptr<Node>& node) const;
             static std::shared_ptr<SectorControl::Node> findLowestSector(const std::shared_ptr<Node>& node,
                                                                          const types::Flight& flight,
                                                                          const types::Position& position,
+                                                                         types::Flight::Type type,
                                                                          bool ignoreClearanceFlag);
-            bool isInOwnSectors(const types::Flight& flight, const types::Position& position, bool ignoreClearanceFlag) const;
+            bool isInOwnSectors(const types::Flight& flight, const types::Position& position,
+                                types::Flight::Type type, bool ignoreClearanceFlag) const;
             void cleanupHandoffList(std::shared_ptr<Node>& node);
             std::list<types::ControllerInfo> findOnlineControllers(const std::shared_ptr<Node>& node) const;
 
@@ -116,8 +118,9 @@ namespace topskytower {
             /**
              * @brief Analysis the flight and checks if an handoff is needed
              * @param[in] flight The checked flight
+             * @param[in] type The flight type
              */
-            void updateFlight(const types::Flight& flight);
+            void updateFlight(const types::Flight& flight, types::Flight::Type type);
             /**
              * @brief Removes a flight out of the sector control
              * @param[in] callsign The deletable callsign
@@ -126,9 +129,10 @@ namespace topskytower {
             /**
              * @brief Checks if a specific flight is in the own sector
              * @param[in] flight The requested flight
+             * @param[in] type The flight's type
              * @return True if it is in the own sector, else false
              */
-            bool isInOwnSector(const types::Flight& flight);
+            bool isInOwnSector(const types::Flight& flight, types::Flight::Type type);
             /**
              * @brief Checks if an handoff is required for a specific callsign
              * @param[in] flight The requested flight
@@ -144,9 +148,10 @@ namespace topskytower {
             /**
              * @brief Checks if the aircraft is in the area sector and a handoff is possible
              * @param[in] flight The requested flight
+             * @param[in] type The flight's type
              * @return Trie if an handoff is possible, else false
              */
-            bool handoffPossible(const types::Flight& flight) const;
+            bool handoffPossible(const types::Flight& flight, types::Flight::Type type) const;
             /**
              * @brief Marks that the handoff is performed for a specific callsign
              * @param[in] flight The requested flight

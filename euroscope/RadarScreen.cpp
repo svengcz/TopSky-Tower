@@ -14,6 +14,7 @@
 #include <formats/AirportFileFormat.h>
 #include <formats/EseFileFormat.h>
 #include <helper/Exception.h>
+#include <helper/String.h>
 #include <management/NotamControl.h>
 #include <management/PdcControl.h>
 
@@ -34,7 +35,6 @@ RadarScreen::RadarScreen() :
         m_airport(),
         m_elevation(),
         m_userInterface(this),
-        m_flightRegistry(new system::FlightRegistry()),
         m_sectorControl(nullptr),
         m_standControl(nullptr),
         m_ariwsControl(nullptr),
@@ -64,8 +64,6 @@ RadarScreen::~RadarScreen() {
         delete this->m_sectorControl;
     if (nullptr != this->m_standControl)
         delete this->m_standControl;
-    if (nullptr != this->m_flightRegistry)
-        delete this->m_flightRegistry;
 }
 
 void RadarScreen::OnAsrContentLoaded(bool loaded) {
@@ -162,31 +160,30 @@ void RadarScreen::OnControllerDisconnect(EuroScopePlugIn::CController controller
 }
 
 void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) {
-    auto flight = Converter::convert(radarTarget, *this);
-    this->m_flightRegistry->updateFlight(flight);
+    if (false == radarTarget.IsValid() || false == system::FlightRegistry::instance().flightExists(radarTarget.GetCallsign()))
+        return;
+
+    const auto& flight = system::FlightRegistry::instance().flight(radarTarget.GetCallsign());
+    auto type = this->identifyType(flight);
 
     if (nullptr != this->m_sectorControl)
-        this->m_sectorControl->updateFlight(flight);
+        this->m_sectorControl->updateFlight(flight, type);
     if (nullptr != this->m_standControl)
-        this->m_standControl->updateFlight(flight);
+        this->m_standControl->updateFlight(flight, type);
     if (nullptr != this->m_ariwsControl)
         this->m_ariwsControl->updateFlight(flight);
     if (nullptr != this->m_cmacControl)
-        this->m_cmacControl->updateFlight(flight);
+        this->m_cmacControl->updateFlight(flight, type);
     if (nullptr != this->m_mtcdControl)
-        this->m_mtcdControl->updateFlight(flight);
+        this->m_mtcdControl->updateFlight(flight, type);
     if (nullptr != this->m_stcdControl)
-        this->m_stcdControl->updateFlight(flight);
-}
-
-void RadarScreen::OnFlightPlanFlightPlanDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan) {
-    if (false == flightPlan.GetCorrelatedRadarTarget().IsValid() || false == this->isInitialized())
-        return;
-
-    this->m_flightRegistry->updateFlight(Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this));
+        this->m_stcdControl->updateFlight(flight, type);
 }
 
 void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan, int type) {
+    if (false == this->isInitialized())
+        return;
+
     /* handle only relevant changes */
     if (EuroScopePlugIn::CTR_DATA_TYPE_TEMPORARY_ALTITUDE != type &&
         EuroScopePlugIn::CTR_DATA_TYPE_SQUAWK != type &&
@@ -195,33 +192,41 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
         return;
     }
 
-    if (false == flightPlan.GetCorrelatedRadarTarget().IsValid() || false == this->isInitialized())
+    auto callsign = flightPlan.GetCallsign();
+    if (false == flightPlan.GetCorrelatedRadarTarget().IsValid() || false == system::FlightRegistry::instance().flightExists(callsign))
         return;
 
     /* update the internal structures that are effected by the flight plan changes */
-    auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget(), *this);
-    this->m_flightRegistry->updateFlight(flight);
+    const auto& flight = system::FlightRegistry::instance().flight(callsign);
+    auto flightType = this->identifyType(flight);
+
     this->m_ariwsControl->updateFlight(flight);
-    this->m_cmacControl->updateFlight(flight);
+    this->m_cmacControl->updateFlight(flight, flightType);
+
+    /* update the stand if needed */
+    std::string stand = flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand));
+    if (0 != stand.length()) {
+        auto split = helper::String::splitString(stand, "/");
+        if (3 == split.size() && this->m_standControl->standExists(split[1]) && this->m_standControl->stand(flight) != split[1])
+            this->m_standControl->assignManually(flight, flightType, split[1]);
+    }
 }
 
 void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) {
-    this->m_flightRegistry->removeFlight(flightPlan.GetCallsign());
+    std::string callsign = flightPlan.GetCallsign();
 
     if (nullptr != this->m_standControl)
-        this->m_standControl->removeFlight(flightPlan.GetCallsign());
+        this->m_standControl->removeFlight(callsign);
     if (nullptr != this->m_sectorControl)
-        this->m_sectorControl->removeFlight(flightPlan.GetCallsign());
+        this->m_sectorControl->removeFlight(callsign);
     if (nullptr != this->m_ariwsControl)
-        this->m_ariwsControl->removeFlight(flightPlan.GetCallsign());
+        this->m_ariwsControl->removeFlight(callsign);
     if (nullptr != this->m_cmacControl)
-        this->m_cmacControl->removeFlight(flightPlan.GetCallsign());
+        this->m_cmacControl->removeFlight(callsign);
     if (nullptr != this->m_mtcdControl)
-        this->m_mtcdControl->removeFlight(flightPlan.GetCallsign());
+        this->m_mtcdControl->removeFlight(callsign);
     if (nullptr != this->m_stcdControl)
-        this->m_stcdControl->removeFlight(flightPlan.GetCallsign());
-
-    surveillance::FlightPlanControl::instance().removeFlight(flightPlan.GetCallsign());
+        this->m_stcdControl->removeFlight(callsign);
 }
 
 void RadarScreen::initialize() {
@@ -370,7 +375,7 @@ void RadarScreen::drawTexts(const Gdiplus::PointF& center, float offsetX, float 
 }
 
 bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& graphics) {
-    const auto& flight = this->m_flightRegistry->flight(callsign);
+    const auto& flight = system::FlightRegistry::instance().flight(callsign);
     if (false == this->m_mtcdControl->conflictsExist(flight))
         return false;
 
@@ -382,10 +387,10 @@ bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& 
     auto pixelPos = this->convertCoordinate(flight.currentPosition().coordinate());
     const auto& conflicts = this->m_mtcdControl->conflicts(flight);
     for (const auto& conflict : std::as_const(conflicts)) {
-        if (false == this->m_flightRegistry->flightExists(conflict.callsign))
+        if (false == system::FlightRegistry::instance().flightExists(conflict.callsign))
             continue;
 
-        const auto& other = this->m_flightRegistry->flight(conflict.callsign);
+        const auto& other = system::FlightRegistry::instance().flight(conflict.callsign);
 
         auto otherPos = this->convertCoordinate(other.currentPosition().coordinate());
         auto conflictPos = this->convertCoordinate(conflict.position.coordinate);
@@ -426,7 +431,7 @@ bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& 
 }
 
 bool RadarScreen::visualizeRoute(const std::string& callsign, Gdiplus::Graphics& graphics) {
-    const auto& flight = this->m_flightRegistry->flight(callsign);
+    const auto& flight = system::FlightRegistry::instance().flight(callsign);
 
     if (false == this->m_mtcdControl->departureModelExists(flight))
         return false;
@@ -485,7 +490,7 @@ void RadarScreen::drawData(std::mutex& lock, std::list<std::pair<std::string, st
     lock.lock();
     for (auto it = data.begin(); data.end() != it;) {
         /* erase the visualization if the flight does not exist anymore */
-        if (false == this->m_flightRegistry->flightExists(it->first)) {
+        if (false == system::FlightRegistry::instance().flightExists(it->first)) {
             it = data.erase(it);
             continue;
         }
@@ -585,13 +590,9 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     if (0 != positionId.length() && "XX" != positionId)
         this->m_sectorControl->setOwnSector(Converter::convert(plugin->ControllerMyself()));
 
-    /* update all states of the flights */
-    for (auto rt = plugin->RadarTargetSelectFirst(); true == rt.IsValid(); rt = plugin->RadarTargetSelectNext(rt))
-        this->m_flightRegistry->updateFlight(Converter::convert(rt, *this));
-
     /* add the UI elements for the ground menu */
     if (nullptr != this->m_standControl && true == this->m_standOnScreenSelection) {
-        auto stands = this->m_standControl->allPossibleAndAvailableStands(this->m_flightRegistry->flight(this->m_standOnScreenSelectionCallsign));
+        auto stands = this->m_standControl->allPossibleAndAvailableStands(system::FlightRegistry::instance().flight(this->m_standOnScreenSelectionCallsign));
         auto radarArea = this->GetRadarArea();
         Gdiplus::Color color(
             system::ConfigurationRegistry::instance().systemConfiguration().uiScreenClickColor[0],
@@ -621,10 +622,6 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
 
 management::SectorControl& RadarScreen::sectorControl() {
     return *this->m_sectorControl;
-}
-
-system::FlightRegistry& RadarScreen::flightRegistry() const {
-    return *this->m_flightRegistry;
 }
 
 management::StandControl& RadarScreen::standControl() const {
@@ -706,7 +703,7 @@ std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::strin
         return retval;
 
     /* search the SID exit point */
-    const auto& flight = this->flightRegistry().flight(callsign);
+    const auto& flight = system::FlightRegistry::instance().flight(callsign);
     auto route = flight.flightPlan().route().waypoints();
     types::Coordinate sidExit;
     bool foundExit = false;
@@ -766,4 +763,19 @@ std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::strin
 void RadarScreen::activateStandOnScreenSelection(bool activate, const std::string& callsign) {
     this->m_standOnScreenSelection = activate;
     this->m_standOnScreenSelectionCallsign = callsign;
+}
+
+types::Flight::Type RadarScreen::identifyType(const types::Flight& flight) {
+    if (this->m_airport == flight.flightPlan().origin() && this->m_airport == flight.flightPlan().destination()) {
+        if (true == flight.airborne())
+            return types::Flight::Type::Arrival;
+        else
+            return types::Flight::Type::Departure;
+    }
+    else if (this->m_airport == flight.flightPlan().origin()) {
+        return types::Flight::Type::Departure;
+    }
+    else if (this->m_airport == flight.flightPlan().destination()) {
+        return types::Flight::Type::Arrival;
+    }
 }
