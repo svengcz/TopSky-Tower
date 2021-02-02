@@ -778,4 +778,7 @@ types::Flight::Type RadarScreen::identifyType(const types::Flight& flight) {
     else if (this->m_airport == flight.flightPlan().destination()) {
         return types::Flight::Type::Arrival;
     }
+    else {
+        return types::Flight::Type::Unknown;
+    }
 }
