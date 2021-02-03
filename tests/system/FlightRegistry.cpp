@@ -16,5 +16,5 @@
 using namespace topskytower;
 
 TEST(FlightRegistry, FlightExists) {
-    //EXPECT_FALSE(system::FlightRegistry::instance().)
+    EXPECT_FALSE(system::FlightRegistry::instance().flightExists("TEST"));
 }
