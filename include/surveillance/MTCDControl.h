@@ -76,7 +76,7 @@ namespace topskytower {
             std::map<std::string, std::list<Conflict>> m_conflicts;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
-            std::list<DepartureModel>::iterator insertFlight(const types::Flight& flight);
+            std::list<DepartureModel>::iterator insertFlight(const types::Flight& flight, types::Flight::Type type);
             void removeConflict(const std::string& callsignModel, const std::string& callsignConflict);
 
         public:
@@ -94,8 +94,9 @@ namespace topskytower {
             /**
              * @brief Updates a flight and calculates the MTCA metrices
              * @param[in] flight The updated flight
+             * @param[in] type The flight's type
              */
-            void updateFlight(const types::Flight& flight);
+            void updateFlight(const types::Flight& flight, types::Flight::Type type);
             /**
              * @brief Removes a flight out of the internal system
              * @param[in] callsign The removable callsign

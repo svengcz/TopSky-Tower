@@ -176,7 +176,6 @@ namespace topskytower {
             std::mutex                              m_comChannelsLock;
             std::map<std::string, MessageQueue>     m_comChannels;
             std::function<void()>                   m_notification;
-            std::function<bool(const std::string&)> m_flightChecker;
 
             PdcControl();
             void receiveMessages();
@@ -256,18 +255,6 @@ namespace topskytower {
             void registerNotificationCallback(T* instance, F cbFunction) {
                 std::function<void()> func = std::bind(cbFunction, instance);
                 this->m_notification = func;
-            }
-            /**
-             * @brief Registers a callback that checks if a flight is registered in the system or not
-             * @tparam T The element which registers the callback
-             * @tparam F The callback function
-             * @param[in] instance The instance which registers the callback
-             * @param[in] cbFunction The callback function
-             */
-            template <typename T, typename F>
-            void registerFlightCheckCallback(T* instance, F cbFunction) {
-                std::function<bool(const std::string&)> func = std::bind(cbFunction, instance, std::placeholders::_1);
-                this->m_flightChecker = func;
             }
             /**
              * @brief Returns the PDC control singleton

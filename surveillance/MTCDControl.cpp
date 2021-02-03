@@ -47,9 +47,9 @@ static __inline types::Angle __normalize(const types::Angle& angle) {
     return retval;
 }
 
-std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Flight& flight) {
+std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Flight& flight, types::Flight::Type type) {
     /* ignore non-departing flights and non-IFR flights */
-    if (types::Flight::Type::Departure != flight.type() || types::FlightPlan::Type::IFR != flight.flightPlan().type())
+    if (types::Flight::Type::Departure != type || types::FlightPlan::Type::IFR != flight.flightPlan().type())
         return this->m_departures.end();
 
     /* the flight is actually departing -> add it to the list */
@@ -90,7 +90,7 @@ std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Fligh
     return it;
 }
 
-void MTCDControl::updateFlight(const types::Flight& flight) {
+void MTCDControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
     /* the controller disabled the system */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().mtcdActive ||
         false == system::ConfigurationRegistry::instance().runtimeConfiguration().mtcdActive)
@@ -106,7 +106,7 @@ void MTCDControl::updateFlight(const types::Flight& flight) {
 
     /* we've got a new candidate -> check how to insert it */
     if (this->m_departures.end() == it) {
-        it = this->insertFlight(flight);
+        it = this->insertFlight(flight, type);
         /* did not insert it -> stop any processing */
         if (this->m_departures.end() == it)
             return;
