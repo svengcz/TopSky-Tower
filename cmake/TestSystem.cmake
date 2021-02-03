@@ -9,52 +9,36 @@
 
 ENABLE_TESTING()
 INCLUDE(GoogleTest)
-INCLUDE(FetchContent)
 
 # download googletest
-FetchContent_Declare(
-    googletest
+ExternalProject_Add(
+    GTest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.10.0
+    GIT_TAG release-1.10.0
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -Dgtest_force_shared_crt=ON
+        -DBUILD_SHARED_LIBS=OFF
 )
-FetchContent_GetProperties(googletest)
-IF (NOT googletest_POPULATED)
-    FetchContent_Populate(googletest)
-    SET(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
-    ADD_SUBDIRECTORY(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-    UNSET(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
-
-    SET_TARGET_PROPERTIES(gmock      PROPERTIES FOLDER "external")
-    SET_TARGET_PROPERTIES(gtest      PROPERTIES FOLDER "external")
-    SET_TARGET_PROPERTIES(gtest_main PROPERTIES FOLDER "external")
-ENDIF ()
+SET_TARGET_PROPERTIES(GTest PROPERTIES FOLDER "external")
 
 # create the command to run the tests
 IF (CMAKE_CONFIGURATION_TYPES)
-    ADD_CUSTOM_TARGET(check COMMAND ${CMAKE_CTEST_COMMAND} 
+    ADD_CUSTOM_TARGET(tests COMMAND ${CMAKE_CTEST_COMMAND} 
         --force-new-ctest-process --output-on-failure 
         --build-config "$<CONFIGURATION>")
 ELSE()
-    ADD_CUSTOM_TARGET(check COMMAND ${CMAKE_CTEST_COMMAND} 
+    ADD_CUSTOM_TARGET(tests COMMAND ${CMAKE_CTEST_COMMAND} 
         --force-new-ctest-process --output-on-failure)
 ENDIF()
-
-# disable individual tests
-SET(GOOGLE_TEST_INDIVIDUAL OFF)
+SET_TARGET_PROPERTIES(tests PROPERTIES FOLDER "tests")
 
 MACRO(AddTest TESTNAME FILES LIBRARIES TEST_WORKING_DIRECTORY)
     ADD_EXECUTABLE(${TESTNAME} ${FILES})
-    TARGET_LINK_LIBRARIES(${TESTNAME} gtest gmock gtest_main ${LIBRARIES})
-    gtest_discover_tests(${TESTNAME}
-        WORKING_DIRECTORY ${TEST_WORKING_DIRECTORY}
-        PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}"
-    )
+    TARGET_LINK_LIBRARIES(${TESTNAME} ${LIBRARIES})
+    TARGET_LINK_LIBRARIES(${TESTNAME} debug gtest_maind.lib optimized gtest_main.lib)
+    TARGET_LINK_LIBRARIES(${TESTNAME} debug gtestd.lib optimized gtest.lib)
+    gtest_add_tests(TARGET ${TESTNAME})
     SET_TARGET_PROPERTIES(${TESTNAME} PROPERTIES FOLDER tests)
 ENDMACRO()
-
-# cleanup the cache
-MARK_AS_ADVANCED(
-    BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
-    gmock_build_tests gtest_build_samples gtest_build_tests
-    gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
-)
