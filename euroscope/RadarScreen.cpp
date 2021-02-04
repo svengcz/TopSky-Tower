@@ -624,6 +624,34 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
             }
         }
     }
+
+    /* draw the STCD circles */
+    Gdiplus::Pen stcdPen(Gdiplus::Color(255, 0, 0), 1.0f);
+    for (auto target = plugin->RadarTargetSelectFirst(); true == target.IsValid(); target = plugin->RadarTargetSelectNext(target)) {
+        if (false == target.IsValid())
+            continue;
+
+        std::string callsign(target.GetCallsign());
+
+        if (false == system::FlightRegistry::instance().flightExists(callsign))
+            continue;
+        const auto& flight = system::FlightRegistry::instance().flight(callsign);
+
+        if (true == this->m_stcdControl->separationLoss(flight)) {
+            auto minSeparation = this->m_stcdControl->minSeparation(flight);
+
+            /* calculate the required coordinates to define the rectangle for the ellipse */
+            auto topCoordinate = flight.currentPosition().coordinate().projection(0.0_deg, minSeparation);
+            auto top = this->convertCoordinate(topCoordinate);
+            auto leftCoordinate = flight.currentPosition().coordinate().projection(270.0_deg, minSeparation);
+            auto left = this->convertCoordinate(leftCoordinate);
+            auto center = this->convertCoordinate(flight.currentPosition().coordinate());
+
+            /* calculate the rectangle */
+            Gdiplus::RectF rect(left.X, top.Y, 2.0f * (center.X - left.X), 2.0f * (center.Y - top.Y));
+            graphics.DrawEllipse(&stcdPen, rect);
+        }
+    }
 }
 
 management::SectorControl& RadarScreen::sectorControl() {
