@@ -264,6 +264,7 @@ bool EseFileFormat::parse(const std::string& sectorName) {
         if (".sct" == file.path().extension())
             this->m_paths.push_back(file);
     }
+    threadCount = std::min(this->m_paths.size(), threadCount);
 
     /* start the threads */
     for (std::size_t i = 0; i < threadCount; ++i)
