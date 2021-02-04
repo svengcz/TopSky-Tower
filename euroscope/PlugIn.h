@@ -44,7 +44,8 @@ namespace topskytower {
                 AircraftControlMenuBar              = 3000, /**< The generic aircraft menu */
                 AircraftControlSignal               = 3001, /**< One marker or flag of the flight is set */
                 SurveillanceAlertVisualization      = 3002, /**< Triggers the current surveillance visualization */
-                DepartureRouteDraw                  = 3003, /**< Triggers the visualization of the predicted route */
+                DepartureRouteDrawTimeBased         = 3003, /**< Triggers the visualization of the predicted route for a given time */
+                DepartureRouteDraw                  = 3004, /**< Triggers the visualization of the predicted route */
                 HandoffPerform                      = 3100, /**< Perform the handoff to the next controller */
                 HandoffControllerSelectEvent        = 3101, /**< Select the next controller event */
                 HandoffControllerSelect             = 3102, /**< Select the next controller */

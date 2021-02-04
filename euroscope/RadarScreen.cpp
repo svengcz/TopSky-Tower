@@ -484,8 +484,11 @@ bool RadarScreen::visualizeRoute(const std::string& callsign, Gdiplus::Graphics&
     return 0 != model.waypoints().size();
 }
 
-void RadarScreen::drawData(std::mutex& lock, std::list<std::pair<std::string, std::chrono::system_clock::time_point>>& data,
+void RadarScreen::drawData(std::mutex& lock, std::list<std::pair<std::string, types::Time>>& data,
                            bool surveillanceData, Gdiplus::Graphics& graphics) {
+    auto now = std::chrono::system_clock::now();
+    auto delta = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - this->m_lastRenderingTime).count()) * types::millisecond;
+
     /* draw the different visualization results */
     lock.lock();
     for (auto it = data.begin(); data.end() != it;) {
@@ -496,10 +499,12 @@ void RadarScreen::drawData(std::mutex& lock, std::list<std::pair<std::string, st
         }
 
         /* check if the result is outdated */
-        auto duration = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(this->m_lastRenderingTime - it->second).count()) * types::second;
-        if (duration >= system::ConfigurationRegistry::instance().systemConfiguration().surveillanceVisualizationDuration) {
-            it = data.erase(it);
-            continue;
+        if (0.0_s <= it->second) {
+            it->second -= delta;
+            if (0.0_s > it->second) {
+                it = data.erase(it);
+                continue;
+            }
         }
 
         if (true == surveillanceData) {
@@ -554,7 +559,6 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     if (EuroScopePlugIn::REFRESH_PHASE_AFTER_TAGS != phase)
         return;
 
-    this->m_lastRenderingTime = std::chrono::system_clock::now();
     Gdiplus::Graphics graphics(hdc);
     graphics.SetPageUnit(Gdiplus::UnitPixel);
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
@@ -562,6 +566,8 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     this->drawData(this->m_surveillanceVisualizationsLock, this->m_surveillanceVisualizations, true, graphics);
     this->drawData(this->m_departureRouteVisualizationsLock, this->m_departureRouteVisualizations, false, graphics);
     this->drawNoTransgressionZones(graphics);
+
+    this->m_lastRenderingTime = std::chrono::system_clock::now();
 
     /* visualize everything of the UI manager */
     this->m_userInterface.visualize(&graphics);
@@ -666,33 +672,34 @@ const std::chrono::system_clock::time_point& RadarScreen::lastRenderingTime() co
 }
 
 void RadarScreen::activateSurveillanceVisualization(const std::string& callsign) {
-    std::lock_guard guard(this->m_surveillanceVisualizationsLock);
+    auto duration = system::ConfigurationRegistry::instance().systemConfiguration().surveillanceVisualizationDuration;
 
-    auto stamp = std::chrono::system_clock::now();
+    std::lock_guard guard(this->m_surveillanceVisualizationsLock);
 
     for (auto& entry : this->m_surveillanceVisualizations) {
         if (entry.first == callsign) {
-            entry.second = stamp;
+            entry.second = duration;
             return;
         }
     }
 
-    this->m_surveillanceVisualizations.push_back(std::make_pair(callsign, stamp));
+    this->m_surveillanceVisualizations.push_back(std::make_pair(callsign, duration));
 }
 
-void RadarScreen::activateDepartureRouteVisualization(const std::string& callsign) {
+void RadarScreen::activateDepartureRouteVisualization(const std::string& callsign, const types::Time& visualizationDuration) {
     std::lock_guard guard(this->m_departureRouteVisualizationsLock);
 
-    auto stamp = std::chrono::system_clock::now();
-
-    for (auto& entry : this->m_departureRouteVisualizations) {
-        if (entry.first == callsign) {
-            entry.second = stamp;
+    for (auto it = this->m_departureRouteVisualizations.begin(); this->m_departureRouteVisualizations.end() != it; ++it) {
+        if (it->first == callsign) {
+            if (0.0_s > visualizationDuration)
+                this->m_departureRouteVisualizations.erase(it);
+            else
+                it->second = visualizationDuration;
             return;
         }
     }
 
-    this->m_departureRouteVisualizations.push_back(std::make_pair(callsign, stamp));
+    this->m_departureRouteVisualizations.push_back(std::make_pair(callsign, visualizationDuration));
 }
 
 std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::string& callsign) {

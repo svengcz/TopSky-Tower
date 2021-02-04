@@ -102,6 +102,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemFunction("Departure Ground status menu", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusMenu));
     this->RegisterTagItemFunction("Arrival Ground status menu", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusMenu));
     this->RegisterTagItemFunction("Surveillance visualization trigger", static_cast<int>(PlugIn::TagItemFunction::SurveillanceAlertVisualization));
+    this->RegisterTagItemFunction("Draw departure route (auto hide)", static_cast<int>(PlugIn::TagItemFunction::DepartureRouteDrawTimeBased));
     this->RegisterTagItemFunction("Draw departure route", static_cast<int>(PlugIn::TagItemFunction::DepartureRouteDraw));
 
     /* search for the sound file and register the PDC sound callback */
@@ -1117,8 +1118,11 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::SurveillanceAlertVisualization:
         flightScreen->activateSurveillanceVisualization(flight.callsign());
         break;
+    case PlugIn::TagItemFunction::DepartureRouteDrawTimeBased:
+        flightScreen->activateDepartureRouteVisualization(flight.callsign(), system::ConfigurationRegistry::instance().systemConfiguration().surveillanceVisualizationDuration);
+        break;
     case PlugIn::TagItemFunction::DepartureRouteDraw:
-        flightScreen->activateDepartureRouteVisualization(flight.callsign());
+        flightScreen->activateDepartureRouteVisualization(flight.callsign(), -1.0f * types::second);
         break;
     default:
         break;

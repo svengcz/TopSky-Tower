@@ -53,26 +53,26 @@ namespace topskytower {
             };
 
         private:
-            bool                                                                     m_initialized;
-            bool                                                                     m_sectorFileIsMissing;
-            std::string                                                              m_airport;
-            types::Length                                                            m_elevation;
-            UiManager                                                                m_userInterface;
-            management::SectorControl*                                               m_sectorControl;
-            management::StandControl*                                                m_standControl;
-            surveillance::ARIWSControl*                                              m_ariwsControl;
-            surveillance::CMACControl*                                               m_cmacControl;
-            surveillance::MTCDControl*                                               m_mtcdControl;
-            surveillance::STCDControl*                                               m_stcdControl;
-            std::mutex                                                               m_guiEuroscopeEventsLock;
-            std::list<EuroscopeEvent>                                                m_guiEuroscopeEvents;
-            std::chrono::system_clock::time_point                                    m_lastRenderingTime;
-            std::mutex                                                               m_surveillanceVisualizationsLock;
-            std::list<std::pair<std::string, std::chrono::system_clock::time_point>> m_surveillanceVisualizations;
-            std::mutex                                                               m_departureRouteVisualizationsLock;
-            std::list<std::pair<std::string, std::chrono::system_clock::time_point>> m_departureRouteVisualizations;
-            bool                                                                     m_standOnScreenSelection;
-            std::string                                                              m_standOnScreenSelectionCallsign;
+            bool                                           m_initialized;
+            bool                                           m_sectorFileIsMissing;
+            std::string                                    m_airport;
+            types::Length                                  m_elevation;
+            UiManager                                      m_userInterface;
+            management::SectorControl*                     m_sectorControl;
+            management::StandControl*                      m_standControl;
+            surveillance::ARIWSControl*                    m_ariwsControl;
+            surveillance::CMACControl*                     m_cmacControl;
+            surveillance::MTCDControl*                     m_mtcdControl;
+            surveillance::STCDControl*                     m_stcdControl;
+            std::mutex                                     m_guiEuroscopeEventsLock;
+            std::list<EuroscopeEvent>                      m_guiEuroscopeEvents;
+            std::chrono::system_clock::time_point          m_lastRenderingTime;
+            std::mutex                                     m_surveillanceVisualizationsLock;
+            std::list<std::pair<std::string, types::Time>> m_surveillanceVisualizations;
+            std::mutex                                     m_departureRouteVisualizationsLock;
+            std::list<std::pair<std::string, types::Time>> m_departureRouteVisualizations;
+            bool                                           m_standOnScreenSelection;
+            std::string                                    m_standOnScreenSelectionCallsign;
 
             void initialize();
             Gdiplus::PointF convertCoordinate(const types::Coordinate& coordinate);
@@ -82,7 +82,7 @@ namespace topskytower {
                                   const std::list<std::string>& lines, Gdiplus::Graphics& graphics);
             bool visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& graphics);
             bool visualizeRoute(const std::string& callsign, Gdiplus::Graphics& graphics);
-            void drawData(std::mutex& lock, std::list<std::pair<std::string, std::chrono::system_clock::time_point>>& data,
+            void drawData(std::mutex& lock, std::list<std::pair<std::string, types::Time>>& data,
                           bool surveillanceData, Gdiplus::Graphics& graphics);
             void drawNoTransgressionZones(Gdiplus::Graphics& graphics);
             std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign);
@@ -219,8 +219,9 @@ namespace topskytower {
             /**
              * @brief Activates the visualization of the departure route
              * @param[in] callsign The visualizable callsign
+             * @param[in] visualizationDuration The visualization duration of the route
              */
-            void activateDepartureRouteVisualization(const std::string& callsign);
+            void activateDepartureRouteVisualization(const std::string& callsign, const types::Time& visualizationDuration);
             /**
              * @brief Activates the stand on screen selection for an easier stand selection
              * @param[in] activate Activate or deactivate the screen selection
