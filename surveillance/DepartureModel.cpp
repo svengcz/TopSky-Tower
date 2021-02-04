@@ -177,12 +177,13 @@ types::Length DepartureModel::predictNextPhase(const types::Velocity& speed0, co
 DepartureModel::Waypoint DepartureModel::predictWaypoint(const Waypoint& waypoint, const types::Coordinate& destination) const {
     types::Position position = waypoint.position;
     types::Velocity speed = waypoint.speed;
+    types::Time calcTime = 0.0_s;
 
     while (true) {
         auto distance = position.coordinate().distanceTo(destination);
-        types::Time reqTime, calcTime = 0.0_s;
         types::Length nextAltitude;
         types::Velocity nextSpeed;
+        types::Time reqTime;
 
         Phase phase = this->identifyPhase(position.altitude(), speed, this->m_flight.verticalSpeed());
         auto reqDistance = this->predictNextPhase(speed, position.altitude(), phase, nextSpeed, nextAltitude, reqTime);
