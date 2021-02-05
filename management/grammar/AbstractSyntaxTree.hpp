@@ -22,16 +22,20 @@ namespace topskytower {
             struct AstInteger;
             struct AstFloat;
             struct AstKeyValue;
+            struct AstNotamTime;
+            struct AstNotamInfo;
             struct AstNotam;
 
             /**< Defines the generic node structure */
-            typedef boost::variant<
+            typedef boost::variant <
                 AstNull,
                 AstString,
                 AstInteger,
                 AstFloat,
                 boost::recursive_wrapper<AstNodeVector>,
                 AstKeyValue,
+                AstNotamTime,
+                AstNotamInfo,
                 AstNotam
             > AstNode;
 
@@ -56,73 +60,31 @@ namespace topskytower {
                 std::string value;
             };
 
-            struct AstNotam {
-                std::string title;
-                std::string qCode;
-                std::string icao;
+            struct AstNotamTime {
                 std::string startTime;
                 std::string endTime;
-                std::string content;
             };
 
-            struct AstDebug : boost::static_visitor<> {
-                std::ostringstream stream;
-                int                depth;
+            struct AstNotamInfo {
+                std::string fir;
+                std::string code;
+                std::string flightRule;
+                std::string purpose;
+                std::string scope;
+                std::string lowerAltitude;
+                std::string upperAltitude;
+                std::string coordinate;
+                std::string radius;
+            };
 
-                AstDebug(const AstNode& node) :
-                        stream(), depth(0) {
-                    boost::apply_visitor(*this, node);
-                }
-
-                inline std::string tab() {
-                    return std::string(2 * this->depth, ' ');
-                }
-
-                void operator()(const AstNull&) {
-                    this->stream << this->tab() << "NULL" << std::endl;
-                }
-
-                void operator()(const AstInteger& value) {
-                    this->stream << this->tab() << "integer: " << value.value << std::endl;
-                }
-
-                void operator()(const AstFloat& value) {
-                    this->stream << this->tab() << "float: " << value.value << std::endl;
-                }
-
-                void operator()(const AstString& value) {
-                    this->stream << this->tab() << "string: " << value << std::endl;
-                }
-
-                void operator()(const std::string& text) {
-                    this->stream << this->tab() << "text: \"" << text << "\"" << std::endl;
-                }
-
-                void recurse(const AstNode& node) {
-                    this->depth += 1;
-                    boost::apply_visitor(*this, node);
-                    this->depth -= 1;
-                }
-
-                void operator()(const AstNodeVector& nodevector) {
-                    this->stream << this->tab() << '{' << std::endl;
-                    for (const AstNode& node : std::as_const(nodevector))
-                        this->recurse(node);
-                    this->stream << this->tab() << '}' << std::endl;
-                }
-
-                void operator()(const AstKeyValue& pair) {
-                    this->stream << this->tab() << "[ " << pair.key << ", " << pair.value << " ]" << std::endl;
-                }
-
-                void operator()(const AstNotam& notam) {
-                    this->stream << this->tab() << "Title: " << notam.title << std::endl;
-                    this->stream << this->tab() << "qCode: " << notam.qCode << std::endl;
-                    this->stream << this->tab() << "ICAO: " << notam.icao << std::endl;
-                    this->stream << this->tab() << "Start: " << notam.startTime << std::endl;
-                    this->stream << this->tab() << "End: " << notam.endTime << std::endl;
-                    this->stream << this->tab() << "Content: " << notam.content << std::endl;
-                }
+            struct AstNotam {
+                std::string  title;
+                AstNotamInfo info;
+                std::string  icao;
+                std::string  startTime;
+                std::string  endTime;
+                AstNotamTime dayTime;
+                std::string  content;
             };
         }
     }
@@ -145,11 +107,31 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
+    topskytower::management::grammar::AstNotamTime,
+    (std::string, startTime)
+    (std::string, endTime)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    topskytower::management::grammar::AstNotamInfo,
+    (std::string, fir)
+    (std::string, code)
+    (std::string, flightRule)
+    (std::string, purpose)
+    (std::string, scope)
+    (std::string, lowerAltitude)
+    (std::string, upperAltitude)
+    (std::string, coordinate)
+    (std::string, radius)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     topskytower::management::grammar::AstNotam,
     (std::string, title)
-    (std::string, qCode)
+    (topskytower::management::grammar::AstNotamInfo, info)
     (std::string, icao)
     (std::string, startTime)
     (std::string, endTime)
+    (topskytower::management::grammar::AstNotamTime, dayTime)
     (std::string, content)
 )
