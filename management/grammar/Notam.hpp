@@ -49,19 +49,3 @@ namespace topskytower {
         }
     }
 }
-
-template <typename P>
-bool parse(const std::string& input, const P& parser, topskytower::management::grammar::AstNode& structure) {
-    auto begin(input.begin()), end(input.end());
-    bool retval = qi::phrase_parse(begin, end, parser, qi::space, structure);
-
-    topskytower::management::grammar::AstDebug debug(structure);
-    std::string value = debug.stream.str();
-
-    if (false == retval || begin != end) {
-        value += "\n\nRemaining:\n";
-        value += std::string(begin, end);
-    }
-
-    return retval;
-}

@@ -28,6 +28,6 @@ E) AERODROME[US DOD E - IPL ONLY] VOR RWY 25L WITH JULIAN DATE OF\n\
 CREATED : 28 Jan 2021 15 : 21 : 00\n\
 SOURCE : KQZC";
 
-    EXPECT_TRUE(parse(notam, grammar, node));
+    EXPECT_TRUE(management::grammar::Parser::parse(notam, grammar, node));
 }
 
