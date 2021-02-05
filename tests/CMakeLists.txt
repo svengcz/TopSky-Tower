@@ -17,4 +17,4 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 AddTest(FlightRegistry system/FlightRegistry.cpp system "${PROJECT_BINARY_DIR}")
 
 #define the management tests
-AddTest(Grammar management/Grammar.cpp management "${PROJECT_BINARY_DIR}")
+AddTest(Grammar management/Grammar.cpp "${PROJECT_BINARY_DIR}")
