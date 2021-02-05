@@ -23,6 +23,9 @@
 #include <management/NotamControl.h>
 #include <system/ConfigurationRegistry.h>
 
+#include "grammar/Notam.hpp"
+#include "grammar/Parser.hpp"
+
 using namespace std::chrono;
 using namespace topskytower;
 using namespace topskytower::management;
@@ -52,54 +55,27 @@ static std::size_t receiveCurl(void* ptr, std::size_t size, std::size_t nmemb, v
 }
 
 bool NotamControl::createNotam(const std::string& notamText, NotamControl::Notam& notam) {
-    std::istringstream stream(notamText);
-    bool content = false;
-    std::string line;
+    grammar::AstNode node;
+    bool retval;
 
-    while (std::getline(stream, line)) {
-        if (0 == notam.title.length())
-            notam.title = line;
+    retval = grammar::Parser::parse(notamText, grammar::NotamGrammar(), node);
+    if (true == retval) {
+        const auto& notamTree = boost::get<grammar::AstNotam>(node);
 
-        /* found the time-entries */
-        if (std::string::npos != line.find("B)") || std::string::npos != line.find("C)")) {
-            auto split = helper::String::splitString(line, " ");
-
-            std::size_t startMarker = split.size();
-            std::size_t endMarker = split.size();
-
-            for (std::size_t i = 0; i < split.size(); ++i) {
-                if ("B)" == split[i] && (i + 1) < split.size())
-                    startMarker = i + 1;
-                else if ("C)" == split[i] && (i + 1) < split.size())
-                    endMarker = i + 1;
-            }
-
-            if (split.size() <= startMarker && split.size() <= endMarker)
-                return false;
-
-            if (split.size() > startMarker)
-                notam.startTime = helper::Time::stringToTime(split[startMarker]);
-            if (split.size() > endMarker) {
-                if ("PERM" == split[endMarker])
-                    notam.endTime = helper::Time::stringToTime("6812312359"); /* 31.12.2068 23:59 */
-                else
-                    notam.endTime = helper::Time::stringToTime(split[endMarker]);
-            }
-        }
-        else if (std::string::npos != line.find("E)")) {
-            line.erase(0, line.find("E)") + 3);
-            if (0 != line.length())
-                notam.message = line + "\n";
-            content = true;
-        }
-        else if (true == content) {
-            notam.message += line + "\n";
-        }
+        notam.title = notamTree.title;
+        notam.startTime = helper::Time::stringToTime(notamTree.startTime);
+        if (0 == notamTree.endTime.length())
+            notam.endTime = helper::Time::stringToTime("6812312359"); /* 31.12.2068 23:59 */
+        else
+            notam.endTime = helper::Time::stringToTime(notamTree.endTime);
+        notam.message = notamTree.content;
+        notam.rawMessage = notamText;
+    }
+    else {
+        return false;
     }
 
-    notam.rawMessage = notamText;
-
-    return true == content && 0 != notam.title.length();
+    return retval;
 }
 
 bool NotamControl::parseNotams(const std::string& airport) {
