@@ -31,8 +31,6 @@ namespace topskytower {
                 qi::rule<It, std::string()> icaoEntry;
                 qi::rule<It, std::string()> dateEntry;
                 qi::rule<It, std::string()> notamEntry;
-                qi::rule<It, std::string()> createdAt;
-                qi::rule<It, std::string()> source;
 
                 NotamGrammar() :
                         NotamGrammar::base_type(this->root) {
@@ -42,12 +40,10 @@ namespace topskytower {
                     this->title = +qi::char_("a-zA-Z0-9/ ") >> qi::eol;
 
                     /* define the single entries that are seperated by ')' */
-                    this->qEntry = qi::char_('Q') >> ") " >> +qi::char_("a-zA-Z0-9/") >> (qi::space | qi::eol);
-                    this->icaoEntry = "A) " >> +qi::char_("A-Z") >> (qi::space | qi::eol);
-                    this->dateEntry = qi::char_("BC") >> ") " >> +qi::char_("0-9") >> (qi::space | qi::eol);
-                    this->notamEntry = "E) " >> +(qi::char_ | qi::eol) >> this->createdAt >> this->source;
-                    this->createdAt = "CREATED : " >> +qi::char_ >> qi::eol;
-                    this->source = "SOURCE : " >> +qi::char_ >> qi::eol;
+                    this->qEntry = qi::char_('Q') >> ") " >> +qi::char_("a-zA-Z0-9/") >> qi::omit[qi::char_(' ') | qi::char_('\n')];
+                    this->icaoEntry = "A) " >> qi::repeat(4)[qi::char_("A-Z")] >> qi::omit[qi::char_(' ') | qi::char_('\n')];
+                    this->dateEntry = qi::omit[qi::char_("BC")] >> ") " >> qi::repeat(10)[qi::char_("0-9")] >> qi::omit[qi::char_(' ') | qi::char_('\n')];
+                    this->notamEntry = "E) " >> +(qi::char_ - "CREATED : ");
                 }
             };
         }
