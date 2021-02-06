@@ -38,30 +38,30 @@ namespace boost {
             };
 
             template<>
-            struct transform_attribute<topskytower::management::grammar::AstNotamAltitude, std::string, qi::domain> {
-                typedef std::string type;
+            struct transform_attribute<topskytower::management::grammar::AstNotamAltitude, int, qi::domain> {
+                typedef int type;
 
-                static std::string pre(topskytower::management::grammar::AstNotamAltitude) {
-                    return std::string();
+                static int pre(topskytower::management::grammar::AstNotamAltitude) {
+                    return int();
                 }
 
-                static void post(topskytower::management::grammar::AstNotamAltitude& length, std::string const& value) {
-                    static_cast<topskytower::types::Length&>(length) = static_cast<float>(std::atoi(value.c_str()) * 100) * topskytower::types::feet;
+                static void post(topskytower::management::grammar::AstNotamAltitude& length, int const& value) {
+                    static_cast<topskytower::types::Length&>(length) = static_cast<float>(value * 100) * topskytower::types::feet;
                 }
 
                 static void fail(topskytower::management::grammar::AstNotamAltitude&) { }
             };
 
             template<>
-            struct transform_attribute<topskytower::management::grammar::AstNotamRadius, std::string, qi::domain> {
-                typedef std::string type;
+            struct transform_attribute<topskytower::management::grammar::AstNotamRadius, int, qi::domain> {
+                typedef int type;
 
-                static std::string pre(topskytower::management::grammar::AstNotamRadius) {
-                    return std::string();
+                static int pre(topskytower::management::grammar::AstNotamRadius) {
+                    return int();
                 }
 
-                static void post(topskytower::management::grammar::AstNotamRadius& length, std::string const& value) {
-                    static_cast<topskytower::types::Length&>(length) = static_cast<float>(std::atoi(value.c_str())) * topskytower::types::nauticmile;
+                static void post(topskytower::management::grammar::AstNotamRadius& length, int const& value) {
+                    static_cast<topskytower::types::Length&>(length) = static_cast<float>(value) * topskytower::types::nauticmile;
                 }
 
                 static void fail(topskytower::management::grammar::AstNotamRadius&) { }

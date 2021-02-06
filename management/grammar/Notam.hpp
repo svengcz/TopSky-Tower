@@ -42,9 +42,9 @@ namespace topskytower {
                 qi::rule<It, std::string()>  flightRule;
                 qi::rule<It, std::string()>  purpose;
                 qi::rule<It, std::string()>  scope;
-                qi::rule<It, std::string()>  altitude;
+                qi::rule<It, int>            altitude;
                 qi::rule<It, std::string()>  coordinate;
-                qi::rule<It, std::string()>  radius;
+                qi::rule<It, int>            radius;
 
                 NotamGrammar() :
                         NotamGrammar::base_type(this->root) {
@@ -73,9 +73,9 @@ namespace topskytower {
                     this->flightRule = +qi::char_("IV ") | qi::no_case["IV"];
                     this->purpose = +qi::char_("NBOM ");
                     this->scope = +qi::char_("AEW ");
-                    this->altitude = qi::repeat(3)[qi::char_("0-9")];
+                    this->altitude = qi::int_;
                     this->coordinate = qi::repeat(4)[qi::char_("0-9")] >> qi::char_("NS") >> qi::repeat(5)[qi::char_("0-9")] >> qi::char_("WE");
-                    this->radius = -qi::repeat(3)[qi::char_("0-9")];
+                    this->radius = -qi::int_;
                 }
             };
         }
