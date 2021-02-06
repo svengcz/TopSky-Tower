@@ -62,6 +62,7 @@ bool NotamControl::createNotam(const std::string& notamText, NotamControl::Notam
     if (true == retval) {
         const auto& notamTree = boost::get<grammar::AstNotam>(node);
 
+        /* translate the generic topics of the NOTAM */
         notam.title = notamTree.title;
         notam.startTime = helper::Time::stringToTime(notamTree.startTime);
         if (0 == notamTree.endTime.length())
