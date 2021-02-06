@@ -16,7 +16,7 @@
 
 using namespace topskytower::management::grammar;
 
-TEST(Grammar, NotamDayTime) {
+TEST(NotamGrammar, NotamDayTime) {
     NotamGrammar grammar;
     AstNode node;
 
@@ -55,7 +55,7 @@ E) " + content);
     EXPECT_EQ(content, parsed.content);
 }
 
-TEST(Grammar, NotamPerm) {
+TEST(NotamGrammar, NotamPerm) {
     NotamGrammar grammar;
     AstNode node;
 
@@ -95,7 +95,7 @@ E) " + content);
     EXPECT_EQ(content, parsed.content);
 }
 
-TEST(Grammar, NotamEndEstimated) {
+TEST(NotamGrammar, NotamEndEstimated) {
     NotamGrammar grammar;
     AstNode node;
 
@@ -126,7 +126,7 @@ E) " + content);
     EXPECT_EQ(content, parsed.content);
 }
 
-TEST(Grammar, NotamDaily) {
+TEST(NotamGrammar, NotamDaily) {
     NotamGrammar grammar;
     AstNode node;
 
@@ -159,7 +159,7 @@ E) " + content);
     EXPECT_EQ(content, parsed.content);
 }
 
-TEST(Grammer, NotamBrackets) {
+TEST(NotamGrammar, NotamBrackets) {
     NotamGrammar grammar;
     AstNode node;
 
