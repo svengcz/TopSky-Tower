@@ -1,5 +1,5 @@
 /*
- * @brief Defines the abstract syntax tree for the NOTAM grammatic
+ * @brief Defines the abstract syntax tree for the NOTAM grammar
  * @file grammar/AstNotam.hpp
  * @author Sven Czarnian <devel@svcz.de>
  */
