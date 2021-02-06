@@ -16,6 +16,7 @@ SET(HEADER_FILES
 )
 SET(SOURCE_GRAMMAR_FILES
     grammar/AbstractSyntaxTree.hpp
+    grammar/AstNotam.hpp
     grammar/Notam.hpp
     grammar/Parser.hpp
 )

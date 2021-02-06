@@ -15,7 +15,7 @@
 #include <boost/spirit/include/phoenix_object.hpp>
 #pragma warning(default: 4459)
 
-#include "AbstractSyntaxTree.hpp"
+#include "AstNotam.hpp"
 
 namespace qi = boost::spirit::qi;
 
