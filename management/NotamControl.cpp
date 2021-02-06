@@ -22,6 +22,7 @@
 #include <helper/Time.h>
 #include <management/NotamControl.h>
 #include <system/ConfigurationRegistry.h>
+#include <types/FlightPlan.h>
 
 #include "grammar/Notam.hpp"
 #include "grammar/Parser.hpp"
@@ -70,6 +71,25 @@ bool NotamControl::createNotam(const std::string& notamText, NotamControl::Notam
         else
             notam.endTime = helper::Time::stringToTime(notamTree.endTime);
         notam.message = notamTree.content;
+
+        /* translate the NOTAM information */
+        notam.information.fir = notamTree.info.fir;
+        notam.information.code = notamTree.info.code;
+        notam.information.flightRule = 0;
+        if (std::string::npos != notamTree.info.flightRule.find("I"))
+            notam.information.flightRule |= static_cast<std::uint8_t>(types::FlightPlan::Type::IFR);
+        if (std::string::npos != notamTree.info.flightRule.find("V"))
+            notam.information.flightRule |= static_cast<std::uint8_t>(types::FlightPlan::Type::VFR);
+        notam.information.purpose = notamTree.info.purpose;
+        notam.information.scope = notamTree.info.scope;
+        notam.information.lowerAltitude = static_cast<float>(std::atoi(notamTree.info.lowerAltitude.c_str()) * 100) * types::feet;
+        notam.information.upperAltitude = static_cast<float>(std::atoi(notamTree.info.upperAltitude.c_str()) * 100) * types::feet;
+        std::string latitude = std::string(1, notamTree.info.coordinate[4]) + "0" + notamTree.info.coordinate.substr(0, 2) + "." + notamTree.info.coordinate.substr(2, 2) + ".00.000";
+        std::string longitude = notamTree.info.coordinate[10] + notamTree.info.coordinate.substr(5, 3) + "." + notamTree.info.coordinate.substr(8, 2) + ".00.000";
+        notam.information.coordinate = types::Coordinate(longitude, latitude);
+        if (0 != notamTree.info.radius.length())
+            notam.information.radius = static_cast<float>(std::atoi(notamTree.info.radius.c_str())) * types::nauticmile;
+
         notam.rawMessage = notamText;
     }
     else {
