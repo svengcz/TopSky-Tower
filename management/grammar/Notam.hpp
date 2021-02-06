@@ -6,7 +6,6 @@
 
 #pragma once
 
-#define BOOST_SPIRIT_DEBUG
 #pragma warning(disable: 4459)
 #include <boost/config/warning_disable.hpp>
 #include <boost/fusion/adapted.hpp>
