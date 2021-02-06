@@ -15,6 +15,8 @@
 
 #include "AbstractSyntaxTree.hpp"
 
+namespace qi = boost::spirit::qi;
+
 namespace topskytower {
     namespace management {
         namespace grammar {
