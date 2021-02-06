@@ -2,7 +2,7 @@
  * Author:
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
- *   Implements the tests for the flight registry
+ *   Implements the tests for the NOTAM grammatic
  * Copyright:
  *   2020-2021 Sven Czarnian
  * License:
