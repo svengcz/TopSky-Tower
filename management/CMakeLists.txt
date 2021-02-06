@@ -16,9 +16,13 @@ SET(HEADER_FILES
 )
 SET(SOURCE_GRAMMAR_FILES
     grammar/AbstractSyntaxTree.hpp
+    grammar/AstBase.hpp
     grammar/AstNotam.hpp
+    grammar/AstRunway.hpp
+    grammar/AstTransformation.hpp
     grammar/Notam.hpp
     grammar/Parser.hpp
+    grammar/Runway.hpp
 )
 SET(SOURCE_FILES
     PdcControl.cpp

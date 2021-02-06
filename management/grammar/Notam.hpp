@@ -1,6 +1,6 @@
 /*
  * @brief Defines the boost-spirit grammar to parse full NOTAMs
- * @file grammar/Runway.hpp
+ * @file grammar/Notam.hpp
  * @author Sven Czarnian <devel@svcz.de>
  */
 
@@ -15,6 +15,7 @@
 #pragma warning(default: 4459)
 
 #include "AstNotam.hpp"
+#include "AstTransformation.hpp"
 
 namespace qi = boost::spirit::qi;
 
@@ -35,6 +36,7 @@ namespace topskytower {
                 qi::rule<It, std::string()>  clockDefinition;
                 qi::rule<It, std::string()>  endOfEntry;
                 qi::rule<It, std::string()>  dateDefinition;
+                qi::rule<It, std::string()>  timestamp;
                 qi::rule<It, std::string()>  firEntry;
                 qi::rule<It, std::string()>  qCode;
                 qi::rule<It, std::string()>  flightRule;

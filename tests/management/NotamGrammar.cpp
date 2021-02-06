@@ -11,10 +11,12 @@
 
 #include <gtest/gtest.h>
 
+#include <management/grammar/AbstractSyntaxTree.hpp>
 #include <management/grammar/Notam.hpp>
 #include <management/grammar/Parser.hpp>
 
 using namespace topskytower::management::grammar;
+using namespace topskytower::types;
 
 TEST(NotamGrammar, NotamDayTime) {
     NotamGrammar grammar;
@@ -37,19 +39,24 @@ E) " + content);
     ASSERT_TRUE(Parser::parse(notam, grammar, node));
 
     auto& parsed = boost::get<AstNotam>(node);
+    Coordinate coordinate("E013.30.00.000", "N052.22.00.000");
+    auto startTime = topskytower::helper::Time::stringToTime("2102160700");
+    auto endTime = topskytower::helper::Time::stringToTime("2102181500");
+
     EXPECT_EQ("A0625/21 NOTAMN", parsed.title);
     EXPECT_EQ("EDWW", parsed.info.fir);
     EXPECT_EQ("QPICH", parsed.info.code);
     EXPECT_EQ("I ", parsed.info.flightRule);
     EXPECT_EQ("NBO", parsed.info.purpose);
     EXPECT_EQ("A ", parsed.info.scope);
-    EXPECT_EQ("000", parsed.info.lowerAltitude);
-    EXPECT_EQ("999", parsed.info.upperAltitude);
-    EXPECT_EQ("5222N01330E", parsed.info.coordinate);
-    EXPECT_EQ("005", parsed.info.radius);
+    EXPECT_EQ(0_ft, parsed.info.lowerAltitude);
+    EXPECT_EQ(99900_ft, parsed.info.upperAltitude);
+    EXPECT_FLOAT_EQ(coordinate.latitude().value(), parsed.info.coordinate.latitude().value());
+    EXPECT_FLOAT_EQ(coordinate.longitude().value(), parsed.info.coordinate.longitude().value());
+    EXPECT_EQ(5_nm, parsed.info.radius);
     EXPECT_EQ("EDDB", parsed.icao);
-    EXPECT_EQ("2102160700", parsed.startTime);
-    EXPECT_EQ("2102181500", parsed.endTime);
+    EXPECT_EQ(startTime, parsed.startTime);
+    EXPECT_EQ(endTime, parsed.endTime);
     EXPECT_EQ("0700", parsed.dayTime.startTime);
     EXPECT_EQ("1500", parsed.dayTime.endTime);
     EXPECT_EQ(content, parsed.content);
@@ -77,19 +84,24 @@ E) " + content);
     ASSERT_TRUE(Parser::parse(notam, grammar, node));
 
     auto& parsed = boost::get<AstNotam>(node);
+    Coordinate coordinate("E013.30.00.000", "N052.22.00.000");
+    auto startTime = topskytower::helper::Time::stringToTime("2102011423");
+    auto endTime = std::chrono::time_point<std::chrono::system_clock>::max();
+
     EXPECT_EQ("A0596/21 NOTAMN", parsed.title);
     EXPECT_EQ("EDWW", parsed.info.fir);
     EXPECT_EQ("QPICH", parsed.info.code);
     EXPECT_EQ("I ", parsed.info.flightRule);
     EXPECT_EQ("NBO", parsed.info.purpose);
     EXPECT_EQ("A ", parsed.info.scope);
-    EXPECT_EQ("000", parsed.info.lowerAltitude);
-    EXPECT_EQ("999", parsed.info.upperAltitude);
-    EXPECT_EQ("5222N01330E", parsed.info.coordinate);
-    EXPECT_EQ("005", parsed.info.radius);
+    EXPECT_EQ(0_ft, parsed.info.lowerAltitude);
+    EXPECT_EQ(99900_ft, parsed.info.upperAltitude);
+    EXPECT_FLOAT_EQ(coordinate.latitude().value(), parsed.info.coordinate.latitude().value());
+    EXPECT_FLOAT_EQ(coordinate.longitude().value(), parsed.info.coordinate.longitude().value());
+    EXPECT_EQ(5_nm, parsed.info.radius);
     EXPECT_EQ("EDDB", parsed.icao);
-    EXPECT_EQ("2102011423", parsed.startTime);
-    EXPECT_EQ(0UL, parsed.endTime.length());
+    EXPECT_EQ(startTime, parsed.startTime);
+    EXPECT_EQ(endTime, parsed.endTime);
     EXPECT_EQ(0UL, parsed.dayTime.startTime.length());
     EXPECT_EQ(0UL, parsed.dayTime.endTime.length());
     EXPECT_EQ(content, parsed.content);
@@ -108,19 +120,24 @@ E) " + content);
     ASSERT_TRUE(Parser::parse(notam, grammar, node));
 
     auto& parsed = boost::get<AstNotam>(node);
+    Coordinate coordinate("E013.30.00.000", "N052.22.00.000");
+    auto startTime = topskytower::helper::Time::stringToTime("2102010805");
+    auto endTime = topskytower::helper::Time::stringToTime("2105010800");
+
     EXPECT_EQ("A0569/21 NOTAMR A8000/20", parsed.title);
     EXPECT_EQ("EDWW", parsed.info.fir);
     EXPECT_EQ("QPIAU", parsed.info.code);
     EXPECT_EQ("I ", parsed.info.flightRule);
     EXPECT_EQ("NBO", parsed.info.purpose);
     EXPECT_EQ("A ", parsed.info.scope);
-    EXPECT_EQ("000", parsed.info.lowerAltitude);
-    EXPECT_EQ("999", parsed.info.upperAltitude);
-    EXPECT_EQ("5222N01330E", parsed.info.coordinate);
-    EXPECT_EQ("005", parsed.info.radius);
+    EXPECT_EQ(0_ft, parsed.info.lowerAltitude);
+    EXPECT_EQ(99900_ft, parsed.info.upperAltitude);
+    EXPECT_FLOAT_EQ(coordinate.latitude().value(), parsed.info.coordinate.latitude().value());
+    EXPECT_FLOAT_EQ(coordinate.longitude().value(), parsed.info.coordinate.longitude().value());
+    EXPECT_EQ(5_nm, parsed.info.radius);
     EXPECT_EQ("EDDB", parsed.icao);
-    EXPECT_EQ("2102010805", parsed.startTime);
-    EXPECT_EQ("2105010800", parsed.endTime);
+    EXPECT_EQ(startTime, parsed.startTime);
+    EXPECT_EQ(endTime, parsed.endTime);
     EXPECT_EQ(0UL, parsed.dayTime.startTime.length());
     EXPECT_EQ(0UL, parsed.dayTime.endTime.length());
     EXPECT_EQ(content, parsed.content);
@@ -141,19 +158,24 @@ E) " + content);
     ASSERT_TRUE(Parser::parse(notam, grammar, node));
 
     auto& parsed = boost::get<AstNotam>(node);
+    Coordinate coordinate("E014.08.00.000", "N052.25.00.000");
+    auto startTime = topskytower::helper::Time::stringToTime("2102230800");
+    auto endTime = topskytower::helper::Time::stringToTime("2102241400");
+
     EXPECT_EQ("A0430/21 NOTAMN", parsed.title);
     EXPECT_EQ("EDWW", parsed.info.fir);
     EXPECT_EQ("QNMCT", parsed.info.code);
     EXPECT_EQ("IV", parsed.info.flightRule);
     EXPECT_EQ("BO ", parsed.info.purpose);
     EXPECT_EQ("AE", parsed.info.scope);
-    EXPECT_EQ("000", parsed.info.lowerAltitude);
-    EXPECT_EQ("999", parsed.info.upperAltitude);
-    EXPECT_EQ("5225N01408E", parsed.info.coordinate);
-    EXPECT_EQ("025", parsed.info.radius);
+    EXPECT_EQ(0_ft, parsed.info.lowerAltitude);
+    EXPECT_EQ(99900_ft, parsed.info.upperAltitude);
+    EXPECT_FLOAT_EQ(coordinate.latitude().value(), parsed.info.coordinate.latitude().value());
+    EXPECT_FLOAT_EQ(coordinate.longitude().value(), parsed.info.coordinate.longitude().value());
+    EXPECT_EQ(25_nm, parsed.info.radius);
     EXPECT_EQ("EDDB", parsed.icao);
-    EXPECT_EQ("2102230800", parsed.startTime);
-    EXPECT_EQ("2102241400", parsed.endTime);
+    EXPECT_EQ(startTime, parsed.startTime);
+    EXPECT_EQ(endTime, parsed.endTime);
     EXPECT_EQ("0800", parsed.dayTime.startTime);
     EXPECT_EQ("1400", parsed.dayTime.endTime);
     EXPECT_EQ(content, parsed.content);
@@ -172,19 +194,24 @@ E) " + content);
     ASSERT_TRUE(Parser::parse(notam, grammar, node));
 
     auto& parsed = boost::get<AstNotam>(node);
+    Coordinate coordinate("E013.30.00.000", "N052.21.00.000");
+    auto startTime = topskytower::helper::Time::stringToTime("2101281521");
+    auto endTime = topskytower::helper::Time::stringToTime("2102250001");
+
     EXPECT_EQ("W0095/21 NOTAMN", parsed.title);
     EXPECT_EQ("EDWW", parsed.info.fir);
     EXPECT_EQ("QPIGV", parsed.info.code);
     EXPECT_EQ("IV", parsed.info.flightRule);
     EXPECT_EQ("NBO", parsed.info.purpose);
     EXPECT_EQ("A", parsed.info.scope);
-    EXPECT_EQ("000", parsed.info.lowerAltitude);
-    EXPECT_EQ("999", parsed.info.upperAltitude);
-    EXPECT_EQ("5221N01330E", parsed.info.coordinate);
-    EXPECT_EQ("005", parsed.info.radius);
+    EXPECT_EQ(0_ft, parsed.info.lowerAltitude);
+    EXPECT_EQ(99900_ft, parsed.info.upperAltitude);
+    EXPECT_FLOAT_EQ(coordinate.latitude().value(), parsed.info.coordinate.latitude().value());
+    EXPECT_FLOAT_EQ(coordinate.longitude().value(), parsed.info.coordinate.longitude().value());
+    EXPECT_EQ(5_nm, parsed.info.radius);
     EXPECT_EQ("EDDB", parsed.icao);
-    EXPECT_EQ("2101281521", parsed.startTime);
-    EXPECT_EQ("2102250001", parsed.endTime);
+    EXPECT_EQ(startTime, parsed.startTime);
+    EXPECT_EQ(endTime, parsed.endTime);
     EXPECT_EQ(0UL, parsed.dayTime.startTime.length());
     EXPECT_EQ(0UL, parsed.dayTime.endTime.length());
     EXPECT_EQ(content, parsed.content);

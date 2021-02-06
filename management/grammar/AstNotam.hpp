@@ -8,7 +8,10 @@
 
 #include <string>
 
-#include "AbstractSyntaxTree.hpp"
+#include <helper/Time.h>
+#include <types/Coordinate.h>
+
+#include "AstBase.hpp"
 
 namespace topskytower {
     namespace management {
@@ -18,26 +21,39 @@ namespace topskytower {
                 std::string endTime;
             };
 
+            struct AstNotamAltitude : public types::Length { };
+
+            struct AstNotamRadius : public types::Length { };
+
             struct AstNotamInfo {
-                std::string fir;
-                std::string code;
-                std::string flightRule;
-                std::string purpose;
-                std::string scope;
-                std::string lowerAltitude;
-                std::string upperAltitude;
-                std::string coordinate;
-                std::string radius;
+                std::string       fir;
+                std::string       code;
+                std::string       flightRule;
+                std::string       purpose;
+                std::string       scope;
+                AstNotamAltitude  lowerAltitude;
+                AstNotamAltitude  upperAltitude;
+                types::Coordinate coordinate;
+                AstNotamRadius    radius;
             };
 
             struct AstNotam {
-                std::string  title;
-                AstNotamInfo info;
-                std::string  icao;
-                std::string  startTime;
-                std::string  endTime;
-                AstNotamTime dayTime;
-                std::string  content;
+                std::string                           title;
+                AstNotamInfo                          info;
+                std::string                           icao;
+                std::chrono::system_clock::time_point startTime;
+                std::chrono::system_clock::time_point endTime;
+                AstNotamTime                          dayTime;
+                std::string                           content;
+
+                AstNotam() :
+                        title(),
+                        info(),
+                        icao(),
+                        startTime((std::chrono::time_point<std::chrono::system_clock>::min)()),
+                        endTime((std::chrono::time_point<std::chrono::system_clock>::max)()),
+                        dayTime(),
+                        content() { }
             };
         }
     }
@@ -56,10 +72,10 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::string, flightRule)
     (std::string, purpose)
     (std::string, scope)
-    (std::string, lowerAltitude)
-    (std::string, upperAltitude)
-    (std::string, coordinate)
-    (std::string, radius)
+    (topskytower::management::grammar::AstNotamAltitude, lowerAltitude)
+    (topskytower::management::grammar::AstNotamAltitude, upperAltitude)
+    (topskytower::types::Coordinate, coordinate)
+    (topskytower::management::grammar::AstNotamRadius, radius)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -67,8 +83,8 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::string, title)
     (topskytower::management::grammar::AstNotamInfo, info)
     (std::string, icao)
-    (std::string, startTime)
-    (std::string, endTime)
+    (std::chrono::system_clock::time_point, startTime)
+    (std::chrono::system_clock::time_point, endTime)
     (topskytower::management::grammar::AstNotamTime, dayTime)
     (std::string, content)
 )
