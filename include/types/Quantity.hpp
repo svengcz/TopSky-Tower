@@ -279,10 +279,15 @@ namespace topskytower {
 
         /**< Defines a kilogram */
         constexpr Mass kilogram(1.0f);
+        constexpr Mass pound = 0.453592f * kilogram;
         /**< Defines the literal of kilograms */
         constexpr Mass operator"" _kg(long double value) { return Mass(static_cast<float>(value)); }
         /**< Defines the literal of kilograms */
         constexpr Mass operator"" _kg(unsigned long long int value) { return Mass(static_cast<float>(value)); }
+        /**< Defines the literal of pounds */
+        constexpr Mass operator"" _lbs(long double value) { return static_cast<float>(value) * pound; }
+        /**< Defines the literal of pounds */
+        constexpr Mass operator"" _lbs(unsigned long long int value) { return static_cast<float>(value) * pound; }
 
         /**< Defines a metres */
         constexpr Length metre(1.0f);
