@@ -18,6 +18,7 @@
 #include <management/NotamControl.h>
 #include <management/PdcControl.h>
 
+#include "ui/ConfigurationErrorWindow.h"
 #include "ui/elements/Text.h"
 
 #include "Converter.h"
@@ -91,6 +92,11 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
         else {
             this->GetPlugIn()->DisplayUserMessage("Message", "TopSky-Tower", "No elevation in the ASR file defined",
                                                   true, true, false, false, false);
+        }
+
+        if (true == system::ConfigurationRegistry::instance().errorFound()) {
+            auto viewer = new ConfigurationErrorWindow(this);
+            viewer->setActive(true);
         }
     }
 }

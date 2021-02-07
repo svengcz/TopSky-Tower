@@ -17,6 +17,7 @@
 #include "../RadarScreen.h"
 #include "AriwsToolbarButton.h"
 #include "CmacToolbarButton.h"
+#include "ConfigurationErrorWindow.h"
 #include "IpaToolbarButton.h"
 #include "LvpToolbarButton.h"
 #include "PdcToolbarButton.h"
@@ -118,7 +119,7 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         return false;
     }
 
-    bool resetUi = true, retval = true;
+    bool resetUi = true, retval = true, cfgValid = true;
 
     switch (Toolbar::findClickedElement(this->m_toplevel, pt)) {
     case Toolbar::ClickId::Settings:
@@ -126,20 +127,20 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         resetUi = false;
         break;
     case Toolbar::ClickId::Reload:
-        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
-                                                            system::ConfigurationRegistry::UpdateType::All);
+        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                                       system::ConfigurationRegistry::UpdateType::All);
         break;
     case Toolbar::ClickId::ReloadSystem:
-        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
-                                                            system::ConfigurationRegistry::UpdateType::System);
+        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                                       system::ConfigurationRegistry::UpdateType::System);
         break;
     case Toolbar::ClickId::ReloadAirports:
-        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
-                                                            system::ConfigurationRegistry::UpdateType::Airports);
+        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                                       system::ConfigurationRegistry::UpdateType::Airports);
         break;
     case Toolbar::ClickId::ReloadAircrafts:
-        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
-                                                            system::ConfigurationRegistry::UpdateType::Aircrafts);
+        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                                       system::ConfigurationRegistry::UpdateType::Aircrafts);
         break;
     case Toolbar::ClickId::Notams:
         if (false == this->m_parent->uiManager().windowIsActive("NOTAMs")) {
@@ -157,6 +158,11 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     /* reset the UI */
     if (true == resetUi)
         this->resetClickStates();
+
+    if (false == cfgValid && system::ConfigurationRegistry::instance().errorFound()) {
+        auto viewer = new ConfigurationErrorWindow(this->m_parent);
+        viewer->setActive(true);
+    }
 
     /* check if one of the buttons is clicked */
     if (false == retval) {
