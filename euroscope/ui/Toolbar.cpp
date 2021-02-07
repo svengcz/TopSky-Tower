@@ -316,8 +316,8 @@ bool Toolbar::visualize(Gdiplus::Graphics* graphics) {
         this->initialize();
 
     /* draw the root element */
-    auto area = this->m_parent->GetRadarArea();
-    this->draw(graphics, this->m_toplevel, area.left, area.top - 1, true);
+    auto area = this->m_parent->GetToolbarArea();
+    this->draw(graphics, this->m_toplevel, area.left, area.bottom, true);
 
     /* check all child elements */
     for (auto& element : this->m_toplevel->elements) {
