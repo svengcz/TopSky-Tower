@@ -45,6 +45,7 @@ ADD_LIBRARY(
         ${HEADER_FILES}
 )
 TARGET_LINK_LIBRARIES(types helper)
+TARGET_LINK_LIBRARIES(types debug Geographic_d.lib optimized Geographic.lib)
 ADD_DEPENDENCIES(types GeographicLib Boost)
 
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})

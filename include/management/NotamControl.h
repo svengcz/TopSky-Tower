@@ -13,6 +13,7 @@
 #include <map>
 #include <mutex>
 
+#include <types/Coordinate.h>
 #include <types/SystemConfiguration.h>
 
 namespace topskytower {
@@ -27,14 +28,30 @@ namespace topskytower {
             using TimePoint = std::chrono::system_clock::time_point; /**< Defines a more readable type for the time_point */
 
             /**
+             * @brief Defines the parsed NOTAM information
+             */
+            struct NotamInformation {
+                std::string       fir;           /**< Relevant FIR */
+                std::string       code;          /**< The Q-code of the information */
+                std::uint8_t      flightRule;    /**< Bitmask for the flight rule of the NOTAM */
+                std::string       purpose;       /**< Purpose of the NOTAM */
+                std::string       scope;         /**< Scope of the NOTAM */
+                types::Length     lowerAltitude; /**< The lower border of the NOTAM handled area */
+                types::Length     upperAltitude; /**< The upper border of the NOTAM handled area */
+                types::Coordinate coordinate;    /**< The coordinate of the of the NOTAM */
+                types::Length     radius;        /**< The active radius of the NOTAM */
+            };
+
+            /**
              * @brief Defines a parsed NOTAM
              */
             struct Notam {
-                std::string title;      /**< The NOTAM's title */
-                TimePoint   startTime;  /**< The NOTAM's start time */
-                TimePoint   endTime;    /**< The NOTAM's end time */
-                std::string message;    /**< The NOTAM's message */
-                std::string rawMessage; /**< The raw message received from the server */
+                std::string      title;       /**< The NOTAM's title */
+                NotamInformation information; /**< The NOTAM's information */
+                TimePoint        startTime;   /**< The NOTAM's start time */
+                TimePoint        endTime;     /**< The NOTAM's end time */
+                std::string      message;     /**< The NOTAM's message */
+                std::string      rawMessage;  /**< The raw message received from the server */
             };
 
         private:

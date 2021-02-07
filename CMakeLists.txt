@@ -9,6 +9,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 
 # define the project
 PROJECT(TopSky-Tower LANGUAGES CXX VERSION "0.5.2")
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
@@ -27,6 +28,9 @@ ELSE ()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 ENDIF ()
 
+# define the options
+OPTION(BUILD_TESTS "Build the tests and test framework" OFF)
+
 # add the binary, include and installation directories to the search paths
 INCLUDE_DIRECTORIES(
     ${CMAKE_BINARY_DIR}
@@ -38,6 +42,7 @@ INCLUDE_DIRECTORIES(
 LINK_DIRECTORIES(
     ${CMAKE_INSTALL_PREFIX}/lib
 )
+ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 
 INCLUDE(ExternalProject)
 # add third-party-dependencies
@@ -103,6 +108,13 @@ ExternalProject_Add(
         -DCMAKE_USE_WINSSL=ON
 )
 
+# place the external libraries in own folders
+SET_TARGET_PROPERTIES(Eigen         PROPERTIES FOLDER "external")
+SET_TARGET_PROPERTIES(GeographicLib PROPERTIES FOLDER "external")
+SET_TARGET_PROPERTIES(Nanoflann     PROPERTIES FOLDER "external")
+SET_TARGET_PROPERTIES(Boost         PROPERTIES FOLDER "external")
+SET_TARGET_PROPERTIES(Curl          PROPERTIES FOLDER "external")
+
 # integrate the components
 ADD_SUBDIRECTORY(helper)
 ADD_SUBDIRECTORY(types)
@@ -110,7 +122,11 @@ ADD_SUBDIRECTORY(formats)
 ADD_SUBDIRECTORY(system)
 ADD_SUBDIRECTORY(management)
 ADD_SUBDIRECTORY(surveillance)
-ADD_SUBDIRECTORY(euroscope)
+IF (NOT ${BUILD_TESTS})
+    ADD_SUBDIRECTORY(euroscope)
+ELSE ()
+    ADD_SUBDIRECTORY(tests)
+ENDIF ()
 
 # generate the documentation target
 FIND_PACKAGE(Doxygen REQUIRED dot)
