@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include <formats/FileFormat.h>
 #include <types/Coordinate.h>
 
 namespace topskytower {
@@ -26,9 +27,10 @@ namespace topskytower {
          * COORD:LATITUDE:LONGITUDE
          * @endcode
          */
-        class IniFileFormat {
+        class IniFileFormat : public FileFormat {
         public:
-            std::map<std::string, std::vector<std::string>> m_blocks; /**< Contains all read sections without empty lines */
+            std::map<std::string, std::vector<std::string>> m_blocks;      /**< Contains all read sections without empty lines */
+            std::map<std::string, std::uint32_t>            m_lineOffsets; /**< Contains the line offsets of the different blocks */
 
             /**
              * @brief Parses filename and splits the sections into the member m_blocks
