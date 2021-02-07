@@ -24,14 +24,15 @@ Text::Text() :
         m_graphics(nullptr),
         m_rectangle(),
         m_text(),
-        m_fontFamily(new Gdiplus::FontFamily(std::wstring(system::ConfigurationRegistry::instance().systemConfiguration().fontFamily.begin(),
-                                                          system::ConfigurationRegistry::instance().systemConfiguration().fontFamily.end()).c_str(), nullptr)),
+        m_fontFamily(),
         m_font(nullptr),
         m_fontColor(),
         m_fontSize(system::ConfigurationRegistry::instance().systemConfiguration().fontSize),
         m_position(),
         m_bold(false),
-        m_italic(false) { }
+        m_italic(false) {
+    this->updateFontFamily();
+}
 
 bool Text::isInBox(const Gdiplus::PointF& position) const {
     if (position.X < this->m_rectangle.GetLeft() || position.X > this->m_rectangle.GetRight())
@@ -43,6 +44,18 @@ bool Text::isInBox(const Gdiplus::PointF& position) const {
 
 const Gdiplus::RectF& Text::rectangle() const {
     return this->m_rectangle;
+}
+
+void Text::updateFontFamily() {
+    /* check if the configuration or the configured font exists */
+    bool useConfig = false == __fontErrorPrinted && true == system::ConfigurationRegistry::instance().systemConfiguration().valid;
+
+    /* check if the system is well configured */
+    std::string fontFamily = system::ConfigurationRegistry::instance().systemConfiguration().fontFamily;
+    if (false == useConfig || 0 == fontFamily.length())
+        fontFamily = "Arial";
+
+    this->m_fontFamily = std::shared_ptr<Gdiplus::FontFamily>(new Gdiplus::FontFamily(std::wstring(fontFamily.begin(), fontFamily.end()).c_str(), nullptr));
 }
 
 void Text::updateFont() {
@@ -63,8 +76,11 @@ void Text::updateFont() {
                                                                     style, Gdiplus::UnitMillimeter));
 
     /* check if the initialization was successful */
-    if (false == __fontErrorPrinted && Gdiplus::Status::Ok != this->m_font->GetLastStatus())
+    if (Gdiplus::Status::Ok != this->m_font->GetLastStatus()) {
         __fontErrorPrinted = true;
+        this->updateFontFamily();
+        this->updateFont();
+    }
 }
 
 void Text::setGraphics(Gdiplus::Graphics* graphics) {

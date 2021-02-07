@@ -13,6 +13,7 @@
 
 #include <formats/AircraftFileFormat.h>
 #include <formats/AirportFileFormat.h>
+#include <formats/FileFormat.h>
 #include <types/RuntimeConfiguration.h>
 #include <types/SystemConfiguration.h>
 
@@ -22,7 +23,7 @@ namespace topskytower {
          * @brief Describes a flight registry that contains all visible flights
          * @ingroup system
          */
-        class ConfigurationRegistry {
+        class ConfigurationRegistry : public formats::FileFormat {
         public:
             /**
              * @brief Defines the different configuration types that can be updated
@@ -61,8 +62,9 @@ namespace topskytower {
              * @brief Loads the different configuration
              * @param[in] path The path where the configurations can be found
              * @param[in] type The requested update type
+             * @return True if the configuration is parsed, else false
              */
-            void configure(const std::string& path, UpdateType type);
+            bool configure(const std::string& path, UpdateType type);
             /**
              * @brief Returns the system configuration
              * @return The constant reference to the system configuration

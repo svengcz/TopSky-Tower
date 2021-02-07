@@ -79,6 +79,10 @@ static __inline void __parseAirspace(const std::vector<std::string>& airspace,
     std::map<std::string, std::list<types::Coordinate>> sectorlines;
 
     for (const auto& line : std::as_const(airspace)) {
+        /* skip empty lines */
+        if (0 == line.length())
+            continue;
+
         /* found a comment line */
         if (std::string::npos != line.find(';', 0))
             continue;
@@ -151,6 +155,10 @@ void EseFileFormat::parseSectors(const std::vector<std::string>& positions, cons
         this->m_sectorBorders.insert(this->m_sectorBorders.end(), border.second.cbegin(), border.second.cend());
 
     for (const auto& line : std::as_const(positions)) {
+        /* skip empty lines */
+        if (0 == line.length())
+            continue;
+
         /* found a comment line */
         if (std::string::npos != line.find(';', 0))
             continue;
@@ -182,6 +190,10 @@ void EseFileFormat::parseSectors(const std::vector<std::string>& positions, cons
 
 void EseFileFormat::parseRunways(const std::vector<std::string>& runways) {
     for (const auto& line : std::as_const(runways)) {
+        /* skip empty lines */
+        if (0 == line.length())
+            continue;
+
         auto split = helper::String::splitString(line, " ");
         if (9 != split.size())
             continue;

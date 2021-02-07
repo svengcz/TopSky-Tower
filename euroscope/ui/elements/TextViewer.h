@@ -40,6 +40,11 @@ namespace topskytower {
             virtual ~TextViewer() { }
 
             /**
+             * @brief Sets a new text for the viewer
+             * @param[in] text The new text
+             */
+            void setText(const std::string& text);
+            /**
              * @brief Handles the click events
              * @param[in] pt The position of the mouse
              * @param[in] button The clicked mouse button

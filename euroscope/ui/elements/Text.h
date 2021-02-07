@@ -32,9 +32,7 @@ namespace topskytower {
             bool                                 m_bold;
             bool                                 m_italic;
 
-            /**
-             * @brief This function needs to be called as soon as the font configuration changed
-             */
+            void updateFontFamily();
             void updateFont();
 
         public:

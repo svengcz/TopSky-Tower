@@ -18,10 +18,10 @@
 using namespace topskytower;
 using namespace topskytower::formats;
 
-void AircraftFileFormat::parseAircraft(const std::string& line) {
+bool AircraftFileFormat::parseAircraft(const std::string& line) {
     auto split = helper::String::splitString(line, ":");
     if (6 != split.size())
-        return;
+        return false;
 
     types::Aircraft aircraft;
     aircraft.setIcaoCode(split[0]);
@@ -31,14 +31,23 @@ void AircraftFileFormat::parseAircraft(const std::string& line) {
     aircraft.setMTOW(static_cast<float>(std::atof(split[4].c_str())) * types::kilogram);
 
     this->m_aircrafts[aircraft.icaoCode()] = aircraft;
+
+    return true;
 }
 
 AircraftFileFormat::AircraftFileFormat(const std::string& filename) :
+        FileFormat(),
         m_aircrafts() {
     std::ifstream stream(filename);
 
-    for (std::string line; std::getline(stream, line);)
-        this->parseAircraft(line);
+    std::uint32_t lineNumber = 1;
+    for (std::string line; std::getline(stream, line); ++lineNumber) {
+        if (false == this->parseAircraft(line)) {
+            this->m_errorMessage = "Invalid aircraft entry";
+            this->m_errorLine = lineNumber;
+            return;
+        }
+    }
 }
 
 const std::map<std::string, types::Aircraft>& AircraftFileFormat::aircrafts() const {

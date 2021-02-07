@@ -10,6 +10,7 @@
 
 #include <map>
 
+#include <formats/FileFormat.h>
 #include <types/Aircraft.h>
 
 namespace topskytower {
@@ -33,12 +34,12 @@ namespace topskytower {
          *
          * The aircraft file needs the following name: 'TopSkyTowerAircrafts.txt'.
          */
-        class AircraftFileFormat {
+        class AircraftFileFormat : public FileFormat {
         private:
 #ifndef DOXYGEN_IGNORE
             std::map<std::string, types::Aircraft> m_aircrafts;
 
-            void parseAircraft(const std::string& line);
+            bool parseAircraft(const std::string& line);
 
         public:
             /**
