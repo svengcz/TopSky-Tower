@@ -96,8 +96,11 @@ bool UiManager::windowIsActive(const std::string& name) const {
 
 void UiManager::addCustomWindow(InsetWindow* window) {
     auto customIt = this->m_customWindows.find(window->title());
-    if (this->m_customWindows.end() != customIt)
-        this->removeCustomWindow(window);
+    if (this->m_customWindows.end() != customIt) {
+        auto delWindow = customIt->second;
+        this->removeCustomWindow(customIt->second);
+        delete delWindow;
+    }
 
     this->m_newWindowsQueue.push_back(window);
     this->m_customWindows[window->title()] = window;
