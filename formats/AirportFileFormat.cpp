@@ -475,7 +475,7 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
         this->m_errorLine = 0;
         return;
     }
-    if (false == this->parseDepartures(bIt->second, lIt->second))
+    if (false == this->parseAirportData(bIt->second, lIt->second))
         return;
 
     bIt = file.m_blocks.find("[DEPARTURES]");
@@ -485,7 +485,7 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
         this->m_errorLine = 0;
         return;
     }
-    if (false == this->parseAirportData(bIt->second, lIt->second))
+    if (false == this->parseDepartures(bIt->second, lIt->second))
         return;
 
     bIt = file.m_blocks.find("[STANDS]");
@@ -495,7 +495,7 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
         this->m_errorLine = 0;
         return;
     }
-    if (false == this->parsePriorities(bIt->second, lIt->second))
+    if (false == this->parseStands(bIt->second, lIt->second))
         return;
 
     bIt = file.m_blocks.find("[PRIORITIES]");
@@ -505,7 +505,7 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
         this->m_errorLine = 0;
         return;
     }
-    if (false == this->parseStands(bIt->second, lIt->second))
+    if (false == this->parsePriorities(bIt->second, lIt->second))
         return;
 
     bIt = file.m_blocks.find("[TAXIWAYS]");
