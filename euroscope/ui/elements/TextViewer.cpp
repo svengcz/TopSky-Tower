@@ -27,6 +27,10 @@ TextViewer::TextViewer(RadarScreen* parent, const std::string& text, const Gdipl
     this->m_visualization.setFontColor(UiElement::foregroundColor());
 }
 
+void TextViewer::setText(const std::string& text) {
+    this->m_text = text;
+}
+
 bool TextViewer::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     (void)button;
     return this->isInRectangle(pt, this->m_area);
