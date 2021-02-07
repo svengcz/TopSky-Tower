@@ -153,7 +153,7 @@ bool SettingsFileFormat::parse(types::SystemConfiguration& config) {
         else if ("SURV_CMAC_MinDistance" == entry[0]) {
             config.cmacMinimumDistance = static_cast<float>(std::atoi(value.c_str())) * types::metre;
         }
-        else if ("SURV_CMAC_MinDistance" == entry[0]) {
+        else if ("SURV_CMAC_CycleReset" == entry[0]) {
             config.cmacCycleReset = static_cast<std::uint8_t>(std::atoi(value.c_str()));
         }
         else if ("SURV_MTCD_Active" == entry[0]) {
