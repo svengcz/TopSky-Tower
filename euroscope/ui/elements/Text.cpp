@@ -24,14 +24,19 @@ Text::Text() :
         m_graphics(nullptr),
         m_rectangle(),
         m_text(),
-        m_fontFamily(new Gdiplus::FontFamily(std::wstring(system::ConfigurationRegistry::instance().systemConfiguration().fontFamily.begin(),
-                                                          system::ConfigurationRegistry::instance().systemConfiguration().fontFamily.end()).c_str(), nullptr)),
+        m_fontFamily(),
         m_font(nullptr),
         m_fontColor(),
         m_fontSize(system::ConfigurationRegistry::instance().systemConfiguration().fontSize),
         m_position(),
         m_bold(false),
-        m_italic(false) { }
+        m_italic(false) {
+    /* check if the system is well configured */
+    auto fontFamily = system::ConfigurationRegistry::instance().systemConfiguration().fontFamily;
+    if (0 == fontFamily.length())
+        fontFamily = "Arial";
+    this->m_fontFamily = std::shared_ptr<Gdiplus::FontFamily>(new Gdiplus::FontFamily(std::wstring(fontFamily.begin(), fontFamily.end()).c_str(), nullptr));
+}
 
 bool Text::isInBox(const Gdiplus::PointF& position) const {
     if (position.X < this->m_rectangle.GetLeft() || position.X > this->m_rectangle.GetRight())
