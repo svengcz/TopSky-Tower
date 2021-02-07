@@ -31,11 +31,7 @@ Text::Text() :
         m_position(),
         m_bold(false),
         m_italic(false) {
-    /* check if the system is well configured */
-    auto fontFamily = system::ConfigurationRegistry::instance().systemConfiguration().fontFamily;
-    if (0 == fontFamily.length())
-        fontFamily = "Arial";
-    this->m_fontFamily = std::shared_ptr<Gdiplus::FontFamily>(new Gdiplus::FontFamily(std::wstring(fontFamily.begin(), fontFamily.end()).c_str(), nullptr));
+    this->updateFontFamily();
 }
 
 bool Text::isInBox(const Gdiplus::PointF& position) const {
@@ -48,6 +44,18 @@ bool Text::isInBox(const Gdiplus::PointF& position) const {
 
 const Gdiplus::RectF& Text::rectangle() const {
     return this->m_rectangle;
+}
+
+void Text::updateFontFamily() {
+    /* check if the configuration or the configured font exists */
+    bool useConfig = false == __fontErrorPrinted && true == system::ConfigurationRegistry::instance().systemConfiguration().valid;
+
+    /* check if the system is well configured */
+    std::string fontFamily = system::ConfigurationRegistry::instance().systemConfiguration().fontFamily;
+    if (false == useConfig || 0 == fontFamily.length())
+        fontFamily = "Arial";
+
+    this->m_fontFamily = std::shared_ptr<Gdiplus::FontFamily>(new Gdiplus::FontFamily(std::wstring(fontFamily.begin(), fontFamily.end()).c_str(), nullptr));
 }
 
 void Text::updateFont() {
@@ -68,8 +76,11 @@ void Text::updateFont() {
                                                                     style, Gdiplus::UnitMillimeter));
 
     /* check if the initialization was successful */
-    if (false == __fontErrorPrinted && Gdiplus::Status::Ok != this->m_font->GetLastStatus())
+    if (Gdiplus::Status::Ok != this->m_font->GetLastStatus()) {
         __fontErrorPrinted = true;
+        this->updateFontFamily();
+        this->updateFont();
+    }
 }
 
 void Text::setGraphics(Gdiplus::Graphics* graphics) {
