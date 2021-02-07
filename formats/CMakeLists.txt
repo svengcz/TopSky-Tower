@@ -11,12 +11,14 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/formats/AircraftFileFormat.h
     ${CMAKE_SOURCE_DIR}/include/formats/AirportFileFormat.h
     ${CMAKE_SOURCE_DIR}/include/formats/EseFileFormat.h
+    ${CMAKE_SOURCE_DIR}/include/formats/FileFormat.h
     ${CMAKE_SOURCE_DIR}/include/formats/SettingsFileFormat.h
 )
 SET(SOURCE_FILES
     AircraftFileFormat.cpp
     AirportFileFormat.cpp
     EseFileFormat.cpp
+    FileFormat.cpp
     IniFileFormat.cpp
     IniFileFormat.h
     SettingsFileFormat.cpp
