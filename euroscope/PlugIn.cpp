@@ -9,7 +9,6 @@
  *   GNU General Public License v3 (GPLv3)
  */
 
-#define _CRT_SECURE_NO_WARNINGS
 #include "stdafx.h"
 
 #include <filesystem>
