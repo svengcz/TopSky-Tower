@@ -9,6 +9,7 @@
 #pragma once
 
 #include <formats/EseFileFormat.h>
+#include <formats/FileFormat.h>
 #include <types/AirportConfiguration.h>
 
 namespace topskytower {
@@ -271,26 +272,26 @@ namespace topskytower {
          *   </tr>
          * </table>
          */
-        class AirportFileFormat {
+        class AirportFileFormat : public FileFormat {
         private:
 #ifndef DOXYGEN_IGNORE
             types::AirportConfiguration m_configuration;
 
             static bool parseSid(const std::vector<std::string>& elements, types::StandardInstrumentDeparture& sid);
             static bool parseConstraint(const std::vector<std::string>& elements, types::DestinationConstraint& constraint);
-            bool parseDepartures(const std::vector<std::string>& lines);
+            bool parseDepartures(const std::vector<std::string>& lines, std::uint32_t lineOffset);
             static bool parseStandDefinition(const std::vector<std::string>& elements, types::Stand& stand);
             static bool parseWingspan(const std::vector<std::string>& elements, types::Stand& stand);
             static bool parseLength(const std::vector<std::string>& elements, types::Stand& stand);
             static bool parseHeight(const std::vector<std::string>& elements, types::Stand& stand);
             static bool parseWtc(const std::string& categories, std::list<types::Aircraft::WTC>& list);
             static bool parseEngineType(const std::string& types, std::list<types::Aircraft::EngineType>& list);
-            bool parseStands(const std::vector<std::string>& lines);
+            bool parseStands(const std::vector<std::string>& lines, std::uint32_t lineOffset);
             static bool parsePriorities(const std::vector<std::string>& elements, types::StandPriorities& priorities);
-            bool parsePriorities(const std::vector<std::string>& lines);
+            bool parsePriorities(const std::vector<std::string>& lines, std::uint32_t lineOffset);
             static bool parseHoldingPoint(const std::vector<std::string>& elements, types::HoldingPoint& holdingPoint);
-            bool parseTaxiways(const std::vector<std::string>& lines);
-            bool parseAirportData(const std::vector<std::string>& lines);
+            bool parseTaxiways(const std::vector<std::string>& lines, std::uint32_t lineOffset);
+            bool parseAirportData(const std::vector<std::string>& lines, std::uint32_t lineOffset);
 
         public:
             /**

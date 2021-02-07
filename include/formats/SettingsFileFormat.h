@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <formats/FileFormat.h>
 #include <helper/String.h>
 #include <types/Aircraft.h>
 #include <types/SystemConfiguration.h>
@@ -218,23 +219,28 @@ namespace topskytower {
          *   </tr>
          * </table>
          */
-        class SettingsFileFormat {
+        class SettingsFileFormat : public FileFormat {
         private:
 #ifndef DOXYGEN_IGNORE
             std::string m_filename;
 
-            static void parseColor(const std::string& block, std::uint8_t color[3]);
+            bool parseColor(const std::string& block, std::uint8_t color[3], std::uint32_t line);
             template <typename T>
-            static void parseDepartureModelParameters(const std::string& block, T parameters[5], const T& unit) {
+            bool parseDepartureModelParameters(const std::string& block, T parameters[5], const T& unit, std::uint32_t line) {
                 auto split = helper::String::splitString(block, ",");
                 /* all WTC categories need values */
-                if (4 != split.size())
-                    return;
+                if (4 != split.size()) {
+                    this->m_errorLine = line;
+                    this->m_errorMessage = "Invalid model configuration";
+                    return false;
+                }
 
                 parameters[static_cast<int>(types::Aircraft::WTC::Light)] = static_cast<float>(std::atof(split[0].c_str())) * unit;
                 parameters[static_cast<int>(types::Aircraft::WTC::Medium)] = static_cast<float>(std::atof(split[1].c_str())) * unit;
                 parameters[static_cast<int>(types::Aircraft::WTC::Heavy)] = static_cast<float>(std::atof(split[2].c_str())) * unit;
                 parameters[static_cast<int>(types::Aircraft::WTC::Super)] = static_cast<float>(std::atof(split[3].c_str())) * unit;
+
+                return true;
             }
 
         public:
@@ -248,8 +254,9 @@ namespace topskytower {
             /**
              * @brief Parses the set configuration file
              * @param[out] config The resulting configuration
+             * @return True if the configuration file was valid, else false
              */
-            void parse(types::SystemConfiguration& config) const;
+            bool parse(types::SystemConfiguration& config);
 #endif
         };
     }

@@ -18,32 +18,44 @@
 using namespace topskytower;
 using namespace topskytower::formats;
 
-void SettingsFileFormat::parseColor(const std::string& block, std::uint8_t color[3]) {
+bool SettingsFileFormat::parseColor(const std::string& block, std::uint8_t color[3], std::uint32_t line) {
     auto split = helper::String::splitString(block, ",");
-    if (3 != split.size())
-        return;
+    if (3 != split.size()) {
+        this->m_errorLine = line;
+        this->m_errorMessage = "Invalid color configuration";
+        return false;
+    }
 
     color[0] = static_cast<std::uint8_t>(std::atoi(split[0].c_str()));
     color[1] = static_cast<std::uint8_t>(std::atoi(split[1].c_str()));
     color[2] = static_cast<std::uint8_t>(std::atoi(split[2].c_str()));
+
+    return true;
 }
 
 SettingsFileFormat::SettingsFileFormat(const std::string& filename) :
+        FileFormat(),
         m_filename(filename) { }
 
-void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
+bool SettingsFileFormat::parse(types::SystemConfiguration& config) {
     types::Aircraft::WTC defaultWtc = types::Aircraft::WTC::Medium;
     config.valid = true;
 
     std::ifstream stream(this->m_filename);
     if (false == stream.is_open()) {
+        this->m_errorMessage = "Unable to open the configuration file";
+        this->m_errorLine = 0;
         config.valid = false;
-        return;
+        return false;
     }
 
     std::string line;
+    std::uint32_t lineOffset = 0;
     while (std::getline(stream, line)) {
+        bool retval = true;
         std::string value;
+
+        lineOffset += 1;
 
         /* skip a new line */
         if (0 == line.length())
@@ -51,8 +63,10 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
 
         auto entry = helper::String::splitString(line, "=");
         if (2 > entry.size()) {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Invalid configuration entry";
             config.valid = false;
-            return;
+            return false;
         }
         else if (2 < entry.size()) {
             for (std::size_t idx = 1; idx < entry.size() - 1; ++idx)
@@ -63,20 +77,27 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
             value = entry[1];
         }
 
+        /* found an invalid line */
+        if (0 == value.length()) {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Invalid entry";
+            return false;
+        }
+
         if ("UI_BackgroundColor" == entry[0]) {
-            SettingsFileFormat::parseColor(value, config.uiBackgroundColor);
+            retval = this->parseColor(value, config.uiBackgroundColor, lineOffset);
         }
         else if ("UI_ForegroundColor" == entry[0]) {
-            SettingsFileFormat::parseColor(value, config.uiForegroundColor);
+            retval = this->parseColor(value, config.uiForegroundColor, lineOffset);
         }
         else if ("UI_BackgroundActiveColor" == entry[0]) {
-            SettingsFileFormat::parseColor(value, config.uiBackgroundActiveColor);
+            retval = this->parseColor(value, config.uiBackgroundActiveColor, lineOffset);
         }
         else if ("UI_ForegroundActiveColor" == entry[0]) {
-            SettingsFileFormat::parseColor(value, config.uiForegroundActiveColor);
+            retval = this->parseColor(value, config.uiForegroundActiveColor, lineOffset);
         }
         else if ("UI_ScreenClickColor" == entry[0]) {
-            SettingsFileFormat::parseColor(value, config.uiScreenClickColor);
+            retval = this->parseColor(value, config.uiScreenClickColor, lineOffset);
         }
         else if ("UI_FontFamily" == entry[0]) {
             config.fontFamily = value;
@@ -85,7 +106,7 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
             config.fontSize = static_cast<float>(std::atof(value.c_str()));
         }
         else if ("UI_NTZColor" == entry[0]) {
-            SettingsFileFormat::parseColor(value, config.uiNtzColor);
+            retval = this->parseColor(value, config.uiNtzColor, lineOffset);
         }
         else if ("HTTP_HoppiesURL" == entry[0]) {
             config.hoppiesUrl = value;
@@ -153,17 +174,19 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
                 defaultWtc = types::Aircraft::WTC::Super;
                 break;
             default:
-                break;
+                this->m_errorLine = lineOffset;
+                this->m_errorMessage = "Invalid WTC category";
+                return false;
             }
         }
         else if ("SURV_MTCD_DepartureSpeedV2" == entry[0]) {
-            SettingsFileFormat::parseDepartureModelParameters(value, config.mtcdDepartureSpeedV2, types::knot);
+            retval = this->parseDepartureModelParameters(value, config.mtcdDepartureSpeedV2, types::knot, lineOffset);
         }
         else if ("SURV_MTCD_DepartureCruiseSpeed" == entry[0]) {
-            SettingsFileFormat::parseDepartureModelParameters(value, config.mtcdDepartureCruiseTAS, types::knot);
+            retval = this->parseDepartureModelParameters(value, config.mtcdDepartureCruiseTAS, types::knot, lineOffset);
         }
         else if ("SURV_MTCD_DepartureClimbRate" == entry[0]) {
-            SettingsFileFormat::parseDepartureModelParameters(value, config.mtcdDepartureClimbRates, types::feet / types::minute);
+        retval = this->parseDepartureModelParameters(value, config.mtcdDepartureClimbRates, types::feet / types::minute, lineOffset);
         }
         else if ("SURV_MTCD_DepartureAccelerationAlt" == entry[0]) {
             config.mtcdDepartureAccelerationAlt = static_cast<float>(std::atoi(value.c_str())) * types::feet;
@@ -187,6 +210,20 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         else if ("SURV_STCD_Active" == entry[0]) {
             config.stdcActive = '0' != value[0];
         }
+        else {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Unknown entry: " + entry[0];
+            return false;
+        }
+
+        if (false == retval)
+            return false;
+    }
+
+    if (0 == lineOffset) {
+        this->m_errorLine = 0;
+        this->m_errorMessage = "No data found in TopSkyTowerSettings.txt";
+        return false;
     }
 
     /* copy the MTCA-default values of the departure model */
@@ -196,4 +233,6 @@ void SettingsFileFormat::parse(types::SystemConfiguration& config) const {
         config.mtcdDepartureCruiseTAS[static_cast<int>(defaultWtc)];
     config.mtcdDepartureClimbRates[static_cast<int>(types::Aircraft::WTC::Unknown)] =
         config.mtcdDepartureClimbRates[static_cast<int>(defaultWtc)];
+
+    return true;
 }

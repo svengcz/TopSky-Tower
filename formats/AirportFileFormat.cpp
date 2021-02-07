@@ -81,8 +81,14 @@ bool AirportFileFormat::parseConstraint(const std::vector<std::string>& elements
     return true;
 }
 
-bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines) {
+bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines, std::uint32_t lineOffset) {
     for (const auto& line : std::as_const(lines)) {
+        lineOffset += 1;
+
+        /* skip the empty line */
+        if (0 == line.length())
+            continue;
+
         auto split = helper::String::splitString(line, ":");
 
         if ("SID" == split[0]) {
@@ -97,8 +103,13 @@ bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines) {
                 99000_ft
             };
 
-            if (true == AirportFileFormat::parseSid(split, sid))
-                this->m_configuration.sids[sid.name] = sid;
+            if (false == AirportFileFormat::parseSid(split, sid)) {
+                this->m_errorLine = lineOffset;
+                this->m_errorMessage = "Unable to parse the SID";
+                return false;
+            }
+
+            this->m_configuration.sids[sid.name] = sid;
         }
         else if ("CSTR" == split[0]) {
             types::DestinationConstraint constraint = {
@@ -108,8 +119,13 @@ bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines) {
                 99000_ft
             };
 
-            if (true == AirportFileFormat::parseConstraint(split, constraint))
-                this->m_configuration.destinationConstraints.push_back(constraint);
+            if (false == AirportFileFormat::parseConstraint(split, constraint)) {
+                this->m_errorLine = lineOffset;
+                this->m_errorMessage = "Unable to parse the constraint";
+                return false;
+            }
+
+            this->m_configuration.destinationConstraints.push_back(constraint);
         }
     }
 
@@ -217,14 +233,22 @@ bool AirportFileFormat::parseEngineType(const std::string& types, std::list<type
     return true;
 }
 
-bool AirportFileFormat::parseStands(const std::vector<std::string>& lines) {
+bool AirportFileFormat::parseStands(const std::vector<std::string>& lines, std::uint32_t lineOffset) {
     types::Stand stand;
     __resetStand(stand);
 
     for (const auto& line : std::as_const(lines)) {
-        auto split = helper::String::splitString(line, ":");
-        if (1 > split.size() && 0 == split[0].size())
+        lineOffset += 1;
+
+        if (0 == line.length())
             continue;
+
+        auto split = helper::String::splitString(line, ":");
+        if (1 > split.size() && 0 == split[0].size()) {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Invalid entry";
+            return false;
+        }
 
         if ("STAND" == split[0] && 6 == split.size()) {
             if (0 != stand.name.length())
@@ -263,6 +287,11 @@ bool AirportFileFormat::parseStands(const std::vector<std::string>& lines) {
         else if ("PRIORITY" == split[0] && 2 == split.size()) {
             stand.priority = std::atoi(split[1].c_str());
         }
+        else {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Unknown entry: " + split[0];
+            return false;
+        }
     }
 
     if (0 != stand.name.length())
@@ -282,14 +311,23 @@ bool AirportFileFormat::parsePriorities(const std::vector<std::string>& elements
     return true;
 }
 
-bool AirportFileFormat::parsePriorities(const std::vector<std::string>& lines) {
+bool AirportFileFormat::parsePriorities(const std::vector<std::string>& lines, std::uint32_t lineOffset) {
     std::list<types::StandPriorities> priorities;
     std::vector<std::string> airlines;
 
     for (const auto& line : std::as_const(lines)) {
-        auto split = helper::String::splitString(line, ":");
-        if (1 > split.size() && 0 == split[0].size())
+        lineOffset += 1;
+
+        /* skip empty lines */
+        if (0 == line.length())
             continue;
+
+        auto split = helper::String::splitString(line, ":");
+        if (1 > split.size() && 0 == split[0].size()) {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Invalid entry";
+            return false;
+        }
 
         if ("AIRLINES" == split[0]) {
             /* sort priorities in decending order */
@@ -299,8 +337,11 @@ bool AirportFileFormat::parsePriorities(const std::vector<std::string>& lines) {
 
             /* create new stand assignments */
             for (std::size_t i = 1; i < airlines.size(); ++i) {
-                if (0 == airlines[i].length())
+                if (0 == airlines[i].length()) {
+                    this->m_errorLine = lineOffset;
+                    this->m_errorMessage = "No airlines defined";
                     return false;
+                }
 
                 types::AirlineStandAssignments assignment = {
                     airlines[i],
@@ -315,11 +356,16 @@ bool AirportFileFormat::parsePriorities(const std::vector<std::string>& lines) {
         }
         else if ("STANDS" == split[0]) {
             types::StandPriorities priorityEntry;
-            if (false == AirportFileFormat::parsePriorities(split, priorityEntry))
+            if (false == AirportFileFormat::parsePriorities(split, priorityEntry)) {
+                this->m_errorLine = lineOffset;
+                this->m_errorMessage = "Unable to parse the priorities";
                 return false;
+            }
             priorities.push_back(std::move(priorityEntry));
         }
         else {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Unknown entry: " + split[0];
             return false;
         }
     }
@@ -344,19 +390,27 @@ bool AirportFileFormat::parseHoldingPoint(const std::vector<std::string>& elemen
     return true;
 }
 
-bool AirportFileFormat::parseTaxiways(const std::vector<std::string>& lines) {
+bool AirportFileFormat::parseTaxiways(const std::vector<std::string>& lines, std::uint32_t lineOffset) {
     for (const auto& line : std::as_const(lines)) {
-        auto split = helper::String::splitString(line, ":");
-        if (1 > split.size() && 0 == split[0].size())
+        lineOffset += 1;
+
+        /* skip empty line */
+        if (0 == line.length())
             continue;
 
+        auto split = helper::String::splitString(line, ":");
         if (7 == split.size() && "HOLD" == split[0]) {
             types::HoldingPoint holdingPoint;
-            if (false == AirportFileFormat::parseHoldingPoint(split, holdingPoint))
+            if (false == AirportFileFormat::parseHoldingPoint(split, holdingPoint)) {
+                this->m_errorLine = lineOffset;
+                this->m_errorMessage = "Invalid holding point entry";
                 return false;
+            }
             this->m_configuration.holdingPoints.push_back(std::move(holdingPoint));
         }
         else {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Invalid line entry";
             return false;
         }
     }
@@ -364,17 +418,29 @@ bool AirportFileFormat::parseTaxiways(const std::vector<std::string>& lines) {
     return true;
 }
 
-bool AirportFileFormat::parseAirportData(const std::vector<std::string>& lines) {
+bool AirportFileFormat::parseAirportData(const std::vector<std::string>& lines, std::uint32_t lineOffset) {
     for (const auto& line : std::as_const(lines)) {
+        lineOffset += 1;
+
+        /* skip empty line */
+        if (0 == line.length())
+            continue;
+
         auto split = helper::String::splitString(line, ":");
 
         /* found invalid configuration entries */
-        if (3 != split.size() || ("IPA" != split[0] && "PRM" != split[0]))
+        if (3 != split.size() || ("IPA" != split[0] && "PRM" != split[0])) {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Invalid IPA/PRM entry";
             return false;
+        }
 
         /* validate that all entries are defined */
-        if (0 == split[1].length() || 0 == split[2].length())
+        if (0 == split[1].length() || 0 == split[2].length()) {
+            this->m_errorLine = lineOffset;
+            this->m_errorMessage = "Invalid IPA/PRM runway definitions";
             return false;
+        }
 
         /* check if IPA or PRM is defined */
         if ("IPA" == split[0]) {
@@ -391,25 +457,63 @@ bool AirportFileFormat::parseAirportData(const std::vector<std::string>& lines) 
 }
 
 AirportFileFormat::AirportFileFormat(const std::string& filename) :
+        FileFormat(),
         m_configuration() {
+    std::map<std::string, std::vector<std::string>>::const_iterator bIt;
+    std::map<std::string, std::uint32_t>::const_iterator lIt;
+
+    this->m_configuration.valid = false;
+
     IniFileFormat file(filename);
+    if (0 == file.errorLine())
+        return;
 
-    for (const auto& block : std::as_const(file.m_blocks)) {
-        this->m_configuration.valid = true;
-
-        if ("[AIRPORT]" == block.first)
-            this->m_configuration.valid &= this->parseAirportData(block.second);
-        else if ("[DEPARTURES]" == block.first)
-            this->m_configuration.valid &= this->parseDepartures(block.second);
-        else if ("[STANDS]" == block.first)
-            this->m_configuration.valid &= this->parseStands(block.second);
-        else if ("[PRIORITIES]" == block.first)
-            this->m_configuration.valid &= this->parsePriorities(block.second);
-        else if ("[TAXIWAYS]" == block.first)
-            this->m_configuration.valid &= this->parseTaxiways(block.second);
-        else
-            this->m_configuration.valid = false;
+    bIt = file.m_blocks.find("[AIRPORT]");
+    lIt = file.m_lineOffsets.find("[AIRPORT]");
+    if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
+        this->m_errorMessage = "Unable to find the [AIRPORT]-section";
+        return;
     }
+    if (false == this->parseDepartures(bIt->second, lIt->second))
+        return;
+
+    bIt = file.m_blocks.find("[DEPARTURES]");
+    lIt = file.m_lineOffsets.find("[DEPARTURES]");
+    if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
+        this->m_errorMessage = "Unable to find the [DEPARTURES]-section";
+        return;
+    }
+    if (false == this->parseAirportData(bIt->second, lIt->second))
+        return;
+
+    bIt = file.m_blocks.find("[STANDS]");
+    lIt = file.m_lineOffsets.find("[STANDS]");
+    if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
+        this->m_errorMessage = "Unable to find the [STANDS]-section";
+        return;
+    }
+    if (false == this->parsePriorities(bIt->second, lIt->second))
+        return;
+
+    bIt = file.m_blocks.find("[PRIORITIES]");
+    lIt = file.m_lineOffsets.find("[PRIORITIES]");
+    if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
+        this->m_errorMessage = "Unable to find the [PRIORITIES]-section";
+        return;
+    }
+    if (false == this->parseStands(bIt->second, lIt->second))
+        return;
+
+    bIt = file.m_blocks.find("[TAXIWAYS]");
+    lIt = file.m_lineOffsets.find("[TAXIWAYS]");
+    if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
+        this->m_errorMessage = "Unable to find the [TAXIWAYS]-section";
+        return;
+    }
+    if (false == this->parseTaxiways(bIt->second, lIt->second))
+        return;
+
+    this->m_configuration.valid = true;
 }
 
 const types::AirportConfiguration& AirportFileFormat::configuration() const {
