@@ -84,7 +84,7 @@ bool ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
                 this->m_airportConfigurations[icao] = new formats::AirportFileFormat(entry.path().string());
                 if (false == this->m_airportConfigurations[icao]->errorFound()) {
                     this->m_errorLine = this->m_airportConfigurations[icao]->errorLine();
-                    this->m_errorMessage = filename + ":\n" + this->m_airportConfigurations[icao]->errorMessage();
+                    this->m_errorMessage = filename + ".txt:\n" + this->m_airportConfigurations[icao]->errorMessage();
                     return false;
                 }
             }
