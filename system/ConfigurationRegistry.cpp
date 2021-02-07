@@ -48,12 +48,17 @@ void ConfigurationRegistry::cleanup(UpdateType type) {
         this->m_systemConfig.valid = false;
 }
 
-void ConfigurationRegistry::configure(const std::string& path, UpdateType type) {
+bool ConfigurationRegistry::configure(const std::string& path, UpdateType type) {
     this->cleanup(type);
+    this->reset();
 
     if (UpdateType::All == type || UpdateType::System == type) {
         formats::SettingsFileFormat settings(path + "\\TopSkyTowerSettings.txt");
-        settings.parse(this->m_systemConfig);
+        if (false == settings.parse(this->m_systemConfig)) {
+            this->m_errorLine = settings.errorLine();
+            this->m_errorMessage = "TopSkyTowerSettings.txt:\n" + settings.errorMessage();
+            return false;
+        }
 
         std::ifstream stream(path + "\\TopSkyTowerHoppies.txt");
         for (std::string line; std::getline(stream, line);) {
@@ -77,15 +82,26 @@ void ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
 
                 /* read the configuration */
                 this->m_airportConfigurations[icao] = new formats::AirportFileFormat(entry.path().string());
+                if (false == this->m_airportConfigurations[icao]->errorFound()) {
+                    this->m_errorLine = this->m_airportConfigurations[icao]->errorLine();
+                    this->m_errorMessage = filename + ":\n" + this->m_airportConfigurations[icao]->errorMessage();
+                    return false;
+                }
             }
         }
     }
 
-    if (UpdateType::All == type || UpdateType::Aircrafts == type)
+    if (UpdateType::All == type || UpdateType::Aircrafts == type) {
         this->m_aircraftConfiguration = new formats::AircraftFileFormat(path + "\\TopSkyTowerAircrafts.txt");
+        this->m_errorLine = this->m_aircraftConfiguration->errorLine();
+        this->m_errorMessage = + "TopSkyTowerAircrafts.txt:\n" + this->m_aircraftConfiguration->errorMessage();
+        return false;
+    }
 
     for (const auto& notification : std::as_const(this->m_notificationCallbacks))
         notification.second(type);
+
+    return true;
 }
 
 const types::SystemConfiguration& ConfigurationRegistry::systemConfiguration() const {
