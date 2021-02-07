@@ -472,6 +472,7 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
     lIt = file.m_lineOffsets.find("[AIRPORT]");
     if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
         this->m_errorMessage = "Unable to find the [AIRPORT]-section";
+        this->m_errorLine = 0;
         return;
     }
     if (false == this->parseDepartures(bIt->second, lIt->second))
@@ -481,6 +482,7 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
     lIt = file.m_lineOffsets.find("[DEPARTURES]");
     if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
         this->m_errorMessage = "Unable to find the [DEPARTURES]-section";
+        this->m_errorLine = 0;
         return;
     }
     if (false == this->parseAirportData(bIt->second, lIt->second))
@@ -490,6 +492,7 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
     lIt = file.m_lineOffsets.find("[STANDS]");
     if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
         this->m_errorMessage = "Unable to find the [STANDS]-section";
+        this->m_errorLine = 0;
         return;
     }
     if (false == this->parsePriorities(bIt->second, lIt->second))
@@ -499,6 +502,7 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
     lIt = file.m_lineOffsets.find("[PRIORITIES]");
     if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
         this->m_errorMessage = "Unable to find the [PRIORITIES]-section";
+        this->m_errorLine = 0;
         return;
     }
     if (false == this->parseStands(bIt->second, lIt->second))
@@ -508,6 +512,7 @@ AirportFileFormat::AirportFileFormat(const std::string& filename) :
     lIt = file.m_lineOffsets.find("[TAXIWAYS]");
     if (file.m_blocks.cend() == bIt || file.m_lineOffsets.cend() == lIt) {
         this->m_errorMessage = "Unable to find the [TAXIWAYS]-section";
+        this->m_errorLine = 0;
         return;
     }
     if (false == this->parseTaxiways(bIt->second, lIt->second))
