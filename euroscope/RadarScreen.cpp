@@ -253,8 +253,7 @@ void RadarScreen::initialize() {
         formats::EseFileFormat file;
 
         try {
-            file = formats::EseFileFormat(sctFilename);
-            if (0 == file.sectors().size() || 0 == file.runways(this->m_airport).size()) {
+            if (false == file.parse(sctFilename)) {
                 this->m_sectorFileIsMissing = true;
                 return;
             }

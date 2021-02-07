@@ -9,8 +9,6 @@
  *   GNU General Public License v3 (GPLv3)
  */
 
-#include <filesystem>
-
 #include <helper/Exception.h>
 #include <helper/String.h>
 #include <formats/EseFileFormat.h>
@@ -200,44 +198,85 @@ void EseFileFormat::parseRunways(const std::vector<std::string>& runways) {
     }
 }
 
-EseFileFormat::EseFileFormat() :
-        m_sectors(),
-        m_runways() { }
+void EseFileFormat::parserThread(const std::string& sectorFile) {
+    while (true) {
+        /* analyze the next file or abort the thread */
+        this->m_pathsMutex.lock();
+        if (0 == this->m_paths.size()) {
+            this->m_pathsMutex.unlock();
+            break;
+        }
+        auto file = this->m_paths.front();
+        this->m_paths.pop_front();
+        this->m_pathsMutex.unlock();
 
-EseFileFormat::EseFileFormat(const std::string& sectorName) :
-        m_sectors(),
-        m_runways() {
-    /* find all SCT-files to anaylize the info-block */
-    for (const auto& file : std::filesystem::directory_iterator(".")) {
-        if (".sct" == file.path().extension()) {
-            IniFileFormat sctFile(file.path().string());
+        /* check if an other task found the correct file */
+        if (true == this->m_foundSectorFile)
+            break;
 
-            /* check if the sct-file contains an INFO block */
-            auto infoIt = sctFile.m_blocks.find("[INFO]");
-            if (sctFile.m_blocks.cend() != infoIt) {
-                /* found the correct SCT version */
-                if (infoIt->second[0] == sectorName) {
-                    auto esePath = file.path().filename().replace_extension(".ese");
-                    IniFileFormat eseFile(esePath.string());
+        /* try the file */
+        IniFileFormat sctFile(file.path().string());
 
-                    /* parse the sectors */
-                    auto positionsIt = eseFile.m_blocks.find("[POSITIONS]");
-                    if (eseFile.m_blocks.cend() == positionsIt)
-                        throw helper::Exception("ESE File", "Unable to find positions in " + esePath.string());
-                    auto airspaceIt = eseFile.m_blocks.find("[AIRSPACE]");
-                    if (eseFile.m_blocks.cend() == airspaceIt)
-                        throw helper::Exception("ESE File", "Unable to find airspaces in " + esePath.string());
-                    this->parseSectors(positionsIt->second, airspaceIt->second);
+        /* check if the sct-file contains an INFO block */
+        auto infoIt = sctFile.m_blocks.find("[INFO]");
+        if (sctFile.m_blocks.cend() != infoIt) {
+            /* found the correct SCT version */
+            if (infoIt->second[0] == sectorFile) {
+                auto esePath = file.path().filename().replace_extension(".ese");
+                IniFileFormat eseFile(esePath.string());
 
-                    /* parse the runways */
-                    auto runwaysIt = sctFile.m_blocks.find("[RUNWAY]");
-                    if (sctFile.m_blocks.cend() == runwaysIt)
-                        throw helper::Exception("SCT File", "Unable to find the runways in " + file.path().string());
-                    this->parseRunways(runwaysIt->second);
-                }
+                /* parse the sectors */
+                auto positionsIt = eseFile.m_blocks.find("[POSITIONS]");
+                if (eseFile.m_blocks.cend() == positionsIt)
+                    throw helper::Exception("ESE File", "Unable to find positions in " + esePath.string());
+                auto airspaceIt = eseFile.m_blocks.find("[AIRSPACE]");
+                if (eseFile.m_blocks.cend() == airspaceIt)
+                    throw helper::Exception("ESE File", "Unable to find airspaces in " + esePath.string());
+                this->parseSectors(positionsIt->second, airspaceIt->second);
+
+                /* parse the runways */
+                auto runwaysIt = sctFile.m_blocks.find("[RUNWAY]");
+                if (sctFile.m_blocks.cend() == runwaysIt)
+                    throw helper::Exception("SCT File", "Unable to find the runways in " + file.path().string());
+                this->parseRunways(runwaysIt->second);
+
+                this->m_foundSectorFile = true;
             }
         }
     }
+}
+
+EseFileFormat::EseFileFormat() :
+        m_sectors(),
+        m_runways(),
+        m_parserThreads(),
+        m_pathsMutex(),
+        m_paths(),
+        m_foundSectorFile(false) { }
+
+bool EseFileFormat::parse(const std::string& sectorName) {
+    auto threadCount = std::thread::hardware_concurrency();
+    if (0 == threadCount)
+        threadCount = 3;
+
+    /* find all SCT-files to anaylize the info-block */
+    for (const auto& file : std::filesystem::directory_iterator(".")) {
+        if (".sct" == file.path().extension())
+            this->m_paths.push_back(file);
+    }
+    threadCount = std::min(this->m_paths.size(), threadCount);
+
+    /* start the threads */
+    for (std::size_t i = 0; i < threadCount; ++i)
+        this->m_parserThreads.push_back(new std::thread(&EseFileFormat::parserThread, this, sectorName));
+
+    /* wait for the threads */
+    for (auto it = this->m_parserThreads.begin(); this->m_parserThreads.end() != it; ++it) {
+        (*it)->join();
+        delete *it;
+    }
+
+    return true == this->m_foundSectorFile;
 }
 
 const std::list<types::Sector>& EseFileFormat::sectors() const {

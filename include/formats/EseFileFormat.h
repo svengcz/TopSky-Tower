@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <filesystem>
 #include <map>
+#include <mutex>
 
 #include <types/Runway.h>
 #include <types/Sector.h>
@@ -30,22 +32,27 @@ namespace topskytower {
             std::list<types::SectorBorder>                  m_sectorBorders;
             std::list<types::Sector>                        m_sectors;
             std::map<std::string, std::list<types::Runway>> m_runways;
+            std::list<std::thread*>                         m_parserThreads;
+            std::mutex                                      m_pathsMutex;
+            std::list<std::filesystem::directory_entry>     m_paths;
+            volatile bool                                   m_foundSectorFile;
 
             void parseSectors(const std::vector<std::string>& positions, const std::vector<std::string>& airspace);
             void parseRunways(const std::vector<std::string>& runways);
+            void parserThread(const std::string& sectorFile);
 
         public:
             /**
              * @brief Creates an empty file format
              */
             EseFileFormat();
+
             /**
              * @brief Parses an ESE file and extracts all required information
              * If the file does not exist, the constructor throws an exeption.
              * @param[in] sectorName The sector's name which is used to find the sector file
              */
-            EseFileFormat(const std::string& sectorName);
-
+            bool parse(const std::string& sectorName);
             /**
              * @brief Returns the sectors of the ESE file
              * @return The parsed sectors
