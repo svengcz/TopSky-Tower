@@ -23,6 +23,7 @@ namespace topskytower {
             /**< Defines the generic node structure */
             typedef boost::variant <
                 AstNull,
+                std::string,
                 AstNotam,
                 AstRunway
             > AstNode;

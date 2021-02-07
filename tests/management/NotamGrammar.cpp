@@ -2,7 +2,7 @@
  * Author:
  *   Sven Czarnian <devel@svcz.de>
  * Brief:
- *   Implements the tests for the NOTAM grammatic
+ *   Implements the tests for the NOTAM grammar
  * Copyright:
  *   2020-2021 Sven Czarnian
  * License:

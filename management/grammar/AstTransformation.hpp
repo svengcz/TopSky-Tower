@@ -15,6 +15,7 @@
 #pragma warning(default: 4459)
 
 #include "AstNotam.hpp"
+#include "AstRunway.hpp"
 
 namespace qi = boost::spirit::qi;
 
@@ -68,6 +69,21 @@ namespace boost {
             };
 
             template<>
+            struct transform_attribute<topskytower::management::grammar::AstRunwayDimension, int, qi::domain> {
+                typedef std::string type;
+
+                static int pre(topskytower::management::grammar::AstRunwayDimension) {
+                    return int();
+                }
+
+                static void post(topskytower::management::grammar::AstRunwayDimension& dim, int const& value) {
+                    static_cast<topskytower::types::Length&>(dim) = static_cast<float>(value) * topskytower::types::feet;
+                }
+
+                static void fail(topskytower::management::grammar::AstRunwayDimension&) { }
+            };
+
+            template<>
             struct transform_attribute<topskytower::types::Coordinate, std::string, qi::domain> {
                 typedef std::string type;
 
@@ -82,6 +98,21 @@ namespace boost {
                 }
 
                 static void fail(topskytower::types::Coordinate&) { }
+            };
+
+            template<>
+            struct transform_attribute<topskytower::types::Mass, int, qi::domain> {
+                typedef int type;
+
+                static int pre(topskytower::types::Mass) {
+                    return int();
+                }
+
+                static void post(topskytower::types::Mass& mass, int const& value) {
+                    mass = static_cast<float>(value) * topskytower::types::pound;
+                }
+
+                static void fail(topskytower::types::Mass&) { }
             };
         }
     }

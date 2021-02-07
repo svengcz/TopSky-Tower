@@ -18,3 +18,4 @@ AddTest(FlightRegistry system/FlightRegistry.cpp system "${PROJECT_BINARY_DIR}")
 
 #define the management tests
 AddTest(NotamGrammar management/NotamGrammar.cpp management "${PROJECT_BINARY_DIR}")
+AddTest(RunwayGrammar management/RunwayGrammar.cpp management "${PROJECT_BINARY_DIR}")
