@@ -233,6 +233,9 @@ bool StandControl::assignStand(const types::Flight& flight, types::Flight::Type 
 }
 
 void StandControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
+    if (nullptr == this->m_standTreeAdaptor)
+        return;
+
     const auto& maxDist = system::ConfigurationRegistry::instance().systemConfiguration().standAssociationDistance;
     if (maxDist < flight.currentPosition().coordinate().distanceTo(this->m_centerPosition))
         return;
