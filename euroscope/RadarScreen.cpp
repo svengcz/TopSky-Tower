@@ -293,7 +293,7 @@ void RadarScreen::initialize() {
 
         if (nullptr != this->m_cmacControl)
             delete this->m_cmacControl;
-        this->m_cmacControl = new surveillance::CMACControl();
+        this->m_cmacControl = new surveillance::CMACControl(this->m_airport, center);
 
         if (nullptr != this->m_mtcdControl)
             delete this->m_mtcdControl;

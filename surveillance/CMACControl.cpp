@@ -18,8 +18,35 @@ using namespace topskytower;
 using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
-CMACControl::CMACControl() :
-        m_tracks() { }
+CMACControl::CMACControl(const std::string& airport, const types::Coordinate& center) :
+        management::HoldingPointMap<management::HoldingPointData>(airport, center),
+        m_tracks() {
+    system::ConfigurationRegistry::instance().registerNotificationCallback(this, &CMACControl::reinitialize);
+
+    this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
+}
+
+CMACControl::~CMACControl() {
+    system::ConfigurationRegistry::instance().deleteNotificationCallback(this);
+}
+
+void CMACControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
+    if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::Airports != type)
+        return;
+
+    management::HoldingPointMap<management::HoldingPointData>::reinitialize();
+}
+
+static __inline types::Angle __normalize(const types::Angle& angle) {
+    auto retval(angle);
+
+    while (180.0_deg < retval)
+        retval -= 360.0_deg;
+    while (-1.0f * 180.0_deg > retval)
+        retval += 360.0_deg;
+
+    return retval;
+}
 
 void CMACControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
     /* check if the system is active */
@@ -41,6 +68,7 @@ void CMACControl::updateFlight(const types::Flight& flight, types::Flight::Type 
         it = this->m_tracks.find(flight.callsign());
 
         it->second.expectedCommand = types::FlightPlan::AtcCommand::Unknown;
+        it->second.behindHoldingPoint = false;
         it->second.cycleCounter = 0;
         it->second.referencePosition = flight.currentPosition().coordinate();
 
@@ -88,6 +116,26 @@ void CMACControl::updateFlight(const types::Flight& flight, types::Flight::Type 
         else
             it->second.expectedCommand = types::FlightPlan::AtcCommand::TaxiOut;
     }
+    /* check if the flight crossed a runway exit */
+    else if (false == it->second.behindHoldingPoint) {
+        /* find the closest holding point */
+        auto holdingPoint = this->findNextHoldingPoints<1>(flight);
+
+        if (nullptr != holdingPoint[0]) {
+            distance = holdingPoint[0]->holdingPoint.distanceTo(flight.currentPosition().coordinate());
+            if (system::ConfigurationRegistry::instance().systemConfiguration().ariwsMaximumDistance > distance) {
+                heading = flight.currentPosition().coordinate().bearingTo(holdingPoint[0]->holdingPoint);
+                if (__normalize(heading - flight.currentPosition().heading()).abs() < 15_deg)
+                    it->second.behindHoldingPoint = true;
+                else
+                    it->second.expectedCommand = types::FlightPlan::AtcCommand::Land;
+            }
+        }
+        else {
+            it->second.expectedCommand = types::FlightPlan::AtcCommand::TaxiIn;
+        }
+    }
+    /* already left the runway */
     else {
         it->second.expectedCommand = types::FlightPlan::AtcCommand::TaxiIn;
     }

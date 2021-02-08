@@ -10,6 +10,7 @@
 
 #include <map>
 
+#include <management/HoldingPointMap.h>
 #include <types/Flight.h>
 
 namespace topskytower {
@@ -26,24 +27,36 @@ namespace topskytower {
          * If the set ground status command does not fit to the expected one, the CMA is triggered and the "TopSky-Tower / Surveillance alerts"-tag
          * is extended by the CMA message.
          *
+         * The system supervises the arrival flights as well.
+         * It uses the defined holding points to check if the flight left the runway or is still vacating.
+         *
          * ![Conformance Monitoring Alert](doc/imgs/ConformanceMonitoringAlert.png)
          */
-        class CMACControl {
+        class CMACControl : management::HoldingPointMap<management::HoldingPointData> {
         private:
 #ifndef DOXYGEN_IGNORE
             struct FlightHistory {
                 std::size_t                   cycleCounter;
                 types::Coordinate             referencePosition;
+                bool                          behindHoldingPoint;
                 types::FlightPlan::AtcCommand expectedCommand;
             };
 
             std::map<std::string, FlightHistory> m_tracks;
 
+            void reinitialize(system::ConfigurationRegistry::UpdateType type);
+
         public:
             /**
              * @brief Creates a CMAC control instance
+             * @param[in] airport The airport's ICAO code
+             * @param[in] center The airport's center position
              */
-            CMACControl();
+            CMACControl(const std::string& airport, const types::Coordinate& center);
+            /**
+             * @brief Destroys all internal structures
+             */
+            ~CMACControl();
 
             /**
              * @brief Updates a flight and calculates the ARIWS metrices
