@@ -36,17 +36,6 @@ void MTCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
     this->m_holdingPoints.reinitialize();
 }
 
-static __inline types::Angle __normalize(const types::Angle& angle) {
-    auto retval(angle);
-
-    while (180.0_deg < retval)
-        retval -= 360.0_deg;
-    while (-1.0f * 180.0_deg > retval)
-        retval += 360.0_deg;
-
-    return retval;
-}
-
 std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Flight& flight, types::Flight::Type type) {
     /* ignore non-departing flights and non-IFR flights */
     if (types::Flight::Type::Departure != type || types::FlightPlan::Type::IFR != flight.flightPlan().type())
