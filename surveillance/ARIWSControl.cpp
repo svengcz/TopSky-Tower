@@ -46,7 +46,7 @@ static __inline types::Angle __normalize(const types::Angle& angle) {
     return retval;
 }
 
-void ARIWSControl::updateFlight(const types::Flight& flight) {
+void ARIWSControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
     /* check if the system is active */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().ariwsActive ||
         false == system::ConfigurationRegistry::instance().runtimeConfiguration().ariwsActive)
@@ -68,28 +68,8 @@ void ARIWSControl::updateFlight(const types::Flight& flight) {
         return;
     }
 
-    /* find the next holding point */
-    auto node = this->m_holdingPoints.findNextHoldingPoints<1>(flight);
-    if (nullptr == node[0])
-        return;
-
-    auto holdingPointHeading = node[0]->heading;
-    auto holdingPoint = node[0]->holdingPoint;
-
-    /* the heading must be comparable */
-    if (15_deg < __normalize(holdingPointHeading - flight.currentPosition().heading()).abs())
-        return;
-
-    auto distHP = holdingPoint.distanceTo(flight.currentPosition().coordinate());
-    if (system::ConfigurationRegistry::instance().systemConfiguration().ariwsMaximumDistance >= distHP) {
-        /* check if the holding point is behind the flight */
-        auto heading = flight.currentPosition().coordinate().bearingTo(holdingPoint);
-        if (__normalize(heading - flight.currentPosition().heading() - 180.0_deg).abs() < 15_deg) {
-            /* check if the flight is behind the deadband */
-            if (distHP > system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband)
-                this->m_incursionWarnings.push_back(flight.callsign());
-        }
-    }
+    if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband, false, 15.0_deg))
+        this->m_incursionWarnings.push_back(flight.callsign());
 }
 
 void ARIWSControl::removeFlight(const std::string& callsign) {

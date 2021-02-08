@@ -177,7 +177,7 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
     if (nullptr != this->m_standControl)
         this->m_standControl->updateFlight(flight, type);
     if (nullptr != this->m_ariwsControl)
-        this->m_ariwsControl->updateFlight(flight);
+        this->m_ariwsControl->updateFlight(flight, type);
     if (nullptr != this->m_cmacControl)
         this->m_cmacControl->updateFlight(flight, type);
     if (nullptr != this->m_mtcdControl)
@@ -206,7 +206,7 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
     const auto& flight = system::FlightRegistry::instance().flight(callsign);
     auto flightType = this->identifyType(flight);
 
-    this->m_ariwsControl->updateFlight(flight);
+    this->m_ariwsControl->updateFlight(flight, flightType);
     this->m_cmacControl->updateFlight(flight, flightType);
 
     /* update the stand if needed */

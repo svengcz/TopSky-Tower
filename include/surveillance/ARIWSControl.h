@@ -56,8 +56,9 @@ namespace topskytower {
             /**
              * @brief Updates a flight and calculates the ARIWS metrices
              * @param[in] flight The updated flight
+             * @param[in] type The type of the updated flight
              */
-            void updateFlight(const types::Flight& flight);
+            void updateFlight(const types::Flight& flight, types::Flight::Type type);
             /**
              * @brief Removes a flight out of the internal system
              * @param[in] callsign The removable callsign

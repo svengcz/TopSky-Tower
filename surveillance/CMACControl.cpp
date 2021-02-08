@@ -118,21 +118,12 @@ void CMACControl::updateFlight(const types::Flight& flight, types::Flight::Type 
     }
     /* check if the flight crossed a runway exit */
     else if (false == it->second.behindHoldingPoint) {
-        /* find the closest holding point */
-        auto holdingPoint = this->m_holdingPoints.findNextHoldingPoints<1>(flight);
-
-        if (nullptr != holdingPoint[0]) {
-            distance = holdingPoint[0]->holdingPoint.distanceTo(flight.currentPosition().coordinate());
-            if (system::ConfigurationRegistry::instance().systemConfiguration().ariwsMaximumDistance > distance) {
-                heading = flight.currentPosition().coordinate().bearingTo(holdingPoint[0]->holdingPoint);
-                if (__normalize(heading - flight.currentPosition().heading()).abs() < 15_deg)
-                    it->second.behindHoldingPoint = true;
-                else
-                    it->second.expectedCommand = types::FlightPlan::AtcCommand::Land;
-            }
+        if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, 0.0_m, false, 15.0_deg)) {
+            it->second.expectedCommand = types::FlightPlan::AtcCommand::TaxiIn;
+            it->second.behindHoldingPoint = true;
         }
         else {
-            it->second.expectedCommand = types::FlightPlan::AtcCommand::TaxiIn;
+            it->second.expectedCommand = types::FlightPlan::AtcCommand::Land;
         }
     }
     /* already left the runway */

@@ -73,6 +73,64 @@ namespace topskytower {
             HoldingPointTree         m_lvpHoldingPointTree;
             HoldingPointTreeAdaptor* m_lvpHoldingPointTreeAdaptor;
 
+            static void normalize(types::Angle& angle) {
+                while (-180.0 * types::degree > angle)
+                    angle += 360.0 * types::degree;
+                while (180.0 * types::degree < angle)
+                    angle -= 360.0 * types::degree;
+            }
+            T* findNextHoldingPoints(const types::Flight& flight, types::Flight::Type type, bool runwayBound) {
+                /* get the correct adaptor */
+                HoldingPointTreeAdaptor* adaptor;
+                if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures)
+                    adaptor = this->m_normalHoldingPointTreeAdaptor;
+                else
+                    adaptor = this->m_lvpHoldingPointTreeAdaptor;
+
+                /* avoid uninitialized calls */
+                if (nullptr == adaptor)
+                    return nullptr;
+
+                /* project to Cartesian coordinates */
+                GeographicLib::Gnomonic projection(GeographicLib::Geodesic::WGS84());
+                float queryPt[2];
+                projection.Forward(this->m_centerPosition.latitude().convert(types::degree),
+                                   this->m_centerPosition.longitude().convert(types::degree),
+                                   flight.currentPosition().coordinate().latitude().convert(types::degree),
+                                   flight.currentPosition().coordinate().longitude().convert(types::degree),
+                                   queryPt[0], queryPt[1]);
+
+                std::size_t idx;
+                float distance;
+
+                /* find the neighbors */
+                std::size_t found = adaptor->knnSearch(queryPt, 1, &idx, &distance);
+
+                const auto& expectedRunway = types::Flight::Type::Departure == type ? flight.flightPlan().departureRunway() : flight.flightPlan().arrivalRunway();
+                bool lvpActive = system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
+                if (1 != found) {
+                    T* retval;
+
+                    if (false == lvpActive)
+                        retval = &this->m_normalHoldingPointTree.holdingPoints[idx];
+                    else
+                        retval = &this->m_lvpHoldingPointTree.holdingPoints[idx];
+
+                    /* check the runway bound */
+                    if (true == runwayBound && expectedRunway != retval->runway)
+                        return nullptr;
+
+                    /* check if the flight is close enough */
+                    auto hpDistance = retval->holdingPoint.distanceTo(flight.currentPosition().coordinate());
+                    if (hpDistance > system::ConfigurationRegistry::instance().systemConfiguration().ariwsMaximumDistance)
+                        return nullptr;
+
+                    return retval;
+                }
+
+                return nullptr;
+            }
+
         public:
             /**
              * @brief Initializes the holding point map
@@ -138,58 +196,45 @@ namespace topskytower {
                 this->m_normalHoldingPointTreeAdaptor->buildIndex();
                 this->m_lvpHoldingPointTreeAdaptor->buildIndex();
             }
-            /**
-             * @brief Finds the nearest N holding points of the flight
-             * @param[in] flight The requested flight
-             * @return The array with all found holding points
-             */
-            template <std::size_t N>
-            std::array<T*, N> findNextHoldingPoints(const types::Flight& flight) {
-                /* get the correct adaptor */
-                HoldingPointTreeAdaptor* adaptor;
-                if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures)
-                    adaptor = this->m_normalHoldingPointTreeAdaptor;
-                else
-                    adaptor = this->m_lvpHoldingPointTreeAdaptor;
+            bool reachedHoldingPoint(const types::Flight& flight, types::Flight::Type type, bool runwayBound, const types::Length& deadbandWidth,
+                                     const types::Angle& threshold) {
+                /* find the next holding point */
+                auto node = this->findNextHoldingPoints(flight, type, runwayBound);
+                if (nullptr == node)
+                    return false;
 
-                /* avoid uninitialized calls */
-                if (nullptr == adaptor) {
-                    std::array<T*, N> retval;
-                    for (std::size_t i = 0; i < N; ++i)
-                        retval[i] = nullptr;
-                    return retval;
-                }
+                /* inside the deadband -> mark it as reached */
+                auto distance = flight.currentPosition().coordinate().distanceTo(node->holdingPoint);
+                if (distance <= deadbandWidth)
+                    return true;
 
-                /* project to Cartesian coordinates */
-                GeographicLib::Gnomonic projection(GeographicLib::Geodesic::WGS84());
-                float queryPt[2];
-                projection.Forward(this->m_centerPosition.latitude().convert(types::degree),
-                                   this->m_centerPosition.longitude().convert(types::degree),
-                                   flight.currentPosition().coordinate().latitude().convert(types::degree),
-                                   flight.currentPosition().coordinate().longitude().convert(types::degree),
-                                   queryPt[0], queryPt[1]);
+                /* calculate the heading */
+                auto heading = flight.currentPosition().coordinate().bearingTo(node->holdingPoint) - node->heading;
+                if (types::Flight::Type::Departure != type)
+                    heading -= 180.0_deg;
+                HoldingPointMap<T>::normalize(heading);
 
-                std::size_t idx[N];
-                float distance[N];
+                return heading.abs() <= threshold;
+            }
+            bool passedHoldingPoint(const types::Flight& flight, types::Flight::Type type, const types::Length& deadbandWidth, bool runwayBound,
+                                    const types::Angle& threshold) {
+                /* find the next holding point */
+                auto node = this->findNextHoldingPoints(flight, type, runwayBound);
+                if (nullptr == node)
+                    return false;
 
-                /* find the neighbors */
-                std::size_t found = adaptor->knnSearch(queryPt, N, idx, distance);
+                /* inside the deadband -> mark it as reached */
+                auto distance = flight.currentPosition().coordinate().distanceTo(node->holdingPoint);
+                if (distance <= deadbandWidth)
+                    return true;
 
-                bool lvpActive = system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
-                std::array<T*, N> retval;
-                for (std::size_t i = 0; i < N; ++i) {
-                    if (i < found) {
-                        if (false == lvpActive)
-                            retval[i] = &this->m_normalHoldingPointTree.holdingPoints[idx[i]];
-                        else
-                            retval[i] = &this->m_lvpHoldingPointTree.holdingPoints[idx[i]];
-                    }
-                    else {
-                        retval[i] = nullptr;
-                    }
-                }
+                /* calculate the heading and compensate the offset */
+                auto heading = flight.currentPosition().coordinate().bearingTo(node->holdingPoint) - node->heading;
+                if (types::Flight::Type::Departure == type)
+                    heading -= 180.0 * types::degree;
+                HoldingPointMap<T>::normalize(heading);
 
-                return retval;
+                return heading.abs() <= threshold;
             }
             const types::Coordinate& center() const {
                 return this->m_centerPosition;

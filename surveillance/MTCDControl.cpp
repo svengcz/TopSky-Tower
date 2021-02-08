@@ -62,25 +62,9 @@ std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Fligh
     }
     /* check if it is a departure candidate */
     else {
-        /* get more than one to handle also the active runways */
-        auto nodes = this->m_holdingPoints.findNextHoldingPoints<1>(flight);
-        bool inserted = false;
-
-        /* check if the holding point is correct */
-        if (nullptr != nodes[0] && flight.flightPlan().departureRunway() == nodes[0]->runway) {
-            /* check if the heading is comparable */
-            if (20_deg >= __normalize(nodes[0]->heading - flight.currentPosition().heading())) {
-                /* check if we are close enough to the holding point */
-                auto distance = nodes[0]->holdingPoint.distanceTo(flight.currentPosition().coordinate());
-                if (distance <= system::ConfigurationRegistry::instance().systemConfiguration().ariwsMaximumDistance) {
-                    this->m_departures.push_back(std::move(DepartureModel(flight, this->m_holdingPoints.center(),
-                                                 this->m_sidExtractionCallback(flight.callsign()))));
-                    inserted = true;
-                }
-            }
-        }
-
-        if (false == inserted)
+        if (true == this->m_holdingPoints.reachedHoldingPoint(flight, type, true, system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband, 20_deg))
+            this->m_departures.push_back(std::move(DepartureModel(flight, this->m_holdingPoints.center(), this->m_sidExtractionCallback(flight.callsign()))));
+        else
             return this->m_departures.end();
     }
 
