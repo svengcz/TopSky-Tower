@@ -21,12 +21,22 @@
 
 namespace topskytower {
     namespace management {
+        /**
+         * @brief Defines a structure to map a WGS84 holding point to Cartesian coordinates
+         */
         struct HoldingPointData : public types::HoldingPoint {
-            float cartesianPosition[2];
+            float cartesianPosition[2]; /**< The mapped Cartesian coordinates */
 
+            /**
+             * @brief Creates an empty holding point map
+             */
             HoldingPointData() :
                     types::HoldingPoint(),
                     cartesianPosition{ 0.0f, 0.0f } { }
+            /**
+             * @brief Creats a holding point map
+             * @param[in] holdingPoint The holding point definition
+             */
             HoldingPointData(const types::HoldingPoint& holdingPoint) :
                     types::HoldingPoint(holdingPoint),
                     cartesianPosition{ 0.0f, 0.0f } { }
@@ -39,15 +49,33 @@ namespace topskytower {
         template <typename T>
         class HoldingPointMap {
         protected:
+            /**
+             * @brief Defines the KD-tree structure
+             */
             struct HoldingPointTree {
-                std::vector<T> holdingPoints;
+                std::vector<T> holdingPoints; /**< All holding points */
 
+                /**
+                 * @brief Returns the number of holding points
+                 * @return The number of holding points
+                 */
                 inline std::size_t kdtree_get_point_count() const {
                     return holdingPoints.size();
                 }
+                /**
+                 * @brief Returns a value of a specific holding point
+                 * @param[in] idx The requested holding point
+                 * @param[in] dimension The requested dimension
+                 * @return The requested value
+                 */
                 inline float kdtree_get_pt(const std::size_t idx, const std::size_t dimension) const {
                     return this->holdingPoints[idx].cartesianPosition[dimension];
                 }
+                /**
+                 * @brief Checks if the structure supports bounding boxes
+                 * @tparam BBOX The bounding box structure
+                 * @return False due to missing bounding box support
+                 */
                 template <class BBOX>
                 bool kdtree_get_bbox(BBOX&) const {
                     return false;
