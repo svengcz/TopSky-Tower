@@ -49,33 +49,15 @@ namespace topskytower {
         template <typename T>
         class HoldingPointMap {
         protected:
-            /**
-             * @brief Defines the KD-tree structure
-             */
             struct HoldingPointTree {
-                std::vector<T> holdingPoints; /**< All holding points */
+                std::vector<T> holdingPoints;
 
-                /**
-                 * @brief Returns the number of holding points
-                 * @return The number of holding points
-                 */
                 inline std::size_t kdtree_get_point_count() const {
                     return holdingPoints.size();
                 }
-                /**
-                 * @brief Returns a value of a specific holding point
-                 * @param[in] idx The requested holding point
-                 * @param[in] dimension The requested dimension
-                 * @return The requested value
-                 */
                 inline float kdtree_get_pt(const std::size_t idx, const std::size_t dimension) const {
                     return this->holdingPoints[idx].cartesianPosition[dimension];
                 }
-                /**
-                 * @brief Checks if the structure supports bounding boxes
-                 * @tparam BBOX The bounding box structure
-                 * @return False due to missing bounding box support
-                 */
                 template <class BBOX>
                 bool kdtree_get_bbox(BBOX&) const {
                     return false;
