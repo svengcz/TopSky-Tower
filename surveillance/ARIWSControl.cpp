@@ -54,6 +54,10 @@ void ARIWSControl::updateFlight(const types::Flight& flight, types::Flight::Type
         return;
     }
 
+    /* ignore non-departing traffic */
+    if (types::Flight::Type::Departure != type)
+        return;
+
     /* ignore departing or lining up flights */
     auto aIt = std::find(this->m_incursionWarnings.begin(), this->m_incursionWarnings.end(), flight.callsign());
     if (types::FlightPlan::AtcCommand::LineUp == flight.flightPlan().departureFlag() ||
