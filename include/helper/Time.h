@@ -78,10 +78,15 @@ namespace topskytower {
              * @return The converted time
              */
             static __inline std::string timeToString(const std::chrono::system_clock::time_point& time, const std::string& format = "%y%m%d%H%M") {
-                std::time_t value = std::chrono::system_clock::to_time_t(time);
-                std::stringstream stream;
-                stream << std::put_time(std::gmtime(&value), format.c_str());
-                return stream.str();
+                if ((std::chrono::time_point<std::chrono::system_clock>::max)() != time) {
+                    std::time_t value = std::chrono::system_clock::to_time_t(time);
+                    std::stringstream stream;
+                    stream << std::put_time(std::gmtime(&value), format.c_str());
+                    return stream.str();
+                }
+                else {
+                    return "Permanent";
+                }
             }
         };
     }
