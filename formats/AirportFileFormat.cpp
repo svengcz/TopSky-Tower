@@ -429,27 +429,33 @@ bool AirportFileFormat::parseAirportData(const std::vector<std::string>& lines, 
         auto split = helper::String::splitString(line, ":");
 
         /* found invalid configuration entries */
-        if (3 != split.size() || ("IPA" != split[0] && "PRM" != split[0])) {
+        if (3 != split.size()) {
             this->m_errorLine = lineOffset;
-            this->m_errorMessage = "Invalid IPA/PRM entry";
+            this->m_errorMessage = "Invalid entry";
             return false;
         }
 
         /* validate that all entries are defined */
         if (0 == split[1].length() || 0 == split[2].length()) {
             this->m_errorLine = lineOffset;
-            this->m_errorMessage = "Invalid IPA/PRM runway definitions";
+            this->m_errorMessage = "Invalid runway definitions";
             return false;
         }
 
-        /* check if IPA or PRM is defined */
+        /* check if IPA is defined */
         if ("IPA" == split[0]) {
             this->m_configuration.ipaRunways[split[1]].push_back(split[2]);
             this->m_configuration.ipaRunways[split[2]].push_back(split[1]);
         }
-        else {
+        /* check if PRM is defined */
+        else if ("PRM" == split[0]) {
             this->m_configuration.prmRunways[split[1]].push_back(split[2]);
             this->m_configuration.prmRunways[split[2]].push_back(split[1]);
+        }
+        /* check if IPD is defined */
+        else {
+            this->m_configuration.ipdRunways[split[1]].push_back(split[2]);
+            this->m_configuration.ipdRunways[split[2]].push_back(split[1]);
         }
     }
 

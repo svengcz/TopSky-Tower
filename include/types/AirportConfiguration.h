@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -101,6 +102,7 @@ namespace topskytower {
             std::list<HoldingPoint>                            holdingPoints;          /**< The holding points of the airport */
             std::map<std::string, std::list<std::string>>      ipaRunways;             /**< Defines the possible IPA combinations */
             std::map<std::string, std::list<std::string>>      prmRunways;             /**< Defines the possible PRM combinations */
+            std::map<std::string, std::list<std::string>>      ipdRunways;             /**< Defines the possible IPD combinations */
 
             /**
              * @brief Creates an empty and unintialized airport configuration
@@ -112,7 +114,8 @@ namespace topskytower {
                     aircraftStands(),
                     airlines(),
                     ipaRunways(),
-                    prmRunways() { }
+                    prmRunways(),
+                    ipdRunways() { }
         };
     }
 }

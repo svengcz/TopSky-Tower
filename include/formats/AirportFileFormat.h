@@ -29,11 +29,13 @@ namespace topskytower {
          * - [PRIORITIES] Defines the airline to stand assignment priorities
          * - [TAXIWAYS] Defines all taxiway configuration components
          *
-         * The airport-block contains information about possible independent approaches.
+         * The airport-block contains information about possible independent approaches or independent departures.
          * Two different types of independent approaches are possible, the normal IPA and the PRM approach.
-         * The following block describes the syntax to define IPA or PRM runway combinations
+         * The following block describes the syntax to define IPA or PRM runway combinations.
+         * If the IPD is not set, the system assumes direct dependencies between two different runways
          * @code{.xml}
          * [IPA,PRM]:RUNWAY1:RUNWAY2
+         * IPD:RUNWAY1:RUNWAY2
          * @endcode
          *
          * The departures-block contains two different entries.
