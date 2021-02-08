@@ -16,7 +16,7 @@ using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
 MTCDControl::MTCDControl(const std::string& airport, const types::Coordinate& center) :
-        management::HoldingPointMap<management::HoldingPointData>(airport, center),
+        m_holdingPoints(airport, center),
         m_sidExtractionCallback(),
         m_departures(),
         m_conflicts() {
@@ -33,7 +33,7 @@ void MTCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
     if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::Airports != type)
         return;
 
-    management::HoldingPointMap<management::HoldingPointData>::reinitialize();
+    this->m_holdingPoints.reinitialize();
 }
 
 static __inline types::Angle __normalize(const types::Angle& angle) {
@@ -58,12 +58,12 @@ std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Fligh
         if (0 == route.size())
             return this->m_departures.end();
 
-        this->m_departures.push_back(std::move(DepartureModel(flight, this->m_centerPosition, route)));
+        this->m_departures.push_back(std::move(DepartureModel(flight, this->m_holdingPoints.center(), route)));
     }
     /* check if it is a departure candidate */
     else {
         /* get more than one to handle also the active runways */
-        auto nodes = this->findNextHoldingPoints<1>(flight);
+        auto nodes = this->m_holdingPoints.findNextHoldingPoints<1>(flight);
         bool inserted = false;
 
         /* check if the holding point is correct */
@@ -73,7 +73,7 @@ std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Fligh
                 /* check if we are close enough to the holding point */
                 auto distance = nodes[0]->holdingPoint.distanceTo(flight.currentPosition().coordinate());
                 if (distance <= system::ConfigurationRegistry::instance().systemConfiguration().ariwsMaximumDistance) {
-                    this->m_departures.push_back(std::move(DepartureModel(flight, this->m_centerPosition,
+                    this->m_departures.push_back(std::move(DepartureModel(flight, this->m_holdingPoints.center(),
                                                  this->m_sidExtractionCallback(flight.callsign()))));
                     inserted = true;
                 }

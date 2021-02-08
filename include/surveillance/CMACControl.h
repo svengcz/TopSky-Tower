@@ -32,7 +32,7 @@ namespace topskytower {
          *
          * ![Conformance Monitoring Alert](doc/imgs/ConformanceMonitoringAlert.png)
          */
-        class CMACControl : management::HoldingPointMap<management::HoldingPointData> {
+        class CMACControl {
         private:
 #ifndef DOXYGEN_IGNORE
             struct FlightHistory {
@@ -42,7 +42,8 @@ namespace topskytower {
                 types::FlightPlan::AtcCommand expectedCommand;
             };
 
-            std::map<std::string, FlightHistory> m_tracks;
+            management::HoldingPointMap<management::HoldingPointData> m_holdingPoints;
+            std::map<std::string, FlightHistory>                      m_tracks;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
 

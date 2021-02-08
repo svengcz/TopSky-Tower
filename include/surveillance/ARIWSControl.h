@@ -33,10 +33,11 @@ namespace topskytower {
          *
          * ![Runway Incursion Warning](doc/imgs/RunwayIncursionWarning.png)
          */
-        class ARIWSControl : management::HoldingPointMap<management::HoldingPointData> {
+        class ARIWSControl {
         private:
 #ifndef DOXYGEN_IGNORE
-            std::list<std::string> m_incursionWarnings;
+            management::HoldingPointMap<management::HoldingPointData> m_holdingPoints;
+            std::list<std::string>                                    m_incursionWarnings;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
 

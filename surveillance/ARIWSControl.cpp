@@ -17,7 +17,7 @@ using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
 ARIWSControl::ARIWSControl(const std::string& airport, const types::Coordinate& center) :
-        management::HoldingPointMap<management::HoldingPointData>(airport, center),
+        m_holdingPoints(airport, center),
         m_incursionWarnings() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &ARIWSControl::reinitialize);
 
@@ -32,7 +32,7 @@ void ARIWSControl::reinitialize(system::ConfigurationRegistry::UpdateType type) 
     if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::Airports != type)
         return;
 
-    management::HoldingPointMap<management::HoldingPointData>::reinitialize();
+    this->m_holdingPoints.reinitialize();
 }
 
 static __inline types::Angle __normalize(const types::Angle& angle) {
@@ -69,7 +69,7 @@ void ARIWSControl::updateFlight(const types::Flight& flight) {
     }
 
     /* find the next holding point */
-    auto node = this->findNextHoldingPoints<1>(flight);
+    auto node = this->m_holdingPoints.findNextHoldingPoints<1>(flight);
     if (nullptr == node[0])
         return;
 

@@ -48,7 +48,7 @@ namespace topskytower {
          */
         template <typename T>
         class HoldingPointMap {
-        protected:
+        private:
             struct HoldingPointTree {
                 std::vector<T> holdingPoints;
 
@@ -73,6 +73,32 @@ namespace topskytower {
             HoldingPointTree         m_lvpHoldingPointTree;
             HoldingPointTreeAdaptor* m_lvpHoldingPointTreeAdaptor;
 
+        public:
+            /**
+             * @brief Initializes the holding point map
+             * @param[in] airport The airport's ICAO code
+             * @param[in] center The airport's center position
+             */
+            HoldingPointMap(const std::string& airport, const types::Coordinate& center) :
+                    m_airportIcao(airport),
+                    m_centerPosition(center),
+                    m_normalHoldingPointTree(),
+                    m_normalHoldingPointTreeAdaptor(nullptr),
+                    m_lvpHoldingPointTree(),
+                    m_lvpHoldingPointTreeAdaptor(nullptr) { }
+            /**
+             * @brief Deletes all internal structures
+             */
+            ~HoldingPointMap() {
+                if (nullptr != this->m_normalHoldingPointTreeAdaptor)
+                    delete this->m_normalHoldingPointTreeAdaptor;
+                if (nullptr != this->m_lvpHoldingPointTreeAdaptor)
+                    delete this->m_lvpHoldingPointTreeAdaptor;
+            }
+
+            /**
+             * @brief Reinitializes the holding point map with all internal structures
+             */
             void reinitialize() {
                 /* delete all old information */
                 if (nullptr != this->m_normalHoldingPointTreeAdaptor)
@@ -112,15 +138,11 @@ namespace topskytower {
                 this->m_normalHoldingPointTreeAdaptor->buildIndex();
                 this->m_lvpHoldingPointTreeAdaptor->buildIndex();
             }
-
-            HoldingPointMap(const std::string& airport, const types::Coordinate& center) :
-                    m_airportIcao(airport),
-                    m_centerPosition(center),
-                    m_normalHoldingPointTree(),
-                    m_normalHoldingPointTreeAdaptor(nullptr),
-                    m_lvpHoldingPointTree(),
-                    m_lvpHoldingPointTreeAdaptor(nullptr) { }
-
+            /**
+             * @brief Finds the nearest N holding points of the flight
+             * @param[in] flight The requested flight
+             * @return The array with all found holding points
+             */
             template <std::size_t N>
             std::array<T*, N> findNextHoldingPoints(const types::Flight& flight) {
                 /* get the correct adaptor */
@@ -169,16 +191,8 @@ namespace topskytower {
 
                 return retval;
             }
-
-        public:
-            /**
-             * @brief Deletes all internal structures
-             */
-            ~HoldingPointMap() {
-                if (nullptr != this->m_normalHoldingPointTreeAdaptor)
-                    delete this->m_normalHoldingPointTreeAdaptor;
-                if (nullptr != this->m_lvpHoldingPointTreeAdaptor)
-                    delete this->m_lvpHoldingPointTreeAdaptor;
+            const types::Coordinate& center() const {
+                return this->m_centerPosition;
             }
         };
     }

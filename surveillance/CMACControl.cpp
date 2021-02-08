@@ -19,7 +19,7 @@ using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
 CMACControl::CMACControl(const std::string& airport, const types::Coordinate& center) :
-        management::HoldingPointMap<management::HoldingPointData>(airport, center),
+        m_holdingPoints(airport, center),
         m_tracks() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &CMACControl::reinitialize);
 
@@ -34,7 +34,7 @@ void CMACControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
     if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::Airports != type)
         return;
 
-    management::HoldingPointMap<management::HoldingPointData>::reinitialize();
+    this->m_holdingPoints.reinitialize();
 }
 
 static __inline types::Angle __normalize(const types::Angle& angle) {
@@ -119,7 +119,7 @@ void CMACControl::updateFlight(const types::Flight& flight, types::Flight::Type 
     /* check if the flight crossed a runway exit */
     else if (false == it->second.behindHoldingPoint) {
         /* find the closest holding point */
-        auto holdingPoint = this->findNextHoldingPoints<1>(flight);
+        auto holdingPoint = this->m_holdingPoints.findNextHoldingPoints<1>(flight);
 
         if (nullptr != holdingPoint[0]) {
             distance = holdingPoint[0]->holdingPoint.distanceTo(flight.currentPosition().coordinate());
