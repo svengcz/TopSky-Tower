@@ -55,6 +55,7 @@ namespace topskytower {
             std::list<std::string>                                    m_ntzViolations;
             std::list<types::Flight>                                  m_inbounds;
             std::map<std::string, types::Length>                      m_conflicts;
+            std::list<std::string>                                    m_reachedHoldingPoint;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
             void createNTZ(const std::pair<std::string, std::string>& runwayPair);

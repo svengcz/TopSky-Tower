@@ -60,7 +60,8 @@ STCDControl::STCDControl(const std::string& airport, const types::Length& elevat
         m_noTransgressionZones(),
         m_ntzViolations(),
         m_inbounds(),
-        m_conflicts() {
+        m_conflicts(),
+        m_reachedHoldingPoint() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &STCDControl::reinitialize);
 
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
@@ -307,6 +308,20 @@ void STCDControl::analyzeOutbound(const types::Flight& flight) {
     auto closestFlightIt = this->m_inbounds.cend();
     types::Length minDistance = 999_nm;
 
+    /* check if the flight reached the holding point */
+    auto hpIt = std::find(this->m_reachedHoldingPoint.cbegin(), this->m_reachedHoldingPoint.cend(), flight.callsign());
+    if (this->m_reachedHoldingPoint.cend() == hpIt) {
+        bool reached = this->m_holdingPoints.reachedHoldingPoint(flight, types::Flight::Type::Departure, true,
+                                                                 system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband,
+                                                                 20.0_deg);
+        if (true == reached)
+            this->m_reachedHoldingPoint.push_back(flight.callsign());
+        else
+            return;
+    }
+
+    /* check if the flight departed */
+
     /* find the closest inbound to check if the spacing is too small */
     for (auto it = this->m_inbounds.cbegin(); this->m_inbounds.cend() != it; ++it) {
         const auto& config = system::ConfigurationRegistry::instance().airportConfiguration(this->m_airportIcao);
@@ -373,6 +388,9 @@ void STCDControl::removeFlight(const std::string& callsign) {
     auto it = this->m_conflicts.find(callsign);
     if (this->m_conflicts.end() != it)
         this->m_conflicts.erase(it);
+
+    /* cleanup the outbound tracker */
+    this->m_reachedHoldingPoint.remove(callsign);
 }
 
 bool STCDControl::ntzViolation(const types::Flight& flight) const {
