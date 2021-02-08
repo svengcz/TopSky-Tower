@@ -11,6 +11,7 @@
 #include <list>
 #include <map>
 
+#include <management/HoldingPointMap.h>
 #include <system/ConfigurationRegistry.h>
 #include <types/Flight.h>
 #include <types/Runway.h>
@@ -45,17 +46,20 @@ namespace topskytower {
         class STCDControl {
         private:
 #ifndef DOXYGEN_IGNORE
-            std::string                          m_airportIcao;
-            types::Length                        m_airportElevation;
-            types::Coordinate                    m_reference;
-            std::list<types::Runway>             m_runways;
-            std::list<types::SectorBorder>       m_noTransgressionZones;
-            std::list<std::string>               m_ntzViolations;
-            std::list<types::Flight>             m_inbounds;
-            std::map<std::string, types::Length> m_conflicts;
+            std::string                                               m_airportIcao;
+            types::Length                                             m_airportElevation;
+            types::Coordinate                                         m_reference;
+            management::HoldingPointMap<management::HoldingPointData> m_holdingPoints;
+            std::list<types::Runway>                                  m_runways;
+            std::list<types::SectorBorder>                            m_noTransgressionZones;
+            std::list<std::string>                                    m_ntzViolations;
+            std::list<types::Flight>                                  m_inbounds;
+            std::map<std::string, types::Length>                      m_conflicts;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
             void createNTZ(const std::pair<std::string, std::string>& runwayPair);
+            void analyzeInbound(const types::Flight& flight);
+            void analyzeOutbound(const types::Flight& flight);
 
         public:
             /**

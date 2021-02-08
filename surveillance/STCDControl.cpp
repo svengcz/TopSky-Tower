@@ -55,9 +55,12 @@ STCDControl::STCDControl(const std::string& airport, const types::Length& elevat
         m_airportIcao(airport),
         m_airportElevation(elevation + 100_ft),
         m_reference(center),
+        m_holdingPoints(airport, center),
         m_runways(runways),
         m_noTransgressionZones(),
-        m_ntzViolations() {
+        m_ntzViolations(),
+        m_inbounds(),
+        m_conflicts() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &STCDControl::reinitialize);
 
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
@@ -144,6 +147,8 @@ void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
     if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::Runtime != type)
         return;
 
+    this->m_holdingPoints.reinitialize();
+
     const auto& configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
     this->m_noTransgressionZones.clear();
 
@@ -204,19 +209,12 @@ static __inline void __normalizeAngle(types::Angle& angle) {
         angle -= 360.0_deg;
 }
 
-void STCDControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
+void STCDControl::analyzeInbound(const types::Flight& flight) {
     /* flight violated NTZ -> has to go around */
     auto ntzViolationIt = std::find(this->m_ntzViolations.cbegin(), this->m_ntzViolations.cend(), flight.callsign());
     bool violatesNtz = this->m_ntzViolations.cend() != ntzViolationIt;
 
     this->removeFlight(flight.callsign());
-
-    if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().stcdActive)
-        return;
-
-    /* we evaluate only the arrivals anf IFRs */
-    if (types::Flight::Type::Arrival != type || types::FlightPlan::Type::IFR != flight.flightPlan().type())
-        return;
 
     /* ignore landed or going around flights */
     bool landed = 40_kn > flight.groundSpeed() || this->m_airportElevation >= flight.currentPosition().altitude();
@@ -303,6 +301,58 @@ void STCDControl::updateFlight(const types::Flight& flight, types::Flight::Type 
         this->m_conflicts[flight.callsign()] = minRequiredDistance;
 
     this->m_inbounds.push_back(flight);
+}
+
+void STCDControl::analyzeOutbound(const types::Flight& flight) {
+    auto closestFlightIt = this->m_inbounds.cend();
+    types::Length minDistance = 999_nm;
+
+    /* find the closest inbound to check if the spacing is too small */
+    for (auto it = this->m_inbounds.cbegin(); this->m_inbounds.cend() != it; ++it) {
+        const auto& config = system::ConfigurationRegistry::instance().airportConfiguration(this->m_airportIcao);
+
+        /* check if the runways are independent */
+        auto depIt = config.ipdRunways.find(flight.flightPlan().departureRunway());
+        if (config.ipdRunways.cend() != depIt) {
+            auto ipdIt = std::find(depIt->second.cbegin(), depIt->second.cend(), it->flightPlan().arrivalRunway());
+            if (depIt->second.cend() != ipdIt)
+                continue;
+        }
+
+        auto distance = it->currentPosition().coordinate().distanceTo(flight.currentPosition().coordinate());
+
+        /* found a closer flight */
+        if (minDistance > distance) {
+            minDistance = distance;
+            closestFlightIt = it;
+        }
+    }
+
+    /* check if it is a conflict */
+    if (this->m_inbounds.cend() != closestFlightIt) {
+        auto id = std::make_pair(flight.flightPlan().aircraft().wtc(), closestFlightIt->flightPlan().aircraft().wtc());
+        auto minRequiredDistance = __distances.find(id)->second;
+        if (minRequiredDistance >= minDistance) {
+            this->m_conflicts[flight.callsign()] = minRequiredDistance;
+            return;
+        }
+    }
+
+    this->removeFlight(flight.callsign());
+}
+
+void STCDControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
+    if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().stcdActive)
+        return;
+
+    /* we evaluate only the arrivals anf IFRs */
+    if (types::FlightPlan::Type::IFR != flight.flightPlan().type())
+        return;
+
+    if (types::Flight::Type::Arrival == type)
+        this->analyzeInbound(flight);
+    else
+        this->analyzeOutbound(flight);
 }
 
 void STCDControl::removeFlight(const std::string& callsign) {
