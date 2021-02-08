@@ -108,7 +108,7 @@ namespace topskytower {
 
                 const auto& expectedRunway = types::Flight::Type::Departure == type ? flight.flightPlan().departureRunway() : flight.flightPlan().arrivalRunway();
                 bool lvpActive = system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
-                if (1 != found) {
+                if (1 == found) {
                     T* retval;
 
                     if (false == lvpActive)
