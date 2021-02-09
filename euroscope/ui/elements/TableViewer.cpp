@@ -30,7 +30,9 @@ TableViewer::TableViewer(RadarScreen* parent, const std::vector<std::string>& he
         m_columnWidths(header.size(), 0.0f),
         m_rowHeight(0.0f),
         m_clickedRow(std::numeric_limits<std::size_t>::max()),
-        m_clickedColumn(std::numeric_limits<std::size_t>::max()) {
+        m_clickedColumn(std::numeric_limits<std::size_t>::max()),
+        m_calculateArea(true),
+        m_overallWidth(0.0f) {
     this->m_header.reserve(header.size());
 
     for (std::size_t i = 0; i < header.size(); ++i) {
@@ -49,6 +51,7 @@ std::size_t TableViewer::numberOfColumns() const {
 }
 
 void TableViewer::setMaxVisibleRows(std::size_t count) {
+    this->m_calculateArea = true;
     this->m_visibleRowOffset = 0;
     this->m_visibleRows = count;
 }
@@ -56,6 +59,7 @@ void TableViewer::setMaxVisibleRows(std::size_t count) {
 void TableViewer::addRow() {
     this->m_rowContent.push_back(std::move(std::vector<std::string>(this->m_header.size())));
     this->m_rows.push_back(std::move(std::vector<Text>(this->m_header.size())));
+    this->m_calculateArea = true;
 }
 
 void TableViewer::removeRow(std::size_t idx) {
@@ -67,6 +71,8 @@ void TableViewer::removeRow(std::size_t idx) {
         auto it = this->m_rows.begin();
         std::advance(it, idx);
         this->m_rows.erase(it);
+
+        this->m_calculateArea = true;
     }
 }
 
@@ -79,6 +85,8 @@ void TableViewer::setElement(std::size_t rowIdx, std::size_t columnIdx, const st
         auto cit = this->m_rowContent.begin();
         std::advance(cit, rowIdx);
         (*cit)[columnIdx] = element;
+
+        this->m_calculateArea = true;
     }
 }
 
@@ -153,7 +161,10 @@ bool TableViewer::clickedEntry(std::size_t& rowIdx, std::size_t& columnIdx) cons
     return true;
 }
 
-float TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
+void TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
+    if (false == this->m_calculateArea)
+        return;
+
     /* contains the per-column widths */
     this->m_columnWidths = std::vector<float>(this->m_header.size(), 0.0f);
     std::size_t emptyLines = 0;
@@ -197,7 +208,7 @@ float TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
     this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 12.0f + 3.0f * (this->m_header.size() - 1),
                                   (0 == maxRowCount ? (this->m_visibleRows + 1) : (this->m_rows.size() - emptyLines + 1)) * this->m_rowHeight);
 
-    return overallWidth + 3.0f * (this->m_header.size() - 1);
+    this->m_overallWidth = overallWidth + 3.0f * (this->m_header.size() - 1);
 }
 
 void TableViewer::prepareVisualization(Gdiplus::Graphics* graphics) {
@@ -205,7 +216,7 @@ void TableViewer::prepareVisualization(Gdiplus::Graphics* graphics) {
 }
 
 bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
-    float overallWidth = this->calculateRequiredArea(graphics);
+    this->calculateRequiredArea(graphics);
     float offsetX = this->m_area.X;
     float offsetY = this->m_area.Y;
 
@@ -223,7 +234,7 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
         offsetX += this->m_columnWidths[i] + 3.0f;
     }
     offsetY += this->m_rowHeight;
-    graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + overallWidth, offsetY));
+    graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + this->m_overallWidth, offsetY));
 
     /* draw the rows */
     auto it = this->m_rows.begin();
@@ -244,7 +255,7 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
         }
 
         if (false == emptyRow) {
-            graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + overallWidth, offsetY));
+            graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + this->m_overallWidth, offsetY));
             offsetY += this->m_rowHeight;
             maxRowCount -= 1;
         }

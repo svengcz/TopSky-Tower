@@ -37,8 +37,10 @@ namespace topskytower {
             float                               m_rowHeight;
             std::size_t                         m_clickedRow;
             std::size_t                         m_clickedColumn;
+            bool                                m_calculateArea;
+            float                               m_overallWidth;
 
-            float calculateRequiredArea(Gdiplus::Graphics* graphics);
+            void calculateRequiredArea(Gdiplus::Graphics* graphics);
 
         public:
             /**
