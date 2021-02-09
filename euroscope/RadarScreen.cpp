@@ -38,6 +38,7 @@ RadarScreen::RadarScreen() :
         m_userInterface(this),
         m_sectorControl(nullptr),
         m_standControl(nullptr),
+        m_departureControl(nullptr),
         m_ariwsControl(nullptr),
         m_cmacControl(nullptr),
         m_mtcdControl(nullptr),
@@ -61,6 +62,8 @@ RadarScreen::~RadarScreen() {
         delete this->m_mtcdControl;
     if (nullptr != this->m_stcdControl)
         delete this->m_stcdControl;
+    if (nullptr != this->m_departureControl)
+        delete this->m_departureControl;
     if (nullptr != this->m_sectorControl)
         delete this->m_sectorControl;
     if (nullptr != this->m_standControl)
@@ -176,6 +179,8 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
         this->m_sectorControl->updateFlight(flight, type);
     if (nullptr != this->m_standControl)
         this->m_standControl->updateFlight(flight, type);
+    if (nullptr != this->m_departureControl)
+        this->m_departureControl->updateFlight(flight, type);
     if (nullptr != this->m_ariwsControl)
         this->m_ariwsControl->updateFlight(flight, type);
     if (nullptr != this->m_cmacControl)
@@ -206,8 +211,11 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
     const auto& flight = system::FlightRegistry::instance().flight(callsign);
     auto flightType = this->identifyType(flight);
 
+    this->m_departureControl->updateFlight(flight, flightType);
     this->m_ariwsControl->updateFlight(flight, flightType);
     this->m_cmacControl->updateFlight(flight, flightType);
+    this->m_stcdControl->updateFlight(flight, flightType);
+    this->m_mtcdControl->updateFlight(flight, flightType);
 
     /* update the stand if needed */
     std::string stand = flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand));
@@ -225,6 +233,8 @@ void RadarScreen::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan
         this->m_standControl->removeFlight(callsign);
     if (nullptr != this->m_sectorControl)
         this->m_sectorControl->removeFlight(callsign);
+    if (nullptr != this->m_departureControl)
+        this->m_departureControl->removeFlight(callsign);
     if (nullptr != this->m_ariwsControl)
         this->m_ariwsControl->removeFlight(callsign);
     if (nullptr != this->m_cmacControl)
@@ -294,6 +304,10 @@ void RadarScreen::initialize() {
         if (nullptr != this->m_cmacControl)
             delete this->m_cmacControl;
         this->m_cmacControl = new surveillance::CMACControl(this->m_airport, center);
+
+        if (nullptr != this->m_departureControl)
+            delete this->m_departureControl;
+        this->m_departureControl = new management::DepartureSequenceControl(this->m_airport, center);
 
         if (nullptr != this->m_mtcdControl)
             delete this->m_mtcdControl;

@@ -8,6 +8,7 @@
 #   Creates the management library
 
 SET(HEADER_FILES
+    ${CMAKE_SOURCE_DIR}/include/management/DepartureSequenceControl.h
     ${CMAKE_SOURCE_DIR}/include/management/HoldingPointMap.h
     ${CMAKE_SOURCE_DIR}/include/management/NotamControl.h
     ${CMAKE_SOURCE_DIR}/include/management/PdcControl.h
@@ -25,6 +26,7 @@ SET(SOURCE_GRAMMAR_FILES
     grammar/Runway.hpp
 )
 SET(SOURCE_FILES
+    DepartureSequenceControl.cpp
     PdcControl.cpp
     NotamControl.cpp
     SectorControl.cpp

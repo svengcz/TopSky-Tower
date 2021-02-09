@@ -15,6 +15,7 @@
 #include <EuroScopePlugIn.h>
 #pragma warning(pop)
 
+#include <management/DepartureSequenceControl.h>
 #include <management/SectorControl.h>
 #include <management/StandControl.h>
 #include <surveillance/ARIWSControl.h>
@@ -60,6 +61,7 @@ namespace topskytower {
             UiManager                                      m_userInterface;
             management::SectorControl*                     m_sectorControl;
             management::StandControl*                      m_standControl;
+            management::DepartureSequenceControl*          m_departureControl;
             surveillance::ARIWSControl*                    m_ariwsControl;
             surveillance::CMACControl*                     m_cmacControl;
             surveillance::MTCDControl*                     m_mtcdControl;
