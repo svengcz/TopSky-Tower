@@ -18,65 +18,11 @@
 
 #include <surveillance/STCDControl.h>
 
+#include <system/Separation.h>
+
 using namespace topskytower;
 using namespace topskytower::surveillance;
 using namespace topskytower::types;
-
-static const std::map<std::pair<types::Aircraft::WTC, types::Aircraft::WTC>, types::Length> __distances = {
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Unknown), 3_nm },
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Light),   3_nm },
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Medium),  3_nm },
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Heavy),   3_nm },
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Super),   3_nm },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Unknown), 3_nm },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Light),   3_nm },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Medium),  3_nm },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Heavy),   3_nm },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Super),   3_nm },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Unknown), 3_nm },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Light),   5_nm },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Medium),  3_nm },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Heavy),   3_nm },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Super),   3_nm },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Unknown), 4_nm },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Light),   6_nm },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Medium),  5_nm },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Heavy),   4_nm },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Super),   4_nm },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Unknown), 6_nm },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Light),   8_nm },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Medium),  7_nm },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Heavy),   6_nm },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Super),   6_nm }
-};
-
-const std::map<std::pair<types::Aircraft::WTC, types::Aircraft::WTC>, types::Time> __timeSpacings = {
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Unknown), 0_min },
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Light),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Medium),  0_min },
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Heavy),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Super),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Unknown), 0_min },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Light),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Medium),  0_min },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Heavy),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Super),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Unknown), 0_min },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Light),   2_min },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Medium),  0_min },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Heavy),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Super),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Unknown), 0_min },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Light),   2_min },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Medium),  2_min },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Heavy),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Super),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Unknown), 0_min },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Light),   3_min },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Medium),  3_min },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Heavy),   0_min },
-    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Super),   0_min }
-};
 
 STCDControl::STCDControl(const std::string& airport, const types::Length& elevation, const types::Coordinate& center,
                          const std::list<types::Runway>& runways) :
@@ -331,7 +277,7 @@ void STCDControl::analyzeInbound(const types::Flight& flight) {
     }
     else {
         auto id = std::make_pair(neighborWtc, flight.flightPlan().aircraft().wtc());
-        minRequiredDistance = __distances.find(id)->second;
+        minRequiredDistance = system::Separation::EuclideanDistance.find(id)->second;
     }
 
     /* check the distance with the minDistance with minRequiredDistance */
@@ -388,7 +334,7 @@ void STCDControl::analyzeOutbound(const types::Flight& flight) {
     /* check if it is a conflict */
     if (this->m_inbounds.cend() != closestFlightIt) {
         auto id = std::make_pair(flight.flightPlan().aircraft().wtc(), closestFlightIt->flightPlan().aircraft().wtc());
-        auto minRequiredDistance = __distances.find(id)->second;
+        auto minRequiredDistance = system::Separation::EuclideanDistance.find(id)->second;
         if (minRequiredDistance >= minDistance) {
             this->m_conflicts[flight.callsign()] = minRequiredDistance;
             return;

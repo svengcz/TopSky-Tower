@@ -10,10 +10,12 @@
 SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/system/ConfigurationRegistry.h
     ${CMAKE_SOURCE_DIR}/include/system/FlightRegistry.h
+    ${CMAKE_SOURCE_DIR}/include/system/Separation.h
 )
 SET(SOURCE_FILES
     ConfigurationRegistry.cpp
     FlightRegistry.cpp
+    Separation.cpp
 )
 
 # define the helper library
