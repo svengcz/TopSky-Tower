@@ -69,10 +69,12 @@ namespace topskytower {
             std::mutex                                     m_guiEuroscopeEventsLock;
             std::list<EuroscopeEvent>                      m_guiEuroscopeEvents;
             std::chrono::system_clock::time_point          m_lastRenderingTime;
-            std::mutex                                     m_surveillanceVisualizationsLock;
-            std::list<std::pair<std::string, types::Time>> m_surveillanceVisualizations;
+            std::mutex                                     m_mediumTermConflictVisualizationsLock;
+            std::list<std::pair<std::string, types::Time>> m_mediumTermConflictVisualizations;
             std::mutex                                     m_departureRouteVisualizationsLock;
             std::list<std::pair<std::string, types::Time>> m_departureRouteVisualizations;
+            std::mutex                                     m_shortTermConflictVisualizationsLock;
+            std::list<std::pair<std::string, types::Time>> m_shortTermConflictVisualizations;
             bool                                           m_standOnScreenSelection;
             std::string                                    m_standOnScreenSelectionCallsign;
 
@@ -82,8 +84,9 @@ namespace topskytower {
                                         float& offsetX, float& offsetY, bool& alignRight);
             static void drawTexts(const Gdiplus::PointF& center, float offsetX, float offsetY, bool alignRight,
                                   const std::list<std::string>& lines, Gdiplus::Graphics& graphics);
-            bool visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& graphics);
-            bool visualizeRoute(const std::string& callsign, Gdiplus::Graphics& graphics);
+            bool visualizeMTCD(const types::Flight& flight, Gdiplus::Graphics& graphics);
+            bool visualizeSTCD(const types::Flight& flight, Gdiplus::Graphics& graphics);
+            bool visualizeRoute(const types::Flight& flight, Gdiplus::Graphics& graphics);
             void drawData(std::mutex& lock, std::list<std::pair<std::string, types::Time>>& data,
                           bool surveillanceData, Gdiplus::Graphics& graphics);
             void drawNoTransgressionZones(Gdiplus::Graphics& graphics);

@@ -46,10 +46,12 @@ RadarScreen::RadarScreen() :
         m_guiEuroscopeEventsLock(),
         m_guiEuroscopeEvents(),
         m_lastRenderingTime(),
-        m_surveillanceVisualizationsLock(),
-        m_surveillanceVisualizations(),
+        m_mediumTermConflictVisualizationsLock(),
+        m_mediumTermConflictVisualizations(),
         m_departureRouteVisualizationsLock(),
         m_departureRouteVisualizations(),
+        m_shortTermConflictVisualizationsLock(),
+        m_shortTermConflictVisualizations(),
         m_standOnScreenSelection(false),
         m_standOnScreenSelectionCallsign() { }
 
@@ -393,8 +395,7 @@ void RadarScreen::drawTexts(const Gdiplus::PointF& center, float offsetX, float 
     }
 }
 
-bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& graphics) {
-    const auto& flight = system::FlightRegistry::instance().flight(callsign);
+bool RadarScreen::visualizeMTCD(const types::Flight& flight, Gdiplus::Graphics& graphics) {
     if (false == this->m_mtcdControl->conflictsExist(flight))
         return false;
 
@@ -449,9 +450,7 @@ bool RadarScreen::visualizeMTCD(const std::string& callsign, Gdiplus::Graphics& 
     return 0 != conflicts.size();
 }
 
-bool RadarScreen::visualizeRoute(const std::string& callsign, Gdiplus::Graphics& graphics) {
-    const auto& flight = system::FlightRegistry::instance().flight(callsign);
-
+bool RadarScreen::visualizeRoute(const types::Flight& flight, Gdiplus::Graphics& graphics) {
     if (false == this->m_mtcdControl->departureModelExists(flight))
         return false;
 
@@ -503,6 +502,28 @@ bool RadarScreen::visualizeRoute(const std::string& callsign, Gdiplus::Graphics&
     return 0 != model.waypoints().size();
 }
 
+bool RadarScreen::visualizeSTCD(const types::Flight& flight, Gdiplus::Graphics& graphics) {
+    if (true == this->m_stcdControl->separationLoss(flight)) {
+        auto minSeparation = this->m_stcdControl->minSeparation(flight);
+        Gdiplus::Pen stcdPen(Gdiplus::Color(255, 0, 0), 1.0f);
+
+        /* calculate the required coordinates to define the rectangle for the ellipse */
+        auto topCoordinate = flight.currentPosition().coordinate().projection(0.0_deg, minSeparation);
+        auto top = this->convertCoordinate(topCoordinate);
+        auto leftCoordinate = flight.currentPosition().coordinate().projection(270.0_deg, minSeparation);
+        auto left = this->convertCoordinate(leftCoordinate);
+        auto center = this->convertCoordinate(flight.currentPosition().coordinate());
+
+        /* calculate the rectangle */
+        Gdiplus::RectF rect(left.X, top.Y, 2.0f * (center.X - left.X), 2.0f * (center.Y - top.Y));
+        graphics.DrawEllipse(&stcdPen, rect);
+
+        return true;
+    }
+
+    return false;
+}
+
 void RadarScreen::drawData(std::mutex& lock, std::list<std::pair<std::string, types::Time>>& data,
                            bool surveillanceData, Gdiplus::Graphics& graphics) {
     auto now = std::chrono::system_clock::now();
@@ -517,6 +538,8 @@ void RadarScreen::drawData(std::mutex& lock, std::list<std::pair<std::string, ty
             continue;
         }
 
+        const auto& flight = system::FlightRegistry::instance().flight(it->first);
+
         /* check if the result is outdated */
         if (0.0_s <= it->second) {
             it->second -= delta;
@@ -527,15 +550,22 @@ void RadarScreen::drawData(std::mutex& lock, std::list<std::pair<std::string, ty
         }
 
         if (true == surveillanceData) {
+            bool visualized = false;
+
+            /* draw the STCD conflicts */
+            if (true == this->m_stcdControl->separationLoss(flight))
+                visualized = this->visualizeSTCD(flight, graphics);
             /* draw the MTCD conflicts */
-            if (true == this->visualizeMTCD(it->first, graphics))
+            else
+                visualized = this->visualizeMTCD(flight, graphics);
+
+            if (true == visualized)
                 ++it;
-            /* no more conflicts available */
             else
                 it = data.erase(it);
         }
         else {
-            if (true == this->visualizeRoute(it->first, graphics))
+            if (true == this->visualizeRoute(flight, graphics))
                 ++it;
             else
                 it = data.erase(it);
@@ -582,7 +612,8 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     graphics.SetPageUnit(Gdiplus::UnitPixel);
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
-    this->drawData(this->m_surveillanceVisualizationsLock, this->m_surveillanceVisualizations, true, graphics);
+    this->drawData(this->m_mediumTermConflictVisualizationsLock, this->m_mediumTermConflictVisualizations, true, graphics);
+    this->drawData(this->m_shortTermConflictVisualizationsLock, this->m_shortTermConflictVisualizations, true, graphics);
     this->drawData(this->m_departureRouteVisualizationsLock, this->m_departureRouteVisualizations, false, graphics);
     this->drawNoTransgressionZones(graphics);
 
@@ -643,34 +674,6 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
             }
         }
     }
-
-    /* draw the STCD circles */
-    Gdiplus::Pen stcdPen(Gdiplus::Color(255, 0, 0), 1.0f);
-    for (auto target = plugin->RadarTargetSelectFirst(); true == target.IsValid(); target = plugin->RadarTargetSelectNext(target)) {
-        if (false == target.IsValid())
-            continue;
-
-        std::string callsign(target.GetCallsign());
-
-        if (false == system::FlightRegistry::instance().flightExists(callsign))
-            continue;
-        const auto& flight = system::FlightRegistry::instance().flight(callsign);
-
-        if (true == this->m_stcdControl->separationLoss(flight)) {
-            auto minSeparation = this->m_stcdControl->minSeparation(flight);
-
-            /* calculate the required coordinates to define the rectangle for the ellipse */
-            auto topCoordinate = flight.currentPosition().coordinate().projection(0.0_deg, minSeparation);
-            auto top = this->convertCoordinate(topCoordinate);
-            auto leftCoordinate = flight.currentPosition().coordinate().projection(270.0_deg, minSeparation);
-            auto left = this->convertCoordinate(leftCoordinate);
-            auto center = this->convertCoordinate(flight.currentPosition().coordinate());
-
-            /* calculate the rectangle */
-            Gdiplus::RectF rect(left.X, top.Y, 2.0f * (center.X - left.X), 2.0f * (center.Y - top.Y));
-            graphics.DrawEllipse(&stcdPen, rect);
-        }
-    }
 }
 
 management::SectorControl& RadarScreen::sectorControl() {
@@ -720,17 +723,28 @@ const std::chrono::system_clock::time_point& RadarScreen::lastRenderingTime() co
 
 void RadarScreen::activateSurveillanceVisualization(const std::string& callsign) {
     auto duration = system::ConfigurationRegistry::instance().systemConfiguration().surveillanceVisualizationDuration;
+    const auto& flight = system::FlightRegistry::instance().flight(callsign);
 
-    std::lock_guard guard(this->m_surveillanceVisualizationsLock);
-
-    for (auto& entry : this->m_surveillanceVisualizations) {
-        if (entry.first == callsign) {
-            entry.second = duration;
-            return;
+    if (true == this->m_stcdControl->separationLoss(flight)) {
+        std::lock_guard guard(this->m_shortTermConflictVisualizationsLock);
+        for (auto& entry : this->m_shortTermConflictVisualizations) {
+            if (entry.first == callsign) {
+                entry.second = duration;
+                return;
+            }
         }
+        this->m_shortTermConflictVisualizations.push_back(std::make_pair(callsign, duration));
     }
-
-    this->m_surveillanceVisualizations.push_back(std::make_pair(callsign, duration));
+    else {
+        std::lock_guard guard(this->m_mediumTermConflictVisualizationsLock);
+        for (auto& entry : this->m_mediumTermConflictVisualizations) {
+            if (entry.first == callsign) {
+                entry.second = duration;
+                return;
+            }
+        }
+        this->m_mediumTermConflictVisualizations.push_back(std::make_pair(callsign, duration));
+    }
 }
 
 void RadarScreen::activateDepartureRouteVisualization(const std::string& callsign, const types::Time& visualizationDuration) {
