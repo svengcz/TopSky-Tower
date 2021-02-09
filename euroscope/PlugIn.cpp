@@ -227,6 +227,22 @@ bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char 
         }
     }
 
+    if (true == flight.readyForDeparture()) {
+        localOffset += 5;
+
+        if (16 <= localOffset) {
+            localIdx += localOffset / 16;
+            localOffset = 0;
+            if (idx < localIdx)
+                return inserted;
+        }
+
+        if (localIdx == idx) {
+            std::strcat(itemString, "RDY ");
+            inserted = true;
+        }
+    }
+
     return inserted;
 }
 
@@ -801,6 +817,9 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             this->AddPopupListElement("M/A", (true == flight.onMissedApproach() ? "X" : ""),
                                       static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal), false,
                                       EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.isTrackedByOther(), false);
+            this->AddPopupListElement("Ready", (true == flight.readyForDeparture() ? "X" : ""),
+                                      static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal), false,
+                                      EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.isTrackedByOther(), false);
             this->AddPopupListElement("Irreg", (true == flight.irregularHandoff() ? "X" : ""),
                                       static_cast<int>(PlugIn::TagItemFunction::AircraftControlSignal), false,
                                       EuroScopePlugIn::POPUP_ELEMENT_NO_CHECKBOX, true == flight.isTrackedByOther(), false);
@@ -817,6 +836,9 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         if (false == flight.isTrackedByOther()) {
             if (0 == std::strncmp(itemString, "M/A", 3)) {
                 PlugIn::updateManuallyAlerts(radarTarget, "MISAP_");
+            }
+            else if (0 == std::strncmp(itemString, "Ready", 5)) {
+                PlugIn::updateManuallyAlerts(radarTarget, "RDY_");
             }
             else if (0 == std::strncmp(itemString, "Irreg", 5)) {
                 PlugIn::updateManuallyAlerts(radarTarget, "IRREG_");

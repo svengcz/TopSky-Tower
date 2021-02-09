@@ -39,6 +39,7 @@ namespace topskytower {
             bool            m_onMissedApproach;
             bool            m_irregularFlight;
             bool            m_establishedOnILS;
+            bool            m_departureReady;
             bool            m_isTrackedByController;
             bool            m_isTrackedByOtherController;
             std::string     m_handoffReceivedBy;
@@ -95,6 +96,11 @@ namespace topskytower {
              */
             bool irregularHandoff() const;
             /**
+             * @brief Returns if the flight is ready for departure
+             * @return True if it is ready, else false
+             */
+            bool readyForDeparture() const;
+            /**
              * @brief Returns if the flight is established on the ILS
              * @return True if it is established on the ILS
              */
@@ -149,6 +155,11 @@ namespace topskytower {
              * @param[in] value True if it is established on the ILS, else false
              */
             void setEstablishedOnILS(bool value);
+            /**
+             * @brief Sets if the flight is ready for departure or not
+             * @param[in] value True if the flight is ready, else false
+             */
+            void setReadyForDeparture(bool value);
             /**
              * @brief Sets the flight plan
              * @param[in] plan The flight plan

@@ -24,6 +24,7 @@ Flight::Flight() :
         m_onMissedApproach(false),
         m_irregularFlight(false),
         m_establishedOnILS(false),
+        m_departureReady(false),
         m_isTrackedByController(false),
         m_isTrackedByOtherController(false),
         m_handoffReceivedBy() { }
@@ -39,6 +40,7 @@ Flight::Flight(const std::string& callsign) :
         m_onMissedApproach(false),
         m_irregularFlight(false),
         m_establishedOnILS(false),
+        m_departureReady(false),
         m_isTrackedByOtherController(false),
         m_handoffReceivedBy() { }
 
@@ -78,6 +80,10 @@ bool Flight::establishedOnILS() const {
     return this->m_establishedOnILS;
 }
 
+bool Flight::readyForDeparture() const {
+    return this->m_departureReady;
+}
+
 const FlightPlan& Flight::flightPlan() const {
     return this->m_flightPlan;
 }
@@ -96,6 +102,10 @@ void Flight::setCurrentPosition(const Position& position) {
 
 void Flight::setGroundSpeed(const Velocity& groundSpeed) {
     this->m_groundSpeed = groundSpeed;
+}
+
+void Flight::setReadyForDeparture(bool value) {
+    this->m_departureReady = value;
 }
 
 void Flight::setVerticalSpeed(const Velocity& verticalSpeed) {

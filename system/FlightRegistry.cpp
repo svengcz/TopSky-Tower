@@ -21,13 +21,24 @@ void FlightRegistry::updateFlight(const types::Flight& flight) {
     auto it = this->m_flights.find(callsign);
 
     if (this->m_flights.end() != it) {
+        /* track the flags of the last update */
         auto depFlags = it->second.first.flightPlan().departureFlag();
         auto arrFlags = it->second.first.flightPlan().arrivalFlag();
         bool airborne = it->second.first.airborne();
+        bool onMisApp = it->second.first.onMissedApproach();
+        bool depRdy = it->second.first.readyForDeparture();
+        bool irregular = it->second.first.irregularHandoff();
+        bool established = it->second.first.establishedOnILS();
 
+        /* update the flight information */
         it->second.first = flight;
-        if (true == airborne)
-            it->second.first.setAirborne(true);
+
+        /* update the internal flags, if needed */
+        it->second.first.setAirborne(true == airborne ? true : it->second.first.airborne());
+        it->second.first.setOnMissedApproach(true == flight.onMissedApproach() ? !onMisApp : onMisApp);
+        it->second.first.setReadyForDeparture(true == flight.readyForDeparture() ? !depRdy : depRdy);
+        it->second.first.setIrregularHandoff(true == flight.irregularHandoff() ? !irregular : irregular);
+        it->second.first.setEstablishedOnILS(true == flight.establishedOnILS() ? !established : established);
 
         /* an update of the departure flag is possible */
         if (types::FlightPlan::AtcCommand::Unknown != flight.flightPlan().departureFlag()) {
