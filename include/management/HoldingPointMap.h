@@ -223,18 +223,15 @@ namespace topskytower {
                 if (nullptr == node)
                     return false;
 
-                /* inside the deadband -> mark it as reached */
-                auto distance = flight.currentPosition().coordinate().distanceTo(node->holdingPoint);
-                if (distance <= deadbandWidth)
-                    return true;
-
                 /* calculate the heading and compensate the offset */
                 auto heading = flight.currentPosition().coordinate().bearingTo(node->holdingPoint) - node->heading;
                 if (types::Flight::Type::Departure == type)
                     heading -= 180.0 * types::degree;
                 HoldingPointMap<T>::normalize(heading);
 
-                return heading.abs() <= threshold;
+                auto distance = flight.currentPosition().coordinate().distanceTo(node->holdingPoint);
+
+                return heading.abs() <= threshold && distance > deadbandWidth;
             }
             const types::Coordinate& center() const {
                 return this->m_centerPosition;
