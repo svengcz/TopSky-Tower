@@ -25,18 +25,16 @@ using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
 STCDControl::STCDControl(const std::string& airport, const types::Length& elevation, const types::Coordinate& center,
-                         const std::list<types::Runway>& runways) :
+                         const std::list<types::Runway>& runways, management::DepartureSequenceControl* departureControl) :
         m_airportIcao(airport),
         m_airportElevation(elevation + 100_ft),
         m_reference(center),
-        m_holdingPoints(airport, center),
+        m_departureControl(departureControl),
         m_runways(runways),
         m_noTransgressionZones(),
         m_ntzViolations(),
         m_inbounds(),
-        m_conflicts(),
-        m_reachedHoldingPoint(),
-        m_runwayDepartures() {
+        m_conflicts() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &STCDControl::reinitialize);
 
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
@@ -123,8 +121,6 @@ void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
     if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::Runtime != type)
         return;
 
-    this->m_holdingPoints.reinitialize();
-
     const auto& configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
     this->m_noTransgressionZones.clear();
 
@@ -140,8 +136,6 @@ void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
 
     /* no active arrival or departure runways found configuration found */
     if (configuration.activeArrivalRunways.cend() == configuration.activeArrivalRunways.find(this->m_airportIcao))
-        return;
-    if (configuration.activeDepartureRunways.cend() == configuration.activeDepartureRunways.find(this->m_airportIcao))
         return;
 
     /* get the IPA and PRM pairs that are possible based on the static and runtime configuration */
@@ -171,12 +165,6 @@ void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
                     prmPairs.push_back(std::make_pair(*it, *cit));
             }
         }
-    }
-
-    /* create the departure runways */
-    const auto& departureRunways = configuration.activeDepartureRunways.find(this->m_airportIcao)->second;
-    for (const auto& runway : std::as_const(departureRunways)) {
-        runway
     }
 
     /* create all required NTZs */
@@ -292,23 +280,8 @@ void STCDControl::analyzeOutbound(const types::Flight& flight) {
     types::Length minDistance = 999_nm;
 
     /* check if the flight reached the holding point */
-    auto hpIt = std::find(this->m_reachedHoldingPoint.cbegin(), this->m_reachedHoldingPoint.cend(), flight.callsign());
-    if (this->m_reachedHoldingPoint.cend() == hpIt) {
-        bool reached = this->m_holdingPoints.reachedHoldingPoint(flight, types::Flight::Type::Departure, true,
-                                                                 system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband,
-                                                                 20.0_deg);
-        if (true == reached)
-            this->m_reachedHoldingPoint.push_back(flight.callsign());
-        else
-            return;
-    }
-
-    /* check if the flight departed */
-    if (40_kn < flight.groundSpeed()) {
-        afdafd
-
-        this->m_reachedHoldingPoint.erase(hpIt);
-    }
+    if (false == this->m_departureControl->readyForDeparture(flight))
+        return;
 
     /* find the closest inbound to check if the spacing is too small */
     for (auto it = this->m_inbounds.cbegin(); this->m_inbounds.cend() != it; ++it) {
@@ -376,9 +349,6 @@ void STCDControl::removeFlight(const std::string& callsign) {
     auto it = this->m_conflicts.find(callsign);
     if (this->m_conflicts.end() != it)
         this->m_conflicts.erase(it);
-
-    /* cleanup the outbound tracker */
-    this->m_reachedHoldingPoint.remove(callsign);
 }
 
 bool STCDControl::ntzViolation(const types::Flight& flight) const {

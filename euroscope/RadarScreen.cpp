@@ -311,12 +311,12 @@ void RadarScreen::initialize() {
 
         if (nullptr != this->m_mtcdControl)
             delete this->m_mtcdControl;
-        this->m_mtcdControl = new surveillance::MTCDControl(this->m_airport, center);
+        this->m_mtcdControl = new surveillance::MTCDControl(center, this->m_departureControl);
         this->m_mtcdControl->registerSidExtraction(this, &RadarScreen::extractPredictedSID);
 
         if (nullptr != this->m_stcdControl)
             delete this->m_stcdControl;
-        this->m_stcdControl = new surveillance::STCDControl(this->m_airport, this->m_elevation, center, file.runways(this->m_airport));
+        this->m_stcdControl = new surveillance::STCDControl(this->m_airport, this->m_elevation, center, file.runways(this->m_airport), this->m_departureControl);
 
         this->m_initialized = true;
     }

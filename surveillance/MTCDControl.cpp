@@ -15,26 +15,12 @@ using namespace topskytower;
 using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
-MTCDControl::MTCDControl(const std::string& airport, const types::Coordinate& center) :
-        m_holdingPoints(airport, center),
+MTCDControl::MTCDControl(const types::Coordinate& center, management::DepartureSequenceControl* departureControl) :
+        m_center(center),
+        m_departureControl(departureControl),
         m_sidExtractionCallback(),
         m_departures(),
-        m_conflicts() {
-    system::ConfigurationRegistry::instance().registerNotificationCallback(this, &MTCDControl::reinitialize);
-
-    this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
-}
-
-MTCDControl::~MTCDControl() {
-    system::ConfigurationRegistry::instance().deleteNotificationCallback(this);
-}
-
-void MTCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
-    if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::Airports != type)
-        return;
-
-    this->m_holdingPoints.reinitialize();
-}
+        m_conflicts() { }
 
 std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Flight& flight, types::Flight::Type type) {
     /* ignore non-departing flights and non-IFR flights */
@@ -47,14 +33,14 @@ std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Fligh
         if (0 == route.size())
             return this->m_departures.end();
 
-        this->m_departures.push_back(std::move(DepartureModel(flight, this->m_holdingPoints.center(), route)));
+        this->m_departures.push_back(std::move(DepartureModel(flight, this->m_center, route)));
     }
     /* check if it is a departure candidate */
+    else if (true == this->m_departureControl->readyForDeparture(flight)) {
+        this->m_departures.push_back(std::move(DepartureModel(flight, this->m_center, this->m_sidExtractionCallback(flight.callsign()))));
+    }
     else {
-        if (true == this->m_holdingPoints.reachedHoldingPoint(flight, type, true, system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband, 20_deg))
-            this->m_departures.push_back(std::move(DepartureModel(flight, this->m_holdingPoints.center(), this->m_sidExtractionCallback(flight.callsign()))));
-        else
-            return this->m_departures.end();
+        return this->m_departures.end();
     }
 
     /* get the last inserted element */

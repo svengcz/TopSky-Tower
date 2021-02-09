@@ -10,7 +10,7 @@
 
 #include <functional>
 
-#include <management/HoldingPointMap.h>
+#include <management/DepartureSequenceControl.h>
 #include <surveillance/DepartureModel.h>
 #include <types/Flight.h>
 
@@ -71,26 +71,22 @@ namespace topskytower {
             typedef std::vector<types::Coordinate>(departureRoute)(const std::string&);
 
         private:
-            management::HoldingPointMap<management::HoldingPointData> m_holdingPoints;
-            std::function<departureRoute>                             m_sidExtractionCallback;
-            std::list<DepartureModel>                                 m_departures;
-            std::map<std::string, std::list<Conflict>>                m_conflicts;
+            types::Coordinate                          m_center;
+            management::DepartureSequenceControl*      m_departureControl;
+            std::function<departureRoute>              m_sidExtractionCallback;
+            std::list<DepartureModel>                  m_departures;
+            std::map<std::string, std::list<Conflict>> m_conflicts;
 
-            void reinitialize(system::ConfigurationRegistry::UpdateType type);
             std::list<DepartureModel>::iterator insertFlight(const types::Flight& flight, types::Flight::Type type);
             void removeConflict(const std::string& callsignModel, const std::string& callsignConflict);
 
         public:
             /**
              * @brief Creates a MTCD control instance
-             * @param[in] airport The airport's ICAO code
              * @param[in] center The airport's center position
+             * @param[in] departureControl The departure sequence control system
              */
-            MTCDControl(const std::string& airport, const types::Coordinate& center);
-            /**
-             * @brief Destroys all internal structures and registrations
-             */
-            ~MTCDControl();
+            MTCDControl(const types::Coordinate& center, management::DepartureSequenceControl* departureControl);
 
             /**
              * @brief Updates a flight and calculates the MTCA metrices

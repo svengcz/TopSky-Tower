@@ -11,7 +11,7 @@
 #include <list>
 #include <map>
 
-#include <management/HoldingPointMap.h>
+#include <management/DepartureSequenceControl.h>
 #include <system/ConfigurationRegistry.h>
 #include <types/Flight.h>
 #include <types/Runway.h>
@@ -59,17 +59,15 @@ namespace topskytower {
                         departureTime() { }
             };
 
-            std::string                                               m_airportIcao;
-            types::Length                                             m_airportElevation;
-            types::Coordinate                                         m_reference;
-            management::HoldingPointMap<management::HoldingPointData> m_holdingPoints;
-            std::list<types::Runway>                                  m_runways;
-            std::list<types::SectorBorder>                            m_noTransgressionZones;
-            std::list<std::string>                                    m_ntzViolations;
-            std::list<types::Flight>                                  m_inbounds;
-            std::map<std::string, types::Length>                      m_conflicts;
-            std::list<std::string>                                    m_reachedHoldingPoint;
-            std::map<std::string, Departure>                          m_runwayDepartures;
+            std::string                           m_airportIcao;
+            types::Length                         m_airportElevation;
+            types::Coordinate                     m_reference;
+            management::DepartureSequenceControl* m_departureControl;
+            std::list<types::Runway>              m_runways;
+            std::list<types::SectorBorder>        m_noTransgressionZones;
+            std::list<std::string>                m_ntzViolations;
+            std::list<types::Flight>              m_inbounds;
+            std::map<std::string, types::Length>  m_conflicts;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
             void createNTZ(const std::pair<std::string, std::string>& runwayPair);
@@ -83,9 +81,10 @@ namespace topskytower {
              * @param[in] elevation The airport's elevation
              * @param[in] center The reference point for the gnonomic transformation
              * @param[in] runways The runways of the airport
+             * @param[in] departureControl The departure sequence control system
              */
             STCDControl(const std::string& airport, const types::Length& elevation, const types::Coordinate& center,
-                        const std::list<types::Runway>& runways);
+                        const std::list<types::Runway>& runways, management::DepartureSequenceControl* departureControl);
             /**
              * @brief Destroys all internal structures and registrations
              */
@@ -114,6 +113,11 @@ namespace topskytower {
              * @return True if the separation is lost, else false
              */
             bool separationLoss(const types::Flight& flight) const;
+            /**
+             * @brief Returns the minimum required separation
+             * @param[in] flight The requested flight
+             * @return The minimum required separation
+             */
             const types::Length& minSeparation(const types::Flight& flight);
             /**
              * @brief Returns all defined NTZs
