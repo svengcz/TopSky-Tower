@@ -149,6 +149,11 @@ namespace topskytower {
          *     <td>20</td><td>Metres</td>
          *   </tr>
          *   <tr>
+         *     <td>SURV_STCD_Active</td>
+         *     <td>Defines if STCD is active.</td>
+         *     <td>1</td><td>Boolean</td>
+         *   </tr>
+         *   <tr>
          *     <td>SURV_MTCD_Active</td>
          *     <td>Defines if MTCD is active.</td>
          *     <td>1</td><td>Boolean</td>

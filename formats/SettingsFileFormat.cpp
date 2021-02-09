@@ -156,6 +156,9 @@ bool SettingsFileFormat::parse(types::SystemConfiguration& config) {
         else if ("SURV_CMAC_CycleReset" == entry[0]) {
             config.cmacCycleReset = static_cast<std::uint8_t>(std::atoi(value.c_str()));
         }
+        else if ("SURV_STCD_Active" == entry[0]) {
+            config.stcdActive = '0' != value[0];
+        }
         else if ("SURV_MTCD_Active" == entry[0]) {
             config.mtcdActive = '0' != value[0];
         }

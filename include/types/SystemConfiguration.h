@@ -45,6 +45,7 @@ namespace topskytower {
             bool                cmacActive;                            /**< Defines if CMAC is active or not */
             std::uint8_t        cmacCycleReset;                        /**< Defines after how many non-moving cycles the system for a flight resets */
             types::Length       cmacMinimumDistance;                   /**< Defines the minimum distance between the reference position and the new position to estimate the CMA */
+            bool                stcdActive;                            /**< Defines if STCD is active or not */
             bool                mtcdActive;                            /**< Defines if MTCD is active or not */
             types::Velocity     mtcdDepartureSpeedV2[5];               /**< Defines the V2 speeds for all WTCs */
             types::Length       mtcdDepartureAccelerationAlt;          /**< Defines the acceleration altitude */
@@ -87,6 +88,7 @@ namespace topskytower {
                     cmacActive(true),
                     cmacCycleReset(10),
                     cmacMinimumDistance(20_m),
+                    stcdActive(true),
                     mtcdActive(true),
                     mtcdDepartureSpeedV2{ 160_kn, 90_kn, 160_kn, 180_kn, 190_kn },
                     mtcdDepartureAccelerationAlt(2000_ft),
