@@ -46,6 +46,19 @@ namespace topskytower {
         class STCDControl {
         private:
 #ifndef DOXYGEN_IGNORE
+            using TimePoint = std::chrono::system_clock::time_point;
+
+            struct Departure {
+                std::string          callsign;
+                types::Aircraft::WTC wtc;
+                TimePoint            departureTime;
+
+                Departure() :
+                        callsign(),
+                        wtc(types::Aircraft::WTC::Unknown),
+                        departureTime() { }
+            };
+
             std::string                                               m_airportIcao;
             types::Length                                             m_airportElevation;
             types::Coordinate                                         m_reference;
@@ -56,6 +69,7 @@ namespace topskytower {
             std::list<types::Flight>                                  m_inbounds;
             std::map<std::string, types::Length>                      m_conflicts;
             std::list<std::string>                                    m_reachedHoldingPoint;
+            std::map<std::string, Departure>                          m_runwayDepartures;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
             void createNTZ(const std::pair<std::string, std::string>& runwayPair);

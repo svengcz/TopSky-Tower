@@ -50,6 +50,34 @@ static const std::map<std::pair<types::Aircraft::WTC, types::Aircraft::WTC>, typ
     { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Super),   6_nm }
 };
 
+const std::map<std::pair<types::Aircraft::WTC, types::Aircraft::WTC>, types::Time> __timeSpacings = {
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Unknown), 0_min },
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Light),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Medium),  0_min },
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Heavy),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Unknown, types::Aircraft::WTC::Super),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Unknown), 0_min },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Light),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Medium),  0_min },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Heavy),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Light,   types::Aircraft::WTC::Super),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Unknown), 0_min },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Light),   2_min },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Medium),  0_min },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Heavy),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Medium,  types::Aircraft::WTC::Super),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Unknown), 0_min },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Light),   2_min },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Medium),  2_min },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Heavy),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Heavy,   types::Aircraft::WTC::Super),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Unknown), 0_min },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Light),   3_min },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Medium),  3_min },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Heavy),   0_min },
+    { std::make_pair(types::Aircraft::WTC::Super,   types::Aircraft::WTC::Super),   0_min }
+};
+
 STCDControl::STCDControl(const std::string& airport, const types::Length& elevation, const types::Coordinate& center,
                          const std::list<types::Runway>& runways) :
         m_airportIcao(airport),
@@ -61,7 +89,8 @@ STCDControl::STCDControl(const std::string& airport, const types::Length& elevat
         m_ntzViolations(),
         m_inbounds(),
         m_conflicts(),
-        m_reachedHoldingPoint() {
+        m_reachedHoldingPoint(),
+        m_runwayDepartures() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &STCDControl::reinitialize);
 
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
@@ -163,8 +192,10 @@ void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
 
     const auto& airportConfig = system::ConfigurationRegistry::instance().airportConfiguration(this->m_airportIcao);
 
-    /* no active arrival runways found configuration found */
+    /* no active arrival or departure runways found configuration found */
     if (configuration.activeArrivalRunways.cend() == configuration.activeArrivalRunways.find(this->m_airportIcao))
+        return;
+    if (configuration.activeDepartureRunways.cend() == configuration.activeDepartureRunways.find(this->m_airportIcao))
         return;
 
     /* get the IPA and PRM pairs that are possible based on the static and runtime configuration */
@@ -194,6 +225,12 @@ void STCDControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
                     prmPairs.push_back(std::make_pair(*it, *cit));
             }
         }
+    }
+
+    /* create the departure runways */
+    const auto& departureRunways = configuration.activeDepartureRunways.find(this->m_airportIcao)->second;
+    for (const auto& runway : std::as_const(departureRunways)) {
+        runway
     }
 
     /* create all required NTZs */
@@ -321,6 +358,11 @@ void STCDControl::analyzeOutbound(const types::Flight& flight) {
     }
 
     /* check if the flight departed */
+    if (40_kn < flight.groundSpeed()) {
+        afdafd
+
+        this->m_reachedHoldingPoint.erase(hpIt);
+    }
 
     /* find the closest inbound to check if the spacing is too small */
     for (auto it = this->m_inbounds.cbegin(); this->m_inbounds.cend() != it; ++it) {
