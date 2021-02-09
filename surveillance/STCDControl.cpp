@@ -318,8 +318,11 @@ void STCDControl::analyzeOutbound(const types::Flight& flight) {
 }
 
 void STCDControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
-    if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().stcdActive)
+    if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().stcdActive ||
+        false == system::ConfigurationRegistry::instance().systemConfiguration().stcdActive)
+    {
         return;
+    }
 
     /* we evaluate only the arrivals anf IFRs */
     if (types::FlightPlan::Type::IFR != flight.flightPlan().type())

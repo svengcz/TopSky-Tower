@@ -31,6 +31,8 @@ void StcdToolbarButton::clicked() {
 }
 
 bool StcdToolbarButton::active() {
-    return system::ConfigurationRegistry::instance().runtimeConfiguration().stcdActive;
+    bool isActive = system::ConfigurationRegistry::instance().systemConfiguration().stcdActive;
+    isActive &= system::ConfigurationRegistry::instance().runtimeConfiguration().stcdActive;
+    return isActive;
 }
 
