@@ -9,7 +9,6 @@
  *   GNU General Public License v3 (GPLv3)
  */
 
-#define _CRT_SECURE_NO_WARNINGS 1
 #include "stdafx.h"
 
 #include <helper/Time.h>
@@ -44,9 +43,10 @@ NotamOverviewWindow::NotamOverviewWindow(RadarScreen* parent) :
 }
 
 NotamOverviewWindow::~NotamOverviewWindow() {
-    if (0 != this->m_elements.size())
+    while (0 != this->m_elements.size()) {
         delete this->m_elements.front();
-    this->m_elements.clear();
+        this->m_elements.pop_front();
+    }
 }
 
 void NotamOverviewWindow::setOverviewContent() {
