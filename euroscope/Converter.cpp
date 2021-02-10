@@ -292,6 +292,12 @@ void Converter::convertStandAssignment(const EuroScopePlugIn::CFlightPlan& plan)
         plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), ("s/" + stand + "/s").c_str());
 }
 
+void Converter::convertHoldingPointAssignment(const EuroScopePlugIn::CFlightPlan& plan) {
+    auto point = Converter::findScratchPadEntry(plan, "TST", "HP");
+    if (0 != point.length())
+        plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::HoldingPoint), ("h/" + point + "/h").c_str());
+}
+
 types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target) {
     types::Flight retval(target.GetCallsign());
 
@@ -337,6 +343,7 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target) {
     }
 
     Converter::convertStandAssignment(target.GetCorrelatedFlightPlan());
+    Converter::convertHoldingPointAssignment(target.GetCorrelatedFlightPlan());
 
     return retval;
 }
