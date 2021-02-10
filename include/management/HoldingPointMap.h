@@ -79,7 +79,7 @@ namespace topskytower {
                 while (180.0 * types::degree < angle)
                     angle -= 360.0 * types::degree;
             }
-            T* findNextHoldingPoints(const types::Flight& flight, types::Flight::Type type, bool runwayBound) {
+            T* findNextHoldingPoints(const types::Flight& flight, types::Flight::Type type, bool runwayBound, std::size_t* index) {
                 /* get the correct adaptor */
                 HoldingPointTreeAdaptor* adaptor;
                 if (false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures)
@@ -125,6 +125,8 @@ namespace topskytower {
                     if (hpDistance > system::ConfigurationRegistry::instance().systemConfiguration().ariwsMaximumDistance)
                         return nullptr;
 
+                    if (nullptr != index)
+                        *index = idx;
                     return retval;
                 }
 
@@ -203,11 +205,12 @@ namespace topskytower {
              * @param[in] runwayBound True if the holding point is runway relevant, else false
              * @param[in] deadbandWidth The distance between the flight and the holding point that ignores if the flight passed or is standing in front
              * @param[in] threshold The angular threshold that defines if a flight is facing the holding point or not
+             * @param[out] index The index of the found holding point (nullptr is allowed)
              */
             bool reachedHoldingPoint(const types::Flight& flight, types::Flight::Type type, bool runwayBound, const types::Length& deadbandWidth,
-                                     const types::Angle& threshold) {
+                                     const types::Angle& threshold, std::size_t *index) {
                 /* find the next holding point */
-                auto node = this->findNextHoldingPoints(flight, type, runwayBound);
+                auto node = this->findNextHoldingPoints(flight, type, runwayBound, index);
                 if (nullptr == node)
                     return false;
 
@@ -231,11 +234,12 @@ namespace topskytower {
              * @param[in] runwayBound True if the holding point is runway relevant, else false
              * @param[in] deadbandWidth The distance between the flight and the holding point that ignores if the flight passed or is standing in front
              * @param[in] threshold The angular threshold that defines if a flight is facing the holding point or not
+             * @param[out] index The index of the found holding point (nullptr is allowed)
              */
             bool passedHoldingPoint(const types::Flight& flight, types::Flight::Type type, bool runwayBound, const types::Length& deadbandWidth,
-                                    const types::Angle& threshold) {
+                                    const types::Angle& threshold, std::size_t* index) {
                 /* find the next holding point */
-                auto node = this->findNextHoldingPoints(flight, type, runwayBound);
+                auto node = this->findNextHoldingPoints(flight, type, runwayBound, index);
                 if (nullptr == node)
                     return false;
 

@@ -61,7 +61,8 @@ void ARIWSControl::updateFlight(const types::Flight& flight, types::Flight::Type
         return;
     }
 
-    if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, false, system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband, 15.0_deg))
+    auto deadband = system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband;
+    if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, false, deadband, 15.0_deg, nullptr))
         this->m_incursionWarnings.push_back(flight.callsign());
 }
 
