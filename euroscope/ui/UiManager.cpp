@@ -63,9 +63,10 @@ bool UiManager::click(const std::string_view& objectName, const Gdiplus::PointF&
         return this->m_toolbar->click(pt, button);
     }
     else {
-        auto it = this->m_customWindows.find(std::string(objectName));
-        if (this->m_customWindows.end() != it)
-            return this->click(it->second, pt, button);
+        for (auto& element : this->m_renderQueue) {
+            if (element->title() == objectName)
+                return this->click(element, pt, button);
+        }
     }
 
     return false;
@@ -82,9 +83,10 @@ bool UiManager::move(const std::string_view& objectName, const Gdiplus::PointF& 
     if (nullptr == this->m_parent)
         return false;
 
-    auto it = this->m_customWindows.find(std::string(objectName));
-    if (this->m_customWindows.end() != it)
-        return this->move(it->second, pt, released);
+    for (auto& element : this->m_renderQueue) {
+        if (element->title() == objectName)
+            return this->move(element, pt, released);
+    }
 
     return false;
 }
