@@ -257,6 +257,69 @@ namespace topskytower {
                 return heading.abs() <= threshold && distance > deadbandWidth;
             }
             /**
+             * @brief Returns all possible departure holding points
+             * @param[in] flight The requested flight
+             * @return The list of possible holding points
+             */
+            std::list<types::HoldingPoint> departureHoldingPoints(const types::Flight& flight) const {
+                std::list<types::HoldingPoint> retval;
+                const std::vector<T>* holdingPoints;
+
+                if (true == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures)
+                    holdingPoints = &this->m_lvpHoldingPointTree.holdingPoints;
+                else
+                    holdingPoints = &this->m_normalHoldingPointTree.holdingPoints;
+
+                for (const auto& holdingPoint : std::as_const(*holdingPoints)) {
+                    if (holdingPoint.runway == flight.flightPlan().departureRunway()) {
+                        if (holdingPoint.maxDepartureWtc >= flight.flightPlan().aircraft().wtc())
+                            retval.push_back(holdingPoint);
+                    }
+                }
+
+                return std::move(retval);
+            }
+            /**
+             * @brief Returns a specific holding point
+             * @param[in] normalProcedure True if the normal procedure is used, else false
+             * @param[in] index The index of the requested holding point
+             * @return The requested holding point
+             */
+            const types::HoldingPoint& holdingPoint(bool normalProcedure, std::size_t index) const {
+                if (true == normalProcedure)
+                    return this->m_normalHoldingPointTree.holdingPoints[index];
+                else
+                    return this->m_lvpHoldingPointTree.holdingPoints[index];
+            }
+            /**
+             * @brief Returns a requested holding point based on the name
+             * @param[in] flight The requested flight
+             * @param[in] name The holding point's name
+             * @return The requested holding point
+             */
+            const types::HoldingPoint& holdingPoint(const types::Flight& flight, const std::string& name) const {
+                std::size_t index = std::numeric_limits<std::size_t>::max();
+                types::Length distance = 999 * types::nauticmile;
+                const std::vector<T>* holdingPoints;
+
+                if (true == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures)
+                    holdingPoints = &this->m_lvpHoldingPointTree.holdingPoints;
+                else
+                    holdingPoints = &this->m_normalHoldingPointTree.holdingPoints;
+
+                for (std::size_t i = 0; i < holdingPoints->size(); ++i) {
+                    if ((*holdingPoints)[i].name == name) {
+                        auto currentDist = (*holdingPoints)[i].holdingPoint.distanceTo(flight.currentPosition().coordinate());
+                        if (distance > currentDist) {
+                            distance = currentDist;
+                            index = i;
+                        }
+                    }
+                }
+
+                return (*holdingPoints)[index];
+            }
+            /**
              * @brief Returns the center of the holding point map
              * @return The center of the map
              */
