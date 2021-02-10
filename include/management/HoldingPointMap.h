@@ -196,6 +196,14 @@ namespace topskytower {
                 this->m_normalHoldingPointTreeAdaptor->buildIndex();
                 this->m_lvpHoldingPointTreeAdaptor->buildIndex();
             }
+            /**
+             * @brief Checks if a flight reached a holding point but did not pass it (except to the deadbandWidth distance)
+             * @param[in] flight The requested flight
+             * @param[in] type The flight's type
+             * @param[in] runwayBound True if the holding point is runway relevant, else false
+             * @param[in] deadbandWidth The distance between the flight and the holding point that ignores if the flight passed or is standing in front
+             * @param[in] threshold The angular threshold that defines if a flight is facing the holding point or not
+             */
             bool reachedHoldingPoint(const types::Flight& flight, types::Flight::Type type, bool runwayBound, const types::Length& deadbandWidth,
                                      const types::Angle& threshold) {
                 /* find the next holding point */
@@ -216,6 +224,14 @@ namespace topskytower {
 
                 return heading.abs() <= threshold;
             }
+            /**
+             * @brief Checks if a flight passed a holding point (except to the deadbandWidth distance)
+             * @param[in] flight The requested flight
+             * @param[in] type The flight's type
+             * @param[in] runwayBound True if the holding point is runway relevant, else false
+             * @param[in] deadbandWidth The distance between the flight and the holding point that ignores if the flight passed or is standing in front
+             * @param[in] threshold The angular threshold that defines if a flight is facing the holding point or not
+             */
             bool passedHoldingPoint(const types::Flight& flight, types::Flight::Type type, bool runwayBound, const types::Length& deadbandWidth,
                                     const types::Angle& threshold) {
                 /* find the next holding point */
@@ -233,6 +249,10 @@ namespace topskytower {
 
                 return heading.abs() <= threshold && distance > deadbandWidth;
             }
+            /**
+             * @brief Returns the center of the holding point map
+             * @return The center of the map
+             */
             const types::Coordinate& center() const {
                 return this->m_centerPosition;
             }
