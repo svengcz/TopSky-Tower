@@ -161,9 +161,9 @@ bool TableViewer::clickedEntry(std::size_t& rowIdx, std::size_t& columnIdx) cons
     return true;
 }
 
-void TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
+bool TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
     if (false == this->m_calculateArea)
-        return;
+        return false;
 
     /* contains the per-column widths */
     this->m_columnWidths = std::vector<float>(this->m_header.size(), 0.0f);
@@ -209,10 +209,26 @@ void TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
                                   (0 == maxRowCount ? (this->m_visibleRows + 1) : (this->m_rows.size() - emptyLines + 1)) * this->m_rowHeight);
 
     this->m_overallWidth = overallWidth + 3.0f * (this->m_header.size() - 1);
+    if (this->m_rows.size() > this->m_visibleRows)
+        this->m_overallWidth += 8.0f;
+
+    return true;
 }
 
 void TableViewer::prepareVisualization(Gdiplus::Graphics* graphics) {
-    this->calculateRequiredArea(graphics);
+    auto cit = this->m_rowContent.cbegin();
+    if (false == this->calculateRequiredArea(graphics)) {
+        for (auto it = this->m_rows.begin(); this->m_rows.end() != it; ++it) {
+            for (std::size_t i = 0; i < it->size(); ++i) {
+                (*it)[i].setGraphics(graphics);
+                (*it)[i].setText((*cit)[i]);
+                this->m_columnWidths[i] = std::max(this->m_columnWidths[i], (*it)[i].rectangle().Width);
+                this->m_rowHeight = std::max(this->m_rowHeight, (*it)[i].rectangle().Height);
+            }
+
+            std::advance(cit, 1);
+        }
+    }
 }
 
 bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
@@ -266,18 +282,18 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
         std::advance(it, 1);
     }
 
-    this->m_scrollUp = Gdiplus::RectF(offsetX, this->m_area.Y + 4.0f, 8.0f, 8.0f);
-    this->m_scrollDown = Gdiplus::RectF(offsetX, this->m_area.Y + this->m_area.Height - 12.0f, 8.0f, 8.0f);
-
-    /* draw the slider button */
-    Gdiplus::SolidBrush sliderBrush(UiElement::foregroundColor());
-    graphics->FillEllipse(&sliderBrush, this->m_scrollUp);
-    graphics->FillEllipse(&sliderBrush, this->m_scrollDown);
-
     /* calculate the ratio of the slider */
     float ratio = 1.0f;
     float maxHeight = this->m_scrollDown.Y - 2.0f - (this->m_scrollUp.Y + this->m_scrollUp.Height + 2.0f);
     if (this->m_visibleRows < this->m_rows.size()) {
+        this->m_scrollUp = Gdiplus::RectF(offsetX, this->m_area.Y + 4.0f, 8.0f, 8.0f);
+        this->m_scrollDown = Gdiplus::RectF(offsetX, this->m_area.Y + this->m_area.Height - 12.0f, 8.0f, 8.0f);
+
+        /* draw the slider button */
+        Gdiplus::SolidBrush sliderBrush(UiElement::foregroundColor());
+        graphics->FillEllipse(&sliderBrush, this->m_scrollUp);
+        graphics->FillEllipse(&sliderBrush, this->m_scrollDown);
+
         ratio = static_cast<float>(this->m_visibleRows) / static_cast<float>(this->m_rows.size());
 
         /* calculate the dimensions and position of the slider */
@@ -287,14 +303,10 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
 
         this->m_sliderRectangle = Gdiplus::RectF(offsetX, this->m_scrollUp.Y + this->m_scrollUp.Height + 2.0f + pixelsPerStep * this->m_visibleRowOffset,
                                                  8.0f, height);
-    }
-    else {
-        this->m_sliderRectangle = Gdiplus::RectF(offsetX, this->m_scrollUp.Y + this->m_scrollUp.Height + 2.0f,
-                                                 8.0f, maxHeight);
-    }
 
-    /* draw the slider */
-    graphics->FillRectangle(&sliderBrush, this->m_sliderRectangle);
+        /* draw the slider */
+        graphics->FillRectangle(&sliderBrush, this->m_sliderRectangle);
+    }
 
     return true;
 }

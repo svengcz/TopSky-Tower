@@ -40,7 +40,7 @@ namespace topskytower {
             bool                                m_calculateArea;
             float                               m_overallWidth;
 
-            void calculateRequiredArea(Gdiplus::Graphics* graphics);
+            bool calculateRequiredArea(Gdiplus::Graphics* graphics);
 
         public:
             /**
