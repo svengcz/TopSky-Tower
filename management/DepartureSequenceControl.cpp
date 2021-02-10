@@ -127,7 +127,7 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
             atHoldingPoint,
             passedHoldingPoint,
             normalProcedure,
-            this->m_holdingPoints.holdingPoint(normalProcedure, holdingPointIdx),
+            true == atHoldingPoint ? this->m_holdingPoints.holdingPoint(normalProcedure, holdingPointIdx) : types::HoldingPoint(),
             flight.flightPlan().aircraft().wtc(),
             TimePoint()
         };
