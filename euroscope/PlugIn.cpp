@@ -93,6 +93,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemType("Departure Ground status", static_cast<int>(PlugIn::TagItemElement::DepartureGroundStatus));
     this->RegisterTagItemType("Arrival Ground status", static_cast<int>(PlugIn::TagItemElement::ArrivalGroundStatus));
     this->RegisterTagItemType("Surveillance alerts", static_cast<int>(PlugIn::TagItemElement::SurveillanceAlerts));
+    this->RegisterTagItemType("Holding point", static_cast<int>(PlugIn::TagItemElement::HoldingPoint));
 
     this->RegisterTagItemFunction("Menu bar", static_cast<int>(PlugIn::TagItemFunction::AircraftControlMenuBar));
     this->RegisterTagItemFunction("PDC menu bar", static_cast<int>(PlugIn::TagItemFunction::PdcMenu));
@@ -103,6 +104,7 @@ PlugIn::PlugIn() :
     this->RegisterTagItemFunction("Surveillance visualization trigger", static_cast<int>(PlugIn::TagItemFunction::SurveillanceAlertVisualization));
     this->RegisterTagItemFunction("Draw departure route (auto hide)", static_cast<int>(PlugIn::TagItemFunction::DepartureRouteDrawTimeBased));
     this->RegisterTagItemFunction("Draw departure route", static_cast<int>(PlugIn::TagItemFunction::DepartureRouteDraw));
+    this->RegisterTagItemFunction("Holding point menu", static_cast<int>(PlugIn::TagItemFunction::HoldingPointCandidatesMenu));
 
     /* search for the sound file and register the PDC sound callback */
     for (auto& entry : fs::recursive_directory_iterator(path)) {
@@ -582,6 +584,18 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             std::strcat(itemString, "MTC");
 
         break;
+    case PlugIn::TagItemElement::HoldingPoint:
+    {
+        auto holdingPoint = PlugIn::findScratchPadEntry(radarTarget.GetCorrelatedFlightPlan(), "TST", "HP");
+        if (0 != holdingPoint.length())
+            this->updateHoldingPoint(flight, holdingPoint);
+
+        if (true == flightScreen->departureSequenceControl().readyForDeparture(flight)) {
+            auto& point = flightScreen->departureSequenceControl().holdingPoint(flight);
+            std::strcat(itemString, point.name.c_str());
+        }
+        break;
+    }
     default:
         break;
     }
@@ -1191,6 +1205,25 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::DepartureRouteDraw:
         flightScreen->activateDepartureRouteVisualization(flight.callsign(), -1.0f * types::second);
         break;
+    case PlugIn::TagItemFunction::HoldingPointCandidatesMenu:
+        if (false == flight.isTrackedByOther()) {
+            auto holdingPoints = flightScreen->departureSequenceControl().holdingPointCandidates(flight);
+            if (0 != holdingPoints.size()) {
+                this->OpenPopupList(area, "H/P", 1);
+
+                for (const auto& point : std::as_const(holdingPoints))
+                    this->AddPopupListElement(point.name.c_str(), "", static_cast<int>(PlugIn::TagItemFunction::HoldingPointCandidatesSelect));
+            }
+        }
+        break;
+    case PlugIn::TagItemFunction::HoldingPointCandidatesSelect:
+    {
+        std::string scratchpad = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetScratchPadString();
+        auto holdingPoint = std::string("TST/HP/") + itemString;
+        scratchpad += holdingPoint;
+        radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchpad.c_str());
+        break;
+    }
     default:
         break;
     }

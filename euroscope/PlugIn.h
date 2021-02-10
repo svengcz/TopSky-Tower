@@ -73,6 +73,8 @@ namespace topskytower {
                 DepartureGroundStatusSelect         = 3601, /**< Sets the new status of the departure status */
                 ArrivalGroundStatusMenu             = 3700, /**< Opens the arrival ground status menu */
                 ArrivalGroundStatusSelect           = 3701, /**< Sets the new status of the arrival status */
+                HoldingPointCandidatesMenu          = 3800, /**< Opens the holding point menu */
+                HoldingPointCandidatesSelect        = 3801, /**< Sets the new used holding point */
                 UiElementIds                        = 4000, /**< Elements of the UI entries */
                 UiEditTextRequest                   = 4001, /**< Request an edit-field */
                 UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */
@@ -91,7 +93,8 @@ namespace topskytower {
                 AircraftStand         = 2009,
                 DepartureGroundStatus = 2010,
                 ArrivalGroundStatus   = 2011,
-                SurveillanceAlerts    = 2012
+                SurveillanceAlerts    = 2012,
+                HoldingPoint          = 2013
             };
 
             bool                                    m_errorMode;
