@@ -44,6 +44,8 @@ SET(SOURCE_FILES_UI
     ui/CmacToolbarButton.h
     ui/ConfigurationErrorWindow.cpp
     ui/ConfigurationErrorWindow.h
+    ui/DepartureSequenceWindow.cpp
+    ui/DepartureSequenceWindow.h
     ui/HoppiesLogonWindow.cpp
     ui/HoppiesLogonWindow.h
     ui/InsetWindow.cpp
