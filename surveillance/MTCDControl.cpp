@@ -155,10 +155,8 @@ void MTCDControl::removeConflict(const std::string& callsignModel, const std::st
 
 void MTCDControl::removeFlight(const std::string& callsign) {
     auto it = std::find(this->m_departures.begin(), this->m_departures.end(), DepartureModel(callsign));
-    if (this->m_departures.end() != it) {
+    if (this->m_departures.end() != it)
         this->m_departures.erase(it);
-        return;
-    }
 
     for (auto cit = this->m_conflicts.begin(); this->m_conflicts.end() != cit; ++cit) {
         for (auto oit = cit->second.begin(); oit != cit->second.end();) {
