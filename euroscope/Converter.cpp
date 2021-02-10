@@ -135,22 +135,6 @@ static __inline void __convertTopSkyTowerAtcPad(const std::string& entry, types:
     }
 }
 
-std::string Converter::findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker, const std::string& entry) {
-    /* check if the scratch pad contains a new message */
-    std::string scratchpad = plan.GetControllerAssignedData().GetScratchPadString();
-    std::string identifier = marker + "/" + entry + "/";
-    std::size_t pos = scratchpad.find(identifier);
-
-    if (std::string::npos != pos) {
-        auto retval = scratchpad.substr(pos + identifier.length());
-        scratchpad.erase(pos, scratchpad.length());
-        plan.GetControllerAssignedData().SetScratchPadString(scratchpad.c_str());
-        return retval;
-    }
-
-    return "";
-}
-
 void Converter::convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan) {
     /* get the ground status and check if this or an other TopSky-Tower set something */
     __convertEuroScopeAtcStatus(plan.GetGroundState(), flightPlan);
@@ -286,18 +270,6 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     return retval;
 }
 
-void Converter::convertStandAssignment(const EuroScopePlugIn::CFlightPlan& plan) {
-    auto stand = Converter::findScratchPadEntry(plan, "GRP", "S");
-    if (0 != stand.length())
-        plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), ("s/" + stand + "/s").c_str());
-}
-
-void Converter::convertHoldingPointAssignment(const EuroScopePlugIn::CFlightPlan& plan) {
-    auto point = Converter::findScratchPadEntry(plan, "TST", "HP");
-    if (0 != point.length())
-        plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::HoldingPoint), ("h/" + point + "/h").c_str());
-}
-
 types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target) {
     types::Flight retval(target.GetCallsign());
 
@@ -341,9 +313,6 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target) {
         /* create the flight plan */
         retval.setFlightPlan(Converter::convert(flightPlan));
     }
-
-    Converter::convertStandAssignment(target.GetCorrelatedFlightPlan());
-    Converter::convertHoldingPointAssignment(target.GetCorrelatedFlightPlan());
 
     return retval;
 }

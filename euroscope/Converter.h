@@ -27,10 +27,7 @@ namespace topskytower {
          */
         class Converter {
         private:
-            static std::string findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker, const std::string& entry);
             static void convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan);
-            static void convertStandAssignment(const EuroScopePlugIn::CFlightPlan& plan);
-            static void convertHoldingPointAssignment(const EuroScopePlugIn::CFlightPlan& plan);
 
         public:
             /**

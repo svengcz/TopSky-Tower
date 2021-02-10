@@ -309,6 +309,40 @@ bool PlugIn::summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanCo
     return false;
 }
 
+std::string PlugIn::findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker, const std::string& entry) {
+    /* check if the scratch pad contains a new message */
+    std::string scratchpad = plan.GetControllerAssignedData().GetScratchPadString();
+    std::string identifier = marker + "/" + entry + "/";
+    std::size_t pos = scratchpad.find(identifier);
+
+    if (std::string::npos != pos) {
+        auto retval = scratchpad.substr(pos + identifier.length());
+        scratchpad.erase(pos, scratchpad.length());
+        plan.GetControllerAssignedData().SetScratchPadString(scratchpad.c_str());
+        return retval;
+    }
+
+    return "";
+}
+
+void PlugIn::updateStand(const types::Flight& flight, const std::string& stand) {
+    for (auto& screen : this->m_screens) {
+        auto type = screen->identifyType(flight);
+
+        if (types::Flight::Type::Unknown != type)
+            screen->standControl().assignManually(flight, type, stand);
+    }
+}
+
+void PlugIn::updateHoldingPoint(const types::Flight& flight, const std::string& holdingPoint) {
+    for (auto& screen : this->m_screens) {
+        auto type = screen->identifyType(flight);
+
+        if (types::Flight::Type::Unknown != type)
+            screen->departureSequenceControl().setHoldingPoint(flight, holdingPoint);
+    }
+}
+
 void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlugIn::CRadarTarget radarTarget,
                           int itemCode, int tagData, char itemString[16], int* colorCode, COLORREF* rgb,
                           double* fontSize) {
@@ -456,7 +490,14 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     }
     case PlugIn::TagItemElement::AircraftStand:
     {
-        auto stand = flightScreen->standControl().stand(flight);
+        auto stand = PlugIn::findScratchPadEntry(radarTarget.GetCorrelatedFlightPlan(), "GRP", "S");
+        if (0 != stand.length()) {
+            std::string annotation = "s/" + stand + "/s";
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), annotation.c_str());
+            this->updateStand(flight, stand);
+        }
+
+        stand = flightScreen->standControl().stand(flight);
         if (0 != stand.length()) {
             /* validate that no other controller published a stand already */
             std::strcpy(itemString, stand.c_str());
@@ -1104,9 +1145,14 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     }
     case PlugIn::TagItemFunction::StandControlManualSelect:
-        flightScreen->standControl().assignManually(flight, flightScreen->identifyType(flight), itemString);
+    {
+        std::string scratchpad = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetScratchPadString();
+        auto stand = std::string("GRP/S/") + itemString;
+        scratchpad += stand;
         radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), "");
+        radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchpad.c_str());
         break;
+    }
     case PlugIn::TagItemFunction::StandControlScreenSelect:
         flightScreen->activateStandOnScreenSelection(true, flight.callsign());
         break;
