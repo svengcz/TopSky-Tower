@@ -205,12 +205,14 @@ bool TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
     for (const auto& width : std::as_const(this->m_columnWidths))
         overallWidth += width;
 
-    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 12.0f + 3.0f * (this->m_header.size() - 1),
+    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 2.0f + 3.0f * (this->m_header.size() - 1),
                                   (0 == maxRowCount ? (this->m_visibleRows + 1) : (this->m_rows.size() - emptyLines + 1)) * this->m_rowHeight);
 
     this->m_overallWidth = overallWidth + 3.0f * (this->m_header.size() - 1);
-    if (this->m_rows.size() > this->m_visibleRows)
-        this->m_overallWidth += 8.0f;
+    if (this->m_rows.size() > this->m_visibleRows) {
+        this->m_overallWidth += 10.0f;
+        this->m_area.Width += 10.0f;
+    }
 
     return true;
 }
