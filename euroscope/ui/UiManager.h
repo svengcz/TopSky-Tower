@@ -14,6 +14,7 @@
 
 namespace topskytower {
     namespace euroscope {
+        class DepartureSequenceWindow;
         class InsetWindow;
         class RadarScreen;
         class Toolbar;
@@ -45,6 +46,7 @@ namespace topskytower {
         private:
             RadarScreen*                        m_parent;
             Toolbar*                            m_toolbar;
+            DepartureSequenceWindow*            m_departureWindow;
             std::map<std::string, InsetWindow*> m_customWindows;
             std::list<InsetWindow*>             m_renderQueue;
             std::list<InsetWindow*>             m_newWindowsQueue;

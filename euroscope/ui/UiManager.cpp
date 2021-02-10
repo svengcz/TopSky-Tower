@@ -12,7 +12,7 @@
 #include "stdafx.h"
 
 #include "../RadarScreen.h"
-#include "HoppiesLogonWindow.h"
+#include "DepartureSequenceWindow.h"
 #include "Toolbar.h"
 #include "UiManager.h"
 
@@ -21,9 +21,12 @@ using namespace topskytower::euroscope;
 UiManager::UiManager(RadarScreen* parent) :
         m_parent(parent),
         m_toolbar(nullptr),
+        m_departureWindow(new DepartureSequenceWindow(parent)),
         m_customWindows(),
         m_renderQueue(),
-        m_newWindowsQueue() { }
+        m_newWindowsQueue() {
+    this->m_renderQueue.push_back(this->m_departureWindow);
+}
 
 UiManager::~UiManager() {
     this->m_renderQueue.clear();
@@ -31,6 +34,10 @@ UiManager::~UiManager() {
     if (nullptr != this->m_toolbar) {
         delete this->m_toolbar;
         this->m_toolbar = nullptr;
+    }
+    if (nullptr != this->m_departureWindow) {
+        delete this->m_departureWindow;
+        this->m_departureWindow = nullptr;
     }
 }
 
