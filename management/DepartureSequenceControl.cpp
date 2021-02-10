@@ -91,10 +91,11 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
     /* update the internal statistics and check if the flight is departing */
     if (this->m_departureReady.cend() != rdyIt) {
         rdyIt->second.reachedHoldingPoint = atHoldingPoint;
-        rdyIt->second.passedHoldingPoint = passedHoldingPoint;
+        if (true == passedHoldingPoint)
+            rdyIt->second.passedHoldingPoint = true;
 
         /* flight is departing -> update the internal statistics */
-        if ((types::FlightPlan::AtcCommand::Departure == flight.flightPlan().departureFlag() && true == passedHoldingPoint) || 40_kn <= flight.groundSpeed()) {
+        if ((types::FlightPlan::AtcCommand::Departure == flight.flightPlan().departureFlag() && true == rdyIt->second.passedHoldingPoint) || 40_kn <= flight.groundSpeed()) {
             auto rwyIt = this->m_departedPerRunway.find(flight.flightPlan().departureRunway());
             if (this->m_departedPerRunway.end() != rwyIt) {
                 rwyIt->second = std::move(rdyIt->second);
@@ -104,6 +105,10 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
             }
 
             /* cleanup the ready list */
+            this->m_departureReady.erase(rdyIt);
+        }
+        /* flight is not ready anymore and not at the holding point */
+        else if (false == flight.readyForDeparture() && false == atHoldingPoint && false == rdyIt->second.passedHoldingPoint) {
             this->m_departureReady.erase(rdyIt);
         }
     }
