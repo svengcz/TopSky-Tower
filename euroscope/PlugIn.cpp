@@ -1197,7 +1197,6 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 }
 
 void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
-    auto configuration = system::ConfigurationRegistry::instance().runtimeConfiguration();
     auto split = helper::String::splitString(fullMetar, " ");
 
     /* find the wind entry */
@@ -1216,12 +1215,10 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
             if (std::string::npos != windData.find("G"))
                 information.gusts = static_cast<float>(std::atoi(windData.substr(6, 8).c_str())) * types::knot;
 
-            configuration.windInformation[station] = information;
+            system::ConfigurationRegistry::instance().setMetarInformation(station, information);
             break;
         }
     }
-
-    system::ConfigurationRegistry::instance().setRuntimeConfiguration(configuration);
 }
 
 void PlugIn::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) {
