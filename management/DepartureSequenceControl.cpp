@@ -110,7 +110,7 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
             this->m_departureReady.erase(rdyIt);
         }
         /* flight is not ready anymore and not at the holding point */
-        else if (false == flight.readyForDeparture() && false == atHoldingPoint && false == rdyIt->second.passedHoldingPoint) {
+        else if (false == flight.readyForDeparture() && 0 == rdyIt->second.holdingPoint.name.length()) {
             this->m_departureReady.erase(rdyIt);
         }
         else if (true == atHoldingPoint) {
@@ -159,6 +159,10 @@ void DepartureSequenceControl::removeFlight(const std::string& callsign) {
     }
 }
 
+std::list<types::HoldingPoint> DepartureSequenceControl::holdingPointCandidates(const types::Flight& flight) const {
+    return std::move(this->m_holdingPoints.departureHoldingPoints(flight));
+}
+
 std::list<std::string> DepartureSequenceControl::allReadyForDepartureFlights() const {
     std::list<std::string> retval;
 
@@ -169,8 +173,50 @@ std::list<std::string> DepartureSequenceControl::allReadyForDepartureFlights() c
 }
 
 bool DepartureSequenceControl::readyForDeparture(const types::Flight& flight) const {
+    auto rwyIt = this->m_departedPerRunway.find(flight.flightPlan().departureRunway());
     auto it = this->m_departureReady.find(flight.callsign());
-    return this->m_departureReady.cend() != it;
+
+    bool ready = this->m_departedPerRunway.cend() != rwyIt && rwyIt->second.callsign == flight.callsign();
+    ready |= this->m_departureReady.cend() != it;
+
+    return ready;
+}
+
+const types::HoldingPoint& DepartureSequenceControl::holdingPoint(const types::Flight& flight) const {
+    static types::HoldingPoint __fallback;
+
+    auto it = this->m_departureReady.find(flight.callsign());
+    if (this->m_departureReady.cend() != it)
+        return it->second.holdingPoint;
+
+    auto rwyIt = this->m_departedPerRunway.find(flight.flightPlan().departureRunway());
+    if (this->m_departedPerRunway.cend() != rwyIt && rwyIt->second.callsign == flight.callsign())
+        return rwyIt->second.holdingPoint;
+
+    return __fallback;
+}
+
+void DepartureSequenceControl::setHoldingPoint(const types::Flight& flight, const std::string& name) {
+    auto it = this->m_departureReady.find(flight.callsign());
+
+    if (this->m_departureReady.end() == it) {
+        bool normalProc = false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
+
+        this->m_departureReady[flight.callsign()] = {
+            flight.callsign(),
+            false,
+            false,
+            normalProc,
+            this->m_holdingPoints.holdingPoint(flight, name),
+            flight.flightPlan().aircraft().wtc(),
+            TimePoint(),
+            flight.currentPosition().coordinate(),
+            0.0_m
+        };
+    }
+    else {
+        it->second.holdingPoint = this->m_holdingPoints.holdingPoint(flight, name);
+    }
 }
 
 void DepartureSequenceControl::departureSpacing(const types::Flight& flight, types::Time& timeSpacing, types::Length& separation) const {

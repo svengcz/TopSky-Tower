@@ -29,6 +29,8 @@ namespace topskytower {
                 std::string          callsign;
                 bool                 reachedHoldingPoint;
                 bool                 passedHoldingPoint;
+                bool                 normalProcedureHoldingPoint;
+                types::HoldingPoint  holdingPoint;
                 types::Aircraft::WTC wtc;
                 TimePoint            actualTakeOffTime;
                 types::Coordinate    lastReportedPosition;
@@ -67,11 +69,29 @@ namespace topskytower {
              */
             std::list<std::string> allReadyForDepartureFlights() const;
             /**
+             * @brief Returns the holding point candidates of this flight
+             * @param[in] flight The requested flight
+             * @return The list of holding points candidates
+             */
+            std::list<types::HoldingPoint> holdingPointCandidates(const types::Flight& flight) const;
+            /**
              * @brief Checks if a flight is ready for departure
              * @param[in] flight The requested flight
              * @return True if it is ready for departure, else false
              */
             bool readyForDeparture(const types::Flight& flight) const;
+            /**
+             * @brief Returns the assigned holding point
+             * @param[in] flight The requested flight
+             * @return The holding point
+             */
+            const types::HoldingPoint& holdingPoint(const types::Flight& flight) const;
+            /**
+             * @brief Sets the new holding point for a specific flights
+             * @param[in] flight The requested flight
+             * @param[in] name The holding point's name
+             */
+            void setHoldingPoint(const types::Flight& flight, const std::string& name);
             /**
              * @brief Returns the required spacings between the requested flight and the last departed one
              * @param[in] flight The requested flight
