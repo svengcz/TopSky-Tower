@@ -114,7 +114,7 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
             this->m_departureReady.erase(rdyIt);
         }
         else if (true == atHoldingPoint) {
-            rdyIt->second.normalProcedureHoldingPoint = system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
+            rdyIt->second.normalProcedureHoldingPoint = false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
             rdyIt->second.holdingPoint = this->m_holdingPoints.holdingPoint(rdyIt->second.normalProcedureHoldingPoint, holdingPointIdx);
         }
     }
