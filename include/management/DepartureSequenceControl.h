@@ -62,6 +62,11 @@ namespace topskytower {
              */
             void removeFlight(const std::string& callsign);
             /**
+             * @brief Returns all flights that are ready for departure
+             * @return All flights that are fully ready
+             */
+            std::list<std::string> allReadyForDepartureFlights() const;
+            /**
              * @brief Checks if a flight is ready for departure
              * @param[in] flight The requested flight
              * @return True if it is ready for departure, else false

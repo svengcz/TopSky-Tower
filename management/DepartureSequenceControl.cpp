@@ -144,6 +144,15 @@ void DepartureSequenceControl::removeFlight(const std::string& callsign) {
     }
 }
 
+std::list<std::string> DepartureSequenceControl::allReadyForDepartureFlights() const {
+    std::list<std::string> retval;
+
+    for (auto it = this->m_departureReady.cbegin(); this->m_departureReady.cend() != it; ++it)
+        retval.push_back(it->first);
+
+    return std::move(retval);
+}
+
 bool DepartureSequenceControl::readyForDeparture(const types::Flight& flight) const {
     auto it = this->m_departureReady.find(flight.callsign());
     return this->m_departureReady.cend() != it;
