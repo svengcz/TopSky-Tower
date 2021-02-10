@@ -29,11 +29,12 @@ namespace topskytower {
              * @brief Defines the different configuration types that can be updated
              */
             enum class UpdateType {
-                All       = 0x0F, /**< All configurations are updated */
+                All       = 0x1F, /**< All configurations are updated */
                 System    = 0x01, /**< The system settings are updated */
                 Airports  = 0x02, /**< The airport settings are updated */
                 Aircrafts = 0x04, /**< The aircraft settings are updated */
-                Runtime   = 0x08  /**< The runtime settings are updated */
+                Runtime   = 0x08, /**< The runtime settings are updated */
+                Metar     = 0x10  /**< The METAR data is updated */
             };
 
         private:
@@ -75,6 +76,12 @@ namespace topskytower {
              * @param[in] configuration The new runtime configuration
              */
             void setRuntimeConfiguration(const types::RuntimeConfiguration& configuration);
+            /**
+             * @brief Sets the new METAR information
+             * @param[in] airport The airport's ICAO
+             * @param[in] data The wind information
+             */
+            void setMetarInformation(const std::string& airport, const types::WindData& data);
             /**
              * @brief Returns the runtime configuration
              * @return The constant reference to the runtime configuration

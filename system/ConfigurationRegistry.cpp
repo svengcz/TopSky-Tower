@@ -114,6 +114,12 @@ void ConfigurationRegistry::setRuntimeConfiguration(const types::RuntimeConfigur
         notification.second(ConfigurationRegistry::UpdateType::Runtime);
 }
 
+void ConfigurationRegistry::setMetarInformation(const std::string& airport, const types::WindData& data) {
+    this->m_runtimeConfig.windInformation[airport] = data;
+    for (const auto& notification : std::as_const(this->m_notificationCallbacks))
+        notification.second(ConfigurationRegistry::UpdateType::Metar);
+}
+
 const types::RuntimeConfiguration& ConfigurationRegistry::runtimeConfiguration() const {
     return this->m_runtimeConfig;
 }
