@@ -118,7 +118,7 @@ void CMACControl::updateFlight(const types::Flight& flight, types::Flight::Type 
     }
     /* check if the flight crossed a runway exit */
     else if (false == it->second.behindHoldingPoint) {
-        if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, 0.0_m, false, 15.0_deg)) {
+        if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, false, 0.0_m, 15.0_deg)) {
             it->second.expectedCommand = types::FlightPlan::AtcCommand::TaxiIn;
             it->second.behindHoldingPoint = true;
         }

@@ -216,7 +216,7 @@ namespace topskytower {
 
                 return heading.abs() <= threshold;
             }
-            bool passedHoldingPoint(const types::Flight& flight, types::Flight::Type type, const types::Length& deadbandWidth, bool runwayBound,
+            bool passedHoldingPoint(const types::Flight& flight, types::Flight::Type type, bool runwayBound, const types::Length& deadbandWidth,
                                     const types::Angle& threshold) {
                 /* find the next holding point */
                 auto node = this->findNextHoldingPoints(flight, type, runwayBound);

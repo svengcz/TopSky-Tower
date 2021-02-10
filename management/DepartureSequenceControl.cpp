@@ -83,7 +83,7 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
     bool atHoldingPoint = false, passedHoldingPoint = false;
     if (true == this->m_holdingPoints.reachedHoldingPoint(flight, type, true, system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband, 20_deg))
         atHoldingPoint = true;
-    else if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband, true, 20_deg))
+    else if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, true, system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband, 20_deg))
         passedHoldingPoint = true;
 
     auto rdyIt = this->m_departureReady.find(flight.callsign());
