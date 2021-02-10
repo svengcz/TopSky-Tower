@@ -168,6 +168,9 @@ namespace topskytower {
                     delete this->m_lvpHoldingPointTreeAdaptor;
                 this->m_lvpHoldingPointTreeAdaptor = nullptr;
 
+                this->m_normalHoldingPointTree.holdingPoints.clear();
+                this->m_lvpHoldingPointTree.holdingPoints.clear();
+
                 const auto& config = system::ConfigurationRegistry::instance().airportConfiguration(this->m_airportIcao);
                 if (false == config.valid || 0 == config.aircraftStands.size())
                     return;
