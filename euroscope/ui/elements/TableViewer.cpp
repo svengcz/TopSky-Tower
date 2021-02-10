@@ -84,9 +84,9 @@ void TableViewer::setElement(std::size_t rowIdx, std::size_t columnIdx, const st
 
         auto cit = this->m_rowContent.begin();
         std::advance(cit, rowIdx);
-        (*cit)[columnIdx] = element;
 
-        this->m_calculateArea = true;
+        this->m_calculateArea = (*cit)[columnIdx].length() < element.length();
+        (*cit)[columnIdx] = element;
     }
 }
 
