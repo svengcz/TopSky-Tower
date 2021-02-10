@@ -122,7 +122,7 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
     /* check if the flight departed -> update the internal tracking */
     else {
         auto rwyIt = this->m_departedPerRunway.find(flight.flightPlan().departureRunway());
-        if (this->m_departedPerRunway.end() != rwyIt) {
+        if (this->m_departedPerRunway.end() != rwyIt && flight.callsign() == rwyIt->second.callsign) {
             rwyIt->second.flewDistance += rwyIt->second.lastReportedPosition.distanceTo(flight.currentPosition().coordinate());
             rwyIt->second.lastReportedPosition = flight.currentPosition().coordinate();
         }
