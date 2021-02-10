@@ -80,9 +80,10 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
         return;
 
     /* get the flags to check the holding points */
+    std::size_t holdingPointIdx;
     bool atHoldingPoint = false, passedHoldingPoint = false;
     auto deadband = system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband;
-    if (true == this->m_holdingPoints.reachedHoldingPoint(flight, type, true, deadband, 20_deg, nullptr))
+    if (true == this->m_holdingPoints.reachedHoldingPoint(flight, type, true, deadband, 20_deg, &holdingPointIdx))
         atHoldingPoint = true;
     else if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, true, deadband, 20_deg, nullptr))
         passedHoldingPoint = true;
@@ -112,13 +113,21 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
         else if (false == flight.readyForDeparture() && false == atHoldingPoint && false == rdyIt->second.passedHoldingPoint) {
             this->m_departureReady.erase(rdyIt);
         }
+        else if (true == atHoldingPoint) {
+            rdyIt->second.normalProcedureHoldingPoint = system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
+            rdyIt->second.holdingPoint = this->m_holdingPoints.holdingPoint(rdyIt->second.normalProcedureHoldingPoint, holdingPointIdx);
+        }
     }
     /* check if it is a candidate to be departure ready */
     else if (40_kn > flight.groundSpeed() && (true == flight.readyForDeparture() || true == atHoldingPoint)) {
+        bool normalProcedure = false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
+
         DepartureInformation info = {
             flight.callsign(),
             atHoldingPoint,
             passedHoldingPoint,
+            normalProcedure,
+            this->m_holdingPoints.holdingPoint(normalProcedure, holdingPointIdx),
             flight.flightPlan().aircraft().wtc(),
             TimePoint()
         };
