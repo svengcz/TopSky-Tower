@@ -83,10 +83,12 @@ namespace topskytower {
          * @brief Defines a holding point to enter a runway
          */
         struct HoldingPoint {
-            std::string       runway;        /**< Defines the active runway for this holding point */
-            bool              lowVisibility; /**< Defines if the holding point is used during low visibility */
-            types::Coordinate holdingPoint;  /**< Defines the center position of the holding point */
-            types::Angle      heading;       /**< Defines the heading to the runway */
+            std::string          name;            /**< Defines the holding point's name */
+            std::string          runway;          /**< Defines the active runway for this holding point */
+            bool                 lowVisibility;   /**< Defines if the holding point is used during low visibility */
+            types::Aircraft::WTC maxDepartureWtc; /**< Defines the maximum WTC for departures of this holding point*/
+            types::Coordinate    holdingPoint;    /**< Defines the center position of the holding point */
+            types::Angle         heading;         /**< Defines the heading to the runway */
         };
 
         /**

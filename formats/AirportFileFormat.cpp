@@ -383,10 +383,15 @@ bool AirportFileFormat::parsePriorities(const std::vector<std::string>& lines, s
 }
 
 bool AirportFileFormat::parseHoldingPoint(const std::vector<std::string>& elements, types::HoldingPoint& holdingPoint) {
+    holdingPoint.name = elements[3];
     holdingPoint.lowVisibility = elements[1][0] == 'L';
     holdingPoint.runway = elements[2];
-    holdingPoint.holdingPoint = types::Coordinate(elements[4], elements[3]);
-    holdingPoint.heading = holdingPoint.holdingPoint.bearingTo(types::Coordinate(elements[6], elements[5]));
+    std::list<types::Aircraft::WTC> wtc;
+    if (false == AirportFileFormat::parseWtc(elements[4], wtc) || 0 == wtc.size())
+        return false;
+    holdingPoint.maxDepartureWtc = wtc.front();
+    holdingPoint.holdingPoint = types::Coordinate(elements[6], elements[5]);
+    holdingPoint.heading = holdingPoint.holdingPoint.bearingTo(types::Coordinate(elements[8], elements[7]));
     return true;
 }
 
@@ -399,7 +404,7 @@ bool AirportFileFormat::parseTaxiways(const std::vector<std::string>& lines, std
             continue;
 
         auto split = helper::String::splitString(line, ":");
-        if (7 == split.size() && "HOLD" == split[0]) {
+        if (9 == split.size() && "HOLD" == split[0]) {
             types::HoldingPoint holdingPoint;
             if (false == AirportFileFormat::parseHoldingPoint(split, holdingPoint)) {
                 this->m_errorLine = lineOffset;

@@ -232,9 +232,9 @@ namespace topskytower {
          * </table>
          *
          * The taxiways block defines the taxiway structure of the airport.
-         * It is used to configure the safety net functions for the ground
+         * It is used to configure the safety net functions for the ground.
          * @code{.xml}
-         * HOLD:LVP:RUNWAY:HOLDINGPOINT_LAT:HOLDINGPOINT_LON:RUNWAYDIRECTION_LAT:RUNWAYDIRECTION_LON
+         * HOLD:LVP:RUNWAY:NAME:WTC:HOLDINGPOINT_LAT:HOLDINGPOINT_LON:RUNWAYDIRECTION_LAT:RUNWAYDIRECTION_LON
          * @endcode
          *
          * <table>
@@ -250,6 +250,16 @@ namespace topskytower {
          *   <tr>
          *     <td>RUNWAY</td>
          *     <td>The runway's name that activates the holding point</td>
+         *     <td></td><td></td>
+         *   </tr>
+         *   <tr>
+         *     <td>NAME</td>
+         *     <td>The holding point's name</td>
+         *     <td></td><td></td>
+         *   </tr>
+         *   <tr>
+         *     <td>WTC</td>
+         *     <td>The maximum allowed WTC for departures at this holding point</td>
          *     <td></td><td></td>
          *   </tr>
          *   <tr>
