@@ -177,6 +177,11 @@ namespace topskytower {
              */
             surveillance::ARIWSControl& ariwsControl() const;
             /**
+             * @brief Returns the departure sequence control
+             * @return The departure sequence control
+             */
+            management::DepartureSequenceControl& departureSequenceControl() const;
+            /**
              * @brief Returns the CMAC control
              * @return The CMAC control
              */

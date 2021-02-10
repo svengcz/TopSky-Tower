@@ -688,6 +688,10 @@ surveillance::ARIWSControl& RadarScreen::ariwsControl() const {
     return *this->m_ariwsControl;
 }
 
+management::DepartureSequenceControl& RadarScreen::departureSequenceControl() const {
+    return *this->m_departureControl;
+}
+
 surveillance::CMACControl& RadarScreen::cmacControl() const {
     return *this->m_cmacControl;
 }
