@@ -22,6 +22,7 @@ namespace topskytower {
             std::list<std::string> m_activeDepartures;
             TableViewer*           m_departureTable;
 
+            std::string translate(types::FlightPlan::AtcCommand command);
             bool updateRow(const types::Flight& flight, std::size_t row);
 
         public:

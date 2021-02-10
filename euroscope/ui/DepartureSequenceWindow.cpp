@@ -23,7 +23,7 @@ using namespace topskytower::types;
 DepartureSequenceWindow::DepartureSequenceWindow(RadarScreen* parent) :
         InsetWindow("DEPARTURES", parent, Gdiplus::RectF(100, 100, 400, 300), false, false),
         m_activeDepartures(),
-        m_departureTable(new TableViewer(this->m_parent, { "C/S", "RWY", "SEP", "TIME" },
+        m_departureTable(new TableViewer(this->m_parent, { "C/S", "SID", "RWY", "H/P", "STS", "SEP", "TIME" },
                                         Gdiplus::RectF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y - 2.0f,
                                                        this->m_contentArea.Width, this->m_contentArea.Height))) {
     this->m_departureTable->setMaxVisibleRows(10);
@@ -37,9 +37,34 @@ DepartureSequenceWindow::~DepartureSequenceWindow() {
     this->m_elements.clear();
 }
 
+std::string DepartureSequenceWindow::translate(types::FlightPlan::AtcCommand command) {
+    switch (command) {
+    case types::FlightPlan::AtcCommand::StartUp:
+        return "ST-UP";
+    case types::FlightPlan::AtcCommand::Deicing:
+        return "DEICE";
+    case types::FlightPlan::AtcCommand::Pushback:
+        return "PUSH";
+    case types::FlightPlan::AtcCommand::TaxiOut:
+        return "TAXI";
+    case types::FlightPlan::AtcCommand::LineUp:
+        return "LI-UP";
+    case types::FlightPlan::AtcCommand::Departure:
+        return "DEPA";
+    default:
+        return "";
+    }
+}
+
 bool DepartureSequenceWindow::updateRow(const types::Flight& flight, std::size_t row) {
     types::Length separation;
     types::Time spacing;
+
+    /* update some flight information */
+    this->m_departureTable->setElement(row, 1, flight.flightPlan().departureRoute());
+    this->m_departureTable->setElement(row, 2, flight.flightPlan().departureRunway());
+    this->m_departureTable->setElement(row, 3, this->m_parent->departureSequenceControl().holdingPoint(flight).name);
+    this->m_departureTable->setElement(row, 4, this->translate(flight.flightPlan().departureFlag()));
 
     this->m_parent->departureSequenceControl().departureSpacing(flight, spacing, separation);
 
@@ -49,10 +74,10 @@ bool DepartureSequenceWindow::updateRow(const types::Flight& flight, std::size_t
         if (0.0_m != separation) {
             std::stringstream stream;
             stream << std::fixed << std::setprecision(1) << separation.convert(types::nauticmile);
-            this->m_departureTable->setElement(row, 2, stream.str());
+            this->m_departureTable->setElement(row, 5, stream.str());
         }
         else {
-            this->m_departureTable->setElement(row, 2, " ");
+            this->m_departureTable->setElement(row, 5, " ");
         }
 
         /* update the values for the spacing */
@@ -62,10 +87,10 @@ bool DepartureSequenceWindow::updateRow(const types::Flight& flight, std::size_t
 
             std::stringstream stream;
             stream << mins << ":" << std::setw(2) << std::setfill('0') << seconds;
-            this->m_departureTable->setElement(row, 2, stream.str());
+            this->m_departureTable->setElement(row, 6, stream.str());
         }
         else {
-            this->m_departureTable->setElement(row, 3, " ");
+            this->m_departureTable->setElement(row, 6, " ");
         }
 
         return true;
@@ -120,7 +145,6 @@ bool DepartureSequenceWindow::visualize(Gdiplus::Graphics* graphics) {
 
         if (true == this->updateRow(flight, idx)) {
             this->m_departureTable->setElement(idx, 0, departure);
-            this->m_departureTable->setElement(idx, 1, flight.flightPlan().departureRunway());
             this->m_activeDepartures.push_back(departure);
         }
         else {
