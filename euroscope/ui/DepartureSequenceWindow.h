@@ -37,6 +37,13 @@ namespace topskytower {
             ~DepartureSequenceWindow();
 
             /**
+             * @brief Handles the click events
+             * @param[in] pt The position of the mouse
+             * @param[in] button The clicked mouse button
+             * @return True if the click was handled, else false
+             */
+            bool click(const Gdiplus::PointF& pt, UiManager::MouseButton button) override;
+            /**
              * @brief Visualizes the window
              * @param[in] graphics The graphics container
              * @return True if the element was visualized, else false

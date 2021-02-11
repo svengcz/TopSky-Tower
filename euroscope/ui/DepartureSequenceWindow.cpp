@@ -13,6 +13,7 @@
 
 #include <system/ConfigurationRegistry.h>
 
+#include "../PlugIn.h"
 #include "../RadarScreen.h"
 #include "DepartureSequenceWindow.h"
 
@@ -35,6 +36,37 @@ DepartureSequenceWindow::~DepartureSequenceWindow() {
     if (0 != this->m_elements.size())
         delete this->m_elements.front();
     this->m_elements.clear();
+}
+
+bool DepartureSequenceWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
+    if (true == UiElement::isInRectangle(pt, this->m_contentArea) && true == this->m_departureTable->click(pt, button)) {
+        std::size_t row, column;
+
+        if (true == this->m_departureTable->clickedEntry(row, column)) {
+            auto callsign = this->m_departureTable->entry(row, 0);
+
+            int tagId = 0;
+            if (3 == column)
+                tagId = static_cast<int>(PlugIn::TagItemFunction::HoldingPointCandidatesMenu);
+            else if (4 == column)
+                tagId = static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusMenu);
+
+            RadarScreen::EuroscopeEvent event = {
+                tagId,
+                callsign,
+                "",
+                { static_cast<int>(pt.X), static_cast<int>(pt.Y) },
+                { static_cast<int>(pt.X), static_cast<int>(pt.Y),
+                  static_cast<int>(pt.X) + 100, static_cast<int>(pt.Y) + 100 },
+            };
+
+            this->m_parent->registerEuroscopeEvent(std::move(event));
+        }
+
+        return true;
+    }
+
+    return InsetWindow::click(pt, button);
 }
 
 std::string DepartureSequenceWindow::translate(types::FlightPlan::AtcCommand command) {
