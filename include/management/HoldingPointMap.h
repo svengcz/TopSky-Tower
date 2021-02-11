@@ -298,6 +298,8 @@ namespace topskytower {
              * @return The requested holding point
              */
             const types::HoldingPoint& holdingPoint(const types::Flight& flight, const std::string& name) const {
+                static types::HoldingPoint __fallback;
+
                 std::size_t index = std::numeric_limits<std::size_t>::max();
                 types::Length distance = 999 * types::nauticmile;
                 const std::vector<T>* holdingPoints;
@@ -317,7 +319,10 @@ namespace topskytower {
                     }
                 }
 
-                return (*holdingPoints)[index];
+                if (holdingPoints->size() > index)
+                    return (*holdingPoints)[index];
+                else
+                    return __fallback;
             }
             /**
              * @brief Returns the center of the holding point map
