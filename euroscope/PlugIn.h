@@ -116,8 +116,8 @@ namespace topskytower {
             void pdcMessageReceived();
             void updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std::string_view& view,
                                     const types::Flight& flight, bool arrival);
-            void updateStand(const types::Flight& flight, const std::string& stand);
-            void updateHoldingPoint(const types::Flight& flight, const std::string& holdingPoint);
+            void updateStand(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
+            void updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
 
         public:
             /**

@@ -327,21 +327,32 @@ std::string PlugIn::findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan
     return "";
 }
 
-void PlugIn::updateStand(const types::Flight& flight, const std::string& stand) {
-    for (auto& screen : this->m_screens) {
-        auto type = screen->identifyType(flight);
+void PlugIn::updateStand(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan) {
+    auto stand = PlugIn::findScratchPadEntry(plan, "GRP", "S");
 
-        if (types::Flight::Type::Unknown != type)
-            screen->standControl().assignManually(flight, type, stand);
+    if (0 != stand.length()) {
+        std::string annotation = "s/" + stand + "/s";
+        plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), annotation.c_str());
+
+        for (auto& screen : this->m_screens) {
+            auto type = screen->identifyType(flight);
+
+            if (types::Flight::Type::Unknown != type)
+                screen->standControl().assignManually(flight, type, stand);
+        }
     }
 }
 
-void PlugIn::updateHoldingPoint(const types::Flight& flight, const std::string& holdingPoint) {
-    for (auto& screen : this->m_screens) {
-        auto type = screen->identifyType(flight);
+void PlugIn::updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan) {
+    auto holdingPoint = PlugIn::findScratchPadEntry(plan, "TST", "HP");
 
-        if (types::Flight::Type::Unknown != type)
-            screen->departureSequenceControl().setHoldingPoint(flight, holdingPoint);
+    if (0 != holdingPoint.length()) {
+        for (auto& screen : this->m_screens) {
+            auto type = screen->identifyType(flight);
+
+            if (types::Flight::Type::Unknown != type)
+                screen->departureSequenceControl().setHoldingPoint(flight, holdingPoint);
+        }
     }
 }
 
@@ -492,14 +503,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     }
     case PlugIn::TagItemElement::AircraftStand:
     {
-        auto stand = PlugIn::findScratchPadEntry(radarTarget.GetCorrelatedFlightPlan(), "GRP", "S");
-        if (0 != stand.length()) {
-            std::string annotation = "s/" + stand + "/s";
-            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), annotation.c_str());
-            this->updateStand(flight, stand);
-        }
-
-        stand = flightScreen->standControl().stand(flight);
+        auto stand = flightScreen->standControl().stand(flight);
         if (0 != stand.length()) {
             /* validate that no other controller published a stand already */
             std::strcpy(itemString, stand.c_str());
@@ -585,17 +589,11 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
         break;
     case PlugIn::TagItemElement::HoldingPoint:
-    {
-        auto holdingPoint = PlugIn::findScratchPadEntry(radarTarget.GetCorrelatedFlightPlan(), "TST", "HP");
-        if (0 != holdingPoint.length())
-            this->updateHoldingPoint(flight, holdingPoint);
-
         if (true == flightScreen->departureSequenceControl().readyForDeparture(flight)) {
             auto& point = flightScreen->departureSequenceControl().holdingPoint(flight);
             std::strcat(itemString, point.name.c_str());
         }
         break;
-    }
     default:
         break;
     }
@@ -1281,6 +1279,9 @@ void PlugIn::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPl
     /* update the internal structures that are effected by the flight plan changes */
     auto flight = Converter::convert(flightPlan.GetCorrelatedRadarTarget());
     system::FlightRegistry::instance().updateFlight(flight);
+
+    this->updateHoldingPoint(flight, flightPlan);
+    this->updateStand(flight, flightPlan);
 }
 
 void PlugIn::OnFlightPlanDisconnect(EuroScopePlugIn::CFlightPlan flightPlan) {
