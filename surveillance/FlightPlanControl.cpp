@@ -19,9 +19,19 @@ using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
 FlightPlanControl::FlightPlanControl() :
-        m_flightChecks() { }
+        m_flightChecks() {
+    system::ConfigurationRegistry::instance().registerNotificationCallback(this, &FlightPlanControl::reinitialize);
+    this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
+}
 
 FlightPlanControl::~FlightPlanControl() {
+    this->m_flightChecks.clear();
+    system::ConfigurationRegistry::instance().deleteNotificationCallback(this);
+}
+
+void FlightPlanControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
+    if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::System != type)
+        return;
     this->m_flightChecks.clear();
 }
 

@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 
+#include <system/ConfigurationRegistry.h>
 #include <types/Flight.h>
 
 namespace topskytower {
@@ -95,6 +96,8 @@ namespace topskytower {
             std::map<std::string, FlightPlanStatus> m_flightChecks;
 
             FlightPlanControl();
+
+            void reinitialize(system::ConfigurationRegistry::UpdateType type);
 
         public:
             /**
