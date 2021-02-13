@@ -306,7 +306,7 @@ bool AirportFileFormat::parsePriorities(const std::vector<std::string>& elements
 
     priorities.priority = std::atoi(elements[1].c_str());
     for (std::size_t i = 2; i < elements.size(); ++i)
-        priorities.stands.push_back(std::move(elements[i]));
+        priorities.stands.push_back(elements[i]);
 
     return true;
 }
