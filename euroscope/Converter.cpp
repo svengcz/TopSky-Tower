@@ -179,15 +179,17 @@ void Converter::convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, type
 types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     types::FlightPlan retval;
 
-    switch (plan.GetFlightPlanData().GetPlanType()[0]) {
-    case 'V':
-        retval.setType(types::FlightPlan::Type::VFR);
-        break;
-    case 'I':
-        retval.setType(types::FlightPlan::Type::IFR);
-        break;
-    default:
-        break;
+    if (nullptr != plan.GetFlightPlanData().GetPlanType() && 0 != std::strlen(plan.GetFlightPlanData().GetPlanType())) {
+        switch (plan.GetFlightPlanData().GetPlanType()[0]) {
+        case 'V':
+            retval.setType(types::FlightPlan::Type::VFR);
+            break;
+        case 'I':
+            retval.setType(types::FlightPlan::Type::IFR);
+            break;
+        default:
+            break;
+        }
     }
 
     /* translate the capabilities-entry */
@@ -301,14 +303,18 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target) {
         }
 
         /* check if the flight is marked by a controller */
-        std::string_view annotation(flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Marker)));
-        if (std::string::npos != annotation.find('K'))
-            retval.setMarkedByController(true);
+        if (nullptr != flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Marker))) {
+            std::string_view annotation(flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Marker)));
+            if (std::string::npos != annotation.find('K'))
+                retval.setMarkedByController(true);
+        }
 
         /* analyze the scratch pad and update it if needed */
-        std::string scratch = flightPlan.GetControllerAssignedData().GetScratchPadString();
-        if (true == __analyzeScratchPad(scratch, retval))
-            flightPlan.GetControllerAssignedData().SetScratchPadString(scratch.c_str());
+        if (nullptr != flightPlan.GetControllerAssignedData().GetScratchPadString()) {
+            std::string scratch = flightPlan.GetControllerAssignedData().GetScratchPadString();
+            if (true == __analyzeScratchPad(scratch, retval))
+                flightPlan.GetControllerAssignedData().SetScratchPadString(scratch.c_str());
+        }
 
         /* create the flight plan */
         retval.setFlightPlan(Converter::convert(flightPlan));
