@@ -55,9 +55,29 @@ PlugIn::PlugIn() :
         m_settingsPath(),
         m_screens(),
         m_uiCallback(),
-        m_pdcNotificationSound() {
+        m_pdcNotificationSound(),
+        m_windowClass{
+            NULL,
+            HiddenWindow,
+            NULL,
+            NULL,
+            GetModuleHandle(NULL),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            "TSTHiddenWindowClass"
+        },
+        m_hiddenWindow(nullptr) {
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION + " loaded").c_str(),
                              false, false, false, false, false);
+
+    /* register the window class and create the window */
+    RegisterClass(&this->m_windowClass);
+    this->m_hiddenWindow = CreateWindow("TSTHiddenWindowClass", "TSTHiddenWindow", NULL, 0, 0, 0, 0, NULL, NULL,
+                                        GetModuleHandle(NULL), reinterpret_cast<LPVOID>(this));
+    if (S_OK != GetLastError())
+        this->DisplayUserMessage("Message", PLUGIN_NAME, "Unable to open RDF communication", true, true, true, false, false);
 
     if (0 != curl_global_init(CURL_GLOBAL_ALL)) {
         this->DisplayUserMessage("Message", PLUGIN_NAME, "Unable to initialize the network stack!",

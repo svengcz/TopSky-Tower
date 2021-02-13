@@ -18,6 +18,7 @@
 #include <types/AirportConfiguration.h>
 #include <types/SystemConfiguration.h>
 
+#include "HiddenWindow.h"
 #include "RadarScreen.h"
 
 namespace topskytower {
@@ -102,6 +103,8 @@ namespace topskytower {
             std::list<RadarScreen*>                 m_screens;
             std::function<void(const std::string&)> m_uiCallback;
             std::string                             m_pdcNotificationSound;
+            WNDCLASS                                m_windowClass;
+            HWND                                    m_hiddenWindow;
 
             static std::string findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker,
                                                    const std::string& entry);
