@@ -9,13 +9,10 @@
  *   GNU General Public License v3 (GPLv3)
  */
 
-#define _USE_MATH_DEFINES
 #include <algorithm>
-#include <cmath>
 
 #include <GeographicLib/Geodesic.hpp>
 
-#include <helper/Exception.h>
 #include <helper/Math.h>
 #include <helper/String.h>
 #include <types/Coordinate.h>
@@ -35,7 +32,7 @@ static __inline Angle __coordinateToDecimal(const std::string& coordinate) {
     /* split the coordinate and validate the number of elements */
     auto split = helper::String::splitString(coordinate, ".");
     if (4 != split.size())
-        helper::Exception("Coordinate", "Unable to convert string coordinate to decimal. Expecting 4 entries, splitted by '.'");
+        return 0.0_deg;
 
     /* get the sign factor depending on the global direction flag */
     float signFactor = 1.0;
