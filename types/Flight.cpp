@@ -39,6 +39,7 @@ Flight::Flight(const std::string& callsign) :
         m_onMissedApproach(false),
         m_irregularFlight(false),
         m_establishedOnILS(false),
+        m_isTrackedByController(false),
         m_isTrackedByOtherController(false),
         m_handoffReceivedBy() { }
 
