@@ -40,6 +40,17 @@ namespace topskytower {
                 types::Length     upperAltitude; /**< The upper border of the NOTAM handled area */
                 types::Coordinate coordinate;    /**< The coordinate of the of the NOTAM */
                 types::Length     radius;        /**< The active radius of the NOTAM */
+
+                NotamInformation() :
+                        fir(),
+                        code(),
+                        flightRule(0),
+                        purpose(),
+                        scope(),
+                        lowerAltitude(),
+                        upperAltitude(),
+                        coordinate(),
+                        radius() { }
             };
 
             /**
@@ -52,6 +63,14 @@ namespace topskytower {
                 TimePoint        endTime;     /**< The NOTAM's end time */
                 std::string      message;     /**< The NOTAM's message */
                 std::string      rawMessage;  /**< The raw message received from the server */
+
+                Notam() :
+                        title(),
+                        information(),
+                        startTime(),
+                        endTime(),
+                        message(),
+                        rawMessage() { }
             };
 
         private:

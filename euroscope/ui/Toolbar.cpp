@@ -30,11 +30,6 @@
 using namespace topskytower;
 using namespace topskytower::euroscope;
 
-Toolbar::Level::Level() :
-        active(false),
-        elements(),
-        rectangle() { }
-
 Toolbar::Toolbar(RadarScreen* parent, UiManager* manager) :
         UiElement(parent, Gdiplus::RectF()),
         m_toplevel(nullptr),

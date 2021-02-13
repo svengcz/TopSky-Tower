@@ -48,6 +48,13 @@ namespace topskytower {
                 Text                   visualization;
                 Gdiplus::RectF         rectangle;
                 std::shared_ptr<Level> child;
+
+                Element() :
+                        clickId(ClickId::Undefined),
+                        text(),
+                        visualization(),
+                        rectangle(),
+                        child() { }
             };
 
             struct Level {
@@ -55,7 +62,10 @@ namespace topskytower {
                 std::list<Element> elements;
                 Gdiplus::RectF     rectangle;
 
-                Level();
+                Level() :
+                        active(false),
+                        elements(),
+                        rectangle() { }
             };
 
             UiManager*                m_manager;

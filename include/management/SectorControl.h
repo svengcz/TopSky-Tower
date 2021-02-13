@@ -43,6 +43,19 @@ namespace topskytower {
                 types::Flight                        flight;
                 std::shared_ptr<SectorControl::Node> nextSector;
                 std::string                          handoffReceivedBy;
+
+                FlightData() :
+                        manuallyChanged(false),
+                        handoffPerformed(false),
+                        flight(),
+                        nextSector(),
+                        handoffReceivedBy() { }
+                FlightData(const types::Flight& flight, const std::shared_ptr<SectorControl::Node>& node) :
+                        manuallyChanged(false),
+                        handoffPerformed(false),
+                        flight(flight),
+                        nextSector(node),
+                        handoffReceivedBy() { }
             };
 
             static void insertNode(std::list<std::shared_ptr<Node>>& nodes, const types::Sector& sector);
