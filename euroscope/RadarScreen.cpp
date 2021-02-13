@@ -35,7 +35,7 @@ RadarScreen::RadarScreen() :
         m_sectorFileIsMissing(false),
         m_airport(),
         m_elevation(),
-        m_userInterface(this),
+        m_userInterface(nullptr),
         m_sectorControl(nullptr),
         m_standControl(nullptr),
         m_departureControl(nullptr),
@@ -70,6 +70,8 @@ RadarScreen::~RadarScreen() {
         delete this->m_sectorControl;
     if (nullptr != this->m_standControl)
         delete this->m_standControl;
+    if (nullptr != this->m_userInterface)
+        delete this->m_userInterface;
 }
 
 void RadarScreen::OnAsrContentLoaded(bool loaded) {
@@ -99,6 +101,12 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
                                                   true, true, false, false, false);
         }
 
+        bool hideWindows = false;
+        value = this->GetDataFromAsr("HideWindows");
+        if (nullptr != value)
+            hideWindows = 0 != std::strlen(value) && '1' == value[0];
+        this->m_userInterface = new UiManager(hideWindows, this);
+
         if (true == system::ConfigurationRegistry::instance().errorFound()) {
             auto viewer = new ConfigurationErrorWindow(this);
             viewer->setActive(true);
@@ -117,8 +125,10 @@ void RadarScreen::OnClickScreenObject(int objectType, const char* objectId, POIN
     case RadarScreen::ClickId::UserWindow:
     {
         /* get the click point and forward it to the UI manager */
-        Gdiplus::PointF point(static_cast<Gdiplus::REAL>(pt.x), static_cast<Gdiplus::REAL>(pt.y));
-        this->m_userInterface.click(objectId, point, static_cast<UiManager::MouseButton>(button));
+        if (nullptr != this->m_userInterface) {
+            Gdiplus::PointF point(static_cast<Gdiplus::REAL>(pt.x), static_cast<Gdiplus::REAL>(pt.y));
+            this->m_userInterface->click(objectId, point, static_cast<UiManager::MouseButton>(button));
+        }
         break;
     }
     case RadarScreen::ClickId::StandSelect:
@@ -138,19 +148,19 @@ void RadarScreen::OnClickScreenObject(int objectType, const char* objectId, POIN
     }
 
     /* reset UI elements, if needed */
-    if (RadarScreen::ClickId::UserWindow != static_cast<RadarScreen::ClickId>(objectType))
-        this->m_userInterface.resetClickStates();
+    if (RadarScreen::ClickId::UserWindow != static_cast<RadarScreen::ClickId>(objectType) && nullptr != this->m_userInterface)
+        this->m_userInterface->resetClickStates();
 }
 
 void RadarScreen::OnMoveScreenObject(int objectType, const char* objectId, POINT pt, RECT area, bool released) {
     (void)area;
 
     /* forward to UI manager */
-    if (RadarScreen::ClickId::UserWindow == static_cast<RadarScreen::ClickId>(objectType)) {
+    if (RadarScreen::ClickId::UserWindow == static_cast<RadarScreen::ClickId>(objectType) && nullptr != this->m_userInterface) {
         /* get the click point */
         Gdiplus::PointF point(static_cast<Gdiplus::REAL>(pt.x), static_cast<Gdiplus::REAL>(pt.y));
 
-        this->m_userInterface.move(objectId, point, released);
+        this->m_userInterface->move(objectId, point, released);
     }
 }
 
@@ -620,7 +630,8 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     this->m_lastRenderingTime = std::chrono::system_clock::now();
 
     /* visualize everything of the UI manager */
-    this->m_userInterface.visualize(&graphics);
+    if (nullptr != this->m_userInterface)
+        this->m_userInterface->visualize(&graphics);
 
     /* check if we need to initialize the system */
     this->initialize();
@@ -714,7 +725,7 @@ const std::string& RadarScreen::airportIcao() const {
 }
 
 UiManager& RadarScreen::uiManager() {
-    return this->m_userInterface;
+    return *this->m_userInterface;
 }
 
 bool RadarScreen::isInitialized() const {

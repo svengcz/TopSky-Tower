@@ -18,14 +18,18 @@
 
 using namespace topskytower::euroscope;
 
-UiManager::UiManager(RadarScreen* parent) :
+UiManager::UiManager(bool hideWindows, RadarScreen* parent) :
         m_parent(parent),
+        m_hideWindows(hideWindows),
         m_toolbar(nullptr),
-        m_departureWindow(new DepartureSequenceWindow(parent)),
+        m_departureWindow(nullptr),
         m_customWindows(),
         m_renderQueue(),
         m_newWindowsQueue() {
-    this->m_renderQueue.push_back(this->m_departureWindow);
+    if (false == this->m_hideWindows) {
+        this->m_departureWindow = new DepartureSequenceWindow(parent);
+        this->m_renderQueue.push_back(this->m_departureWindow);
+    }
 }
 
 UiManager::~UiManager() {
@@ -133,9 +137,11 @@ void UiManager::visualize(Gdiplus::Graphics* graphics) {
     if (nullptr == this->m_parent)
         return;
 
-    if (nullptr == this->m_toolbar)
-        this->m_toolbar = new Toolbar(this->m_parent, this);
-    this->m_toolbar->visualize(graphics);
+    if (false == this->m_hideWindows) {
+        if (nullptr == this->m_toolbar)
+            this->m_toolbar = new Toolbar(this->m_parent, this);
+        this->m_toolbar->visualize(graphics);
+    }
 
     if (0 != this->m_newWindowsQueue.size()) {
         this->m_renderQueue.insert(this->m_renderQueue.end(), this->m_newWindowsQueue.begin(), this->m_newWindowsQueue.end());

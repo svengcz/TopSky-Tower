@@ -45,6 +45,7 @@ namespace topskytower {
 
         private:
             RadarScreen*                        m_parent;
+            bool                                m_hideWindows;
             Toolbar*                            m_toolbar;
             DepartureSequenceWindow*            m_departureWindow;
             std::map<std::string, InsetWindow*> m_customWindows;
@@ -58,9 +59,10 @@ namespace topskytower {
         public:
             /**
              * @brief Creates a new UI manager that is responsible for the corresponding RADAR screen
+             * @param[in] hideWindows True if the toolbar needs to be hidden, else false
              * @param[in] parent The corresponding RADAR screen
              */
-            UiManager(RadarScreen* parent);
+            UiManager(bool hideWindows, RadarScreen* parent);
             /**
              * @brief Destroys the manager and all internal structures
              */

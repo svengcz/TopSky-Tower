@@ -58,7 +58,7 @@ namespace topskytower {
             bool                                           m_sectorFileIsMissing;
             std::string                                    m_airport;
             types::Length                                  m_elevation;
-            UiManager                                      m_userInterface;
+            UiManager*                                     m_userInterface;
             management::SectorControl*                     m_sectorControl;
             management::StandControl*                      m_standControl;
             management::DepartureSequenceControl*          m_departureControl;
