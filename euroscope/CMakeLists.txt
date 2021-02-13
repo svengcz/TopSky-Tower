@@ -27,6 +27,8 @@ INCLUDE_DIRECTORIES(
 SET(SOURCE_FILES
     Converter.cpp
     Converter.h
+    HiddenWindow.cpp
+    HiddenWindow.h
     PlugIn.cpp
     PlugIn.h
     RadarScreen.cpp
