@@ -41,9 +41,16 @@ namespace topskytower {
             struct StandData : public types::Stand {
                 float                                                    cartesianPosition[2];
                 std::list<std::pair<types::Flight, types::Flight::Type>> occupancyFlights;
+
+                StandData() :
+                        cartesianPosition{ 0.0f, 0.0f },
+                        occupancyFlights() { }
             };
+
             struct StandTree {
                 std::map<std::string, StandData> stands;
+
+                StandTree() : stands() { }
 
                 inline std::size_t kdtree_get_point_count() const {
                     return stands.size();

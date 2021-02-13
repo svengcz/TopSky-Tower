@@ -80,6 +80,16 @@ namespace topskytower {
                 bool                    rnavCapable;
                 bool                    transponderAvailable;
                 types::Length           requestedFlightLevel;
+
+                FlightPlanStatus() :
+                        errorCodes(),
+                        overwritten(false),
+                        destination(),
+                        departureRoute(),
+                        type(types::FlightPlan::Type::Unknown),
+                        rnavCapable(false),
+                        transponderAvailable(false),
+                        requestedFlightLevel() { }
             };
 
             std::map<std::string, FlightPlanStatus> m_flightChecks;

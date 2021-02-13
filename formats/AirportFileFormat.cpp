@@ -92,16 +92,7 @@ bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines, s
         auto split = helper::String::splitString(line, ":");
 
         if ("SID" == split[0]) {
-            types::StandardInstrumentDeparture sid = {
-                "",
-                0_ft,
-                false,
-                types::Aircraft::EngineType::Unknown,
-                false,
-                false,
-                0_ft,
-                99000_ft
-            };
+            types::StandardInstrumentDeparture sid;
 
             if (false == AirportFileFormat::parseSid(split, sid)) {
                 this->m_errorLine = lineOffset;
@@ -112,12 +103,7 @@ bool AirportFileFormat::parseDepartures(const std::vector<std::string>& lines, s
             this->m_configuration.sids[sid.name] = sid;
         }
         else if ("CSTR" == split[0]) {
-            types::DestinationConstraint constraint = {
-                "",
-                false,
-                0_ft,
-                99000_ft
-            };
+            types::DestinationConstraint constraint;
 
             if (false == AirportFileFormat::parseConstraint(split, constraint)) {
                 this->m_errorLine = lineOffset;
@@ -343,10 +329,10 @@ bool AirportFileFormat::parsePriorities(const std::vector<std::string>& lines, s
                     return false;
                 }
 
-                types::AirlineStandAssignments assignment = {
-                    airlines[i],
-                    priorities
-                };
+                types::AirlineStandAssignments assignment;
+                assignment.airlineIcao = std::move(airlines[i]);
+                assignment.standPriorities = std::move(priorities);
+
                 this->m_configuration.airlines.push_back(std::move(assignment));
             }
 
@@ -372,10 +358,9 @@ bool AirportFileFormat::parsePriorities(const std::vector<std::string>& lines, s
 
     /* create the last cycle */
     for (std::size_t i = 1; i < airlines.size(); ++i) {
-        types::AirlineStandAssignments assignment = {
-            airlines[i],
-            priorities
-        };
+        types::AirlineStandAssignments assignment;
+        assignment.airlineIcao = std::move(airlines[i]);
+        assignment.standPriorities = std::move(priorities);
         this->m_configuration.airlines.push_back(std::move(assignment));
     }
 

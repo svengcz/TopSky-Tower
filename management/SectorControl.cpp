@@ -653,7 +653,7 @@ void SectorControl::updateFlight(const types::Flight& flight, types::Flight::Typ
         if (nullptr != nextNode && nextNode != this->m_ownSector) {
             /* give the flight to an other sector */
             if (this->m_handoffOfFlightsToMe.end() == handoffIt || handoffIt->second != nextNode->sector.controllerInfo().identifier()) {
-                this->m_handoffs[flight.callsign()] = { false, false, flight, nextNode };
+                this->m_handoffs[flight.callsign()] = std::move(FlightData(flight, nextNode));
             }
             /* delete the old entry, because of a new controller */
             else if (this->m_handoffOfFlightsToMe.end() != handoffIt && handoffIt->second == nextNode->sector.controllerInfo().identifier()) {
@@ -799,7 +799,7 @@ std::list<types::ControllerInfo> SectorControl::handoffSectors() const {
 void SectorControl::handoffSectorSelect(const types::Flight& flight, const std::string& identifier) {
     auto it = this->m_handoffs.find(flight.callsign());
     if (this->m_handoffs.end() == it) {
-        this->m_handoffs[flight.callsign()] = { false, false, flight, nullptr };
+        this->m_handoffs[flight.callsign()] = std::move(FlightData(flight, nullptr));
         it = this->m_handoffs.find(flight.callsign());
     }
 

@@ -59,17 +59,7 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
         validationRequired |= flight.flightPlan().transponderExists() != it->second.transponderAvailable;
     }
     else {
-        this->m_flightChecks[flight.callsign()] = {
-            {},
-            false,
-            "",
-            "",
-            types::FlightPlan::Type::Unknown,
-            false,
-            false,
-            0_ft
-        };
-
+        this->m_flightChecks[flight.callsign()] = FlightPlanStatus();
         it = this->m_flightChecks.find(flight.callsign());
     }
 

@@ -40,6 +40,12 @@ namespace topskytower {
                 types::Coordinate             referencePosition;
                 bool                          behindHoldingPoint;
                 types::FlightPlan::AtcCommand expectedCommand;
+
+                FlightHistory() :
+                        cycleCounter(0),
+                        referencePosition(),
+                        behindHoldingPoint(false),
+                        expectedCommand(types::FlightPlan::AtcCommand::Unknown) { }
             };
 
             std::map<std::string, FlightHistory> m_tracks;

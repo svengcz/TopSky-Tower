@@ -31,6 +31,16 @@ namespace topskytower {
             bool                 requiresRnav;        /**< SID requires RNAV-capabilities */
             types::Length        minimumCruiseLevel;  /**< SID requires a minimum flight level */
             types::Length        maximumCruiseLevel;  /**< SID requires a maximum flight level */
+
+            StandardInstrumentDeparture() :
+                    name(),
+                    clearanceLimit(),
+                    containsStepClimbs(false),
+                    engineType(Aircraft::EngineType::Unknown),
+                    requiresTransponder(false),
+                    requiresRnav(false),
+                    minimumCruiseLevel(0.0f * types::feet),
+                    maximumCruiseLevel(99000.0f * types::feet) { }
         };
 
         /**
@@ -41,6 +51,12 @@ namespace topskytower {
             bool          evenCruiseLevel;    /**< Marks if an even flight level is required */
             types::Length minimumCruiseLevel; /**< Defines the minimum flight level */
             types::Length maximumCruiseLevel; /**< Defines the maximum flight level */
+
+            DestinationConstraint() :
+                    destination(),
+                    evenCruiseLevel(false),
+                    minimumCruiseLevel(0.0f * types::feet),
+                    maximumCruiseLevel(99000.0f * types::feet) { }
         };
 
         /**
@@ -60,6 +76,21 @@ namespace topskytower {
             std::list<types::Aircraft::WTC>        wtcBlacklist;        /**< All non-allowed WTC categories */
             std::list<types::Aircraft::EngineType> engineTypeWhitelist; /**< All allowed engine types */
             std::list<types::Aircraft::EngineType> engineTypeBlacklist; /**< All non-allowed engine types */
+
+            Stand() :
+                    name(),
+                    position(),
+                    assignmentRadius(),
+                    priority(255),
+                    blockingStands(),
+                    manualAssignment(false),
+                    wingspan{ types::Length(), types::Length() },
+                    length{ types::Length(), types::Length() },
+                    height{ types::Length(), types::Length() },
+                    wtcWhitelist(),
+                    wtcBlacklist(),
+                    engineTypeWhitelist(),
+                    engineTypeBlacklist() { }
         };
 
         /**
@@ -68,6 +99,10 @@ namespace topskytower {
         struct StandPriorities {
             int                    priority; /**< Defines the priority */
             std::list<std::string> stands;   /**< Defines the stands for this priority */
+
+            StandPriorities() :
+                    priority(255),
+                    stands() { }
         };
 
         /**
@@ -76,6 +111,10 @@ namespace topskytower {
         struct AirlineStandAssignments {
             std::string                airlineIcao;     /**< The airline's ICAO code */
             std::list<StandPriorities> standPriorities; /**< All stand priorities */
+
+            AirlineStandAssignments() :
+                    airlineIcao(),
+                    standPriorities() { }
         };
 
         /**
@@ -86,6 +125,12 @@ namespace topskytower {
             bool              lowVisibility; /**< Defines if the holding point is used during low visibility */
             types::Coordinate holdingPoint;  /**< Defines the center position of the holding point */
             types::Angle      heading;       /**< Defines the heading to the runway */
+
+            HoldingPoint() :
+                    runway(),
+                    lowVisibility(false),
+                    holdingPoint(),
+                    heading() { }
         };
 
         /**
