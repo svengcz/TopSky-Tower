@@ -177,7 +177,7 @@ bool DepartureSequenceControl::readyForDeparture(const types::Flight& flight) co
     auto it = this->m_departureReady.find(flight.callsign());
 
     bool ready = this->m_departedPerRunway.cend() != rwyIt && rwyIt->second.callsign == flight.callsign();
-    ready |= this->m_departureReady.cend() != it;
+    ready |= this->m_departureReady.cend() != it && (true == flight.readyForDeparture() || true == it->second.reachedHoldingPoint);
 
     return ready;
 }
