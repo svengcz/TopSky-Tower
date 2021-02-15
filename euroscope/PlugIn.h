@@ -103,7 +103,7 @@ namespace topskytower {
             std::list<RadarScreen*>                 m_screens;
             std::function<void(const std::string&)> m_uiCallback;
             std::string                             m_pdcNotificationSound;
-            WNDCLASS                                m_windowClass;
+            WNDCLASSA                               m_windowClass;
             HWND                                    m_hiddenWindow;
 
             static std::string findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker,
