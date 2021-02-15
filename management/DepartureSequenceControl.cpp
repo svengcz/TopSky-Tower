@@ -182,6 +182,11 @@ bool DepartureSequenceControl::readyForDeparture(const types::Flight& flight) co
     return ready;
 }
 
+bool DepartureSequenceControl::hasHoldingPoint(const types::Flight& flight) const {
+    auto it = this->m_departureReady.find(flight.callsign());
+    return this->m_departureReady.cend() != it;
+}
+
 const types::HoldingPoint& DepartureSequenceControl::holdingPoint(const types::Flight& flight) const {
     static types::HoldingPoint __fallback;
 

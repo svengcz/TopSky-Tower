@@ -595,7 +595,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
         break;
     case PlugIn::TagItemElement::HoldingPoint:
-        if (true == flightScreen->departureSequenceControl().readyForDeparture(flight)) {
+        if (true == flightScreen->departureSequenceControl().hasHoldingPoint(flight)) {
             auto& point = flightScreen->departureSequenceControl().holdingPoint(flight);
             std::strcat(itemString, point.name.c_str());
         }
