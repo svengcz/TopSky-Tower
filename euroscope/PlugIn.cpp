@@ -335,6 +335,9 @@ void PlugIn::updateStand(const types::Flight& flight, EuroScopePlugIn::CFlightPl
         plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), annotation.c_str());
 
         for (auto& screen : this->m_screens) {
+            if (false == screen->isInitialized())
+                continue;
+
             auto type = screen->identifyType(flight);
 
             if (types::Flight::Type::Unknown != type)
@@ -348,6 +351,9 @@ void PlugIn::updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CF
 
     if (0 != holdingPoint.length()) {
         for (auto& screen : this->m_screens) {
+            if (false == screen->isInitialized())
+                continue;
+
             auto type = screen->identifyType(flight);
 
             if (types::Flight::Type::Unknown != type)
