@@ -335,6 +335,9 @@ void PlugIn::updateStand(const types::Flight& flight, EuroScopePlugIn::CFlightPl
         plan.GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand), annotation.c_str());
 
         for (auto& screen : this->m_screens) {
+            if (false == screen->isInitialized())
+                continue;
+
             auto type = screen->identifyType(flight);
 
             if (types::Flight::Type::Unknown != type)
@@ -348,6 +351,9 @@ void PlugIn::updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CF
 
     if (0 != holdingPoint.length()) {
         for (auto& screen : this->m_screens) {
+            if (false == screen->isInitialized())
+                continue;
+
             auto type = screen->identifyType(flight);
 
             if (types::Flight::Type::Unknown != type)
@@ -589,7 +595,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
         break;
     case PlugIn::TagItemElement::HoldingPoint:
-        if (true == flightScreen->departureSequenceControl().readyForDeparture(flight)) {
+        if (true == flightScreen->departureSequenceControl().hasHoldingPoint(flight)) {
             auto& point = flightScreen->departureSequenceControl().holdingPoint(flight);
             std::strcat(itemString, point.name.c_str());
         }
@@ -904,6 +910,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Marker), "");
                 else
                     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Marker), "K");
+                this->OnRadarTargetPositionUpdate(radarTarget);
             }
         }
         break;

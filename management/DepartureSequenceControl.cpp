@@ -177,9 +177,14 @@ bool DepartureSequenceControl::readyForDeparture(const types::Flight& flight) co
     auto it = this->m_departureReady.find(flight.callsign());
 
     bool ready = this->m_departedPerRunway.cend() != rwyIt && rwyIt->second.callsign == flight.callsign();
-    ready |= this->m_departureReady.cend() != it;
+    ready |= this->m_departureReady.cend() != it && (true == flight.readyForDeparture() || true == it->second.reachedHoldingPoint);
 
     return ready;
+}
+
+bool DepartureSequenceControl::hasHoldingPoint(const types::Flight& flight) const {
+    auto it = this->m_departureReady.find(flight.callsign());
+    return this->m_departureReady.cend() != it;
 }
 
 const types::HoldingPoint& DepartureSequenceControl::holdingPoint(const types::Flight& flight) const {

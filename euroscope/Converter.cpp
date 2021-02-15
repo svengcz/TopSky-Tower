@@ -32,37 +32,22 @@ types::Coordinate Converter::convert(const EuroScopePlugIn::CPosition& position)
                              static_cast<float>(position.m_Latitude) * types::degree);
 }
 
-static bool __analyzeScratchPad(std::string& scratchPad, types::Flight& flight) {
+static void __analyzeScratchPad(std::string_view& scratchPad, types::Flight& flight) {
     /* check if the entries are set */
     if (std::string::npos == scratchPad.find('_'))
-        return false;
+        return;
 
-    bool retval = false;
     std::size_t idx;
 
     /* check the different entries */
-    if (std::string::npos != (idx = scratchPad.find("MISAP_"))) {
+    if (std::string::npos != (idx = scratchPad.find("MISAP_")))
         flight.setOnMissedApproach(true);
-        scratchPad.erase(idx, 5);
-        retval = true;
-    }
-    if (std::string::npos != (idx = scratchPad.find("IRREG_"))) {
+    if (std::string::npos != (idx = scratchPad.find("IRREG_")))
         flight.setIrregularHandoff(true);
-        scratchPad.erase(idx, 6);
-        retval = true;
-    }
-    if (std::string::npos != (idx = scratchPad.find("EST_"))) {
+    if (std::string::npos != (idx = scratchPad.find("EST_")))
         flight.setEstablishedOnILS(true);
-        scratchPad.erase(idx, 4);
-        retval = true;
-    }
-    if (std::string::npos != (idx = scratchPad.find("RDY_"))) {
+    if (std::string::npos != (idx = scratchPad.find("RDY_")))
         flight.setReadyForDeparture(true);
-        scratchPad.erase(idx, 4);
-        retval = true;
-    }
-
-    return retval;
 }
 
 static __inline types::Aircraft __translate(const std::string& code, char wtc) {
@@ -311,9 +296,8 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target) {
 
         /* analyze the scratch pad and update it if needed */
         if (nullptr != flightPlan.GetControllerAssignedData().GetScratchPadString()) {
-            std::string scratch = flightPlan.GetControllerAssignedData().GetScratchPadString();
-            if (true == __analyzeScratchPad(scratch, retval))
-                flightPlan.GetControllerAssignedData().SetScratchPadString(scratch.c_str());
+            std::string_view scratch = flightPlan.GetControllerAssignedData().GetScratchPadString();
+            __analyzeScratchPad(scratch, retval);
         }
 
         /* create the flight plan */

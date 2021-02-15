@@ -81,6 +81,12 @@ namespace topskytower {
              */
             bool readyForDeparture(const types::Flight& flight) const;
             /**
+             * @brief Checks if a holding point is assigned to the flight
+             * @param[in] flight The requested flight
+             * @return True if a holding point exists, else false
+             */
+            bool hasHoldingPoint(const types::Flight& flight) const;
+            /**
              * @brief Returns the assigned holding point
              * @param[in] flight The requested flight
              * @return The holding point

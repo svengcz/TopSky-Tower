@@ -72,7 +72,13 @@ void MTCDControl::updateFlight(const types::Flight& flight, types::Flight::Type 
     }
     /* update the internal states */
     else {
-        it->update(flight, this->m_sidExtractionCallback(flight.callsign()));
+        if (false == this->m_departureControl->readyForDeparture(flight)) {
+            this->m_departures.erase(it);
+            return;
+        }
+        else {
+            it->update(flight, this->m_sidExtractionCallback(flight.callsign()));
+        }
     }
 
     /* check if the flight reached the SIDs exit */
