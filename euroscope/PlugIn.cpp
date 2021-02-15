@@ -910,6 +910,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Marker), "");
                 else
                     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Marker), "K");
+                this->OnRadarTargetPositionUpdate(radarTarget);
             }
         }
         break;
