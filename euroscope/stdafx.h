@@ -10,7 +10,7 @@
 
 #include <algorithm>
 
-#include <targetver.h>
+#include "res/targetver.h"
 
 #define NOMINMAX
 #include <Windows.h>
