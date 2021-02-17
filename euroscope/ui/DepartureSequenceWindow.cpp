@@ -25,8 +25,9 @@ DepartureSequenceWindow::DepartureSequenceWindow(RadarScreen* parent) :
         InsetWindow("DEPARTURES", parent, Gdiplus::RectF(100, 100, 400, 300), false, false),
         m_activeDepartures(),
         m_departureTable(new TableViewer(this->m_parent, { "C/S", "SID", "RWY", "H/P", "STS", "SEP", "TIME" },
-                                        Gdiplus::RectF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y - 2.0f,
-                                                       this->m_contentArea.Width, this->m_contentArea.Height))) {
+                                         Gdiplus::RectF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y - 2.0f,
+                                                        this->m_contentArea.Width, this->m_contentArea.Height))),
+        m_firstRendering(true) {
     this->m_departureTable->setMaxVisibleRows(10);
 
     this->m_elements.push_back(this->m_departureTable);
@@ -185,6 +186,13 @@ bool DepartureSequenceWindow::visualize(Gdiplus::Graphics* graphics) {
     }
 
     if (0 != this->m_activeDepartures.size()) {
+        if (true == this->m_firstRendering) {
+            float yPos = this->m_parent->GetRadarArea().bottom * 0.6f;
+            this->setPosition(Gdiplus::PointF(this->area().X, yPos));
+            this->m_departureTable->setPosition(Gdiplus::PointF(this->m_contentArea.GetLeft() + 2.0f,
+                                                                this->m_contentArea.GetTop() - 2.0f));
+        }
+
         /* calculate the required size */
         this->m_departureTable->prepareVisualization(graphics);
         Gdiplus::SizeF tableSize;
