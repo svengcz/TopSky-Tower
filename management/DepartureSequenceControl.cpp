@@ -166,8 +166,10 @@ std::list<types::HoldingPoint> DepartureSequenceControl::holdingPointCandidates(
 std::list<std::string> DepartureSequenceControl::allReadyForDepartureFlights() const {
     std::list<std::string> retval;
 
-    for (auto it = this->m_departureReady.cbegin(); this->m_departureReady.cend() != it; ++it)
-        retval.push_back(it->first);
+    for (auto it = this->m_departureReady.cbegin(); this->m_departureReady.cend() != it; ++it) {
+        if (true == it->second.reachedHoldingPoint || true == it->second.passedHoldingPoint)
+            retval.push_back(it->first);
+    }
 
     return std::move(retval);
 }
