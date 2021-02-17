@@ -330,54 +330,6 @@ void SectorControl::createGraph(std::list<std::list<std::shared_ptr<Node>>>& sib
     }
 }
 
-std::shared_ptr<SectorControl::Node> SectorControl::findNodeBasedOnIdentifier(const std::shared_ptr<SectorControl::Node>& node,
-                                                                              const std::string_view& identifier) {
-    if (nullptr == node)
-        return nullptr;
-
-    /* this node is the correct one */
-    if (node->sector.controllerInfo().identifier() == identifier)
-        return node;
-
-    /* check every child recursivly */
-    for (const auto& child : std::as_const(node->children)) {
-        auto retval = SectorControl::findNodeBasedOnIdentifier(child, identifier);
-        if (nullptr != retval)
-            return retval;
-    }
-
-    return nullptr;
-}
-
-std::shared_ptr<SectorControl::Node> SectorControl::findNodeBasedOnInformation(const std::shared_ptr<SectorControl::Node>& node,
-                                                                               const types::ControllerInfo& info) {
-    if (nullptr == node)
-        return nullptr;
-
-    /* test the unique information */
-    if (node->sector.controllerInfo().identifier() == info.identifier())
-        return node;
-    if (node->sector.controllerInfo().primaryFrequency() == info.primaryFrequency())
-        return node;
-
-    /* check the SectorControl's name which is likely to be unique */
-    for (const auto& controller : std::as_const(node->controllers)) {
-        if (controller.controllerName() == info.controllerName()) {
-            /* ensure that the stations are compatible and not something different (i.e. SectorControl has TWR and ATIS) */
-            if (controller.prefix() == info.prefix() && controller.suffix() == info.suffix())
-                return node;
-        }
-    }
-
-    for (const auto& child : std::as_const(node->children)) {
-        auto candidate = SectorControl::findNodeBasedOnInformation(child, info);
-        if (nullptr != candidate)
-            return candidate;
-    }
-
-    return nullptr;
-}
-
 void SectorControl::cleanupHandoffList(std::shared_ptr<SectorControl::Node>& node) {
     if (0 == node->controllers.size()) {
         for (auto it = this->m_handoffs.begin(); this->m_handoffs.end() != it;) {
@@ -389,29 +341,40 @@ void SectorControl::cleanupHandoffList(std::shared_ptr<SectorControl::Node>& nod
     }
 }
 
+std::shared_ptr<SectorControl::Node> SectorControl::findNode(const std::shared_ptr<Node>& node, const types::ControllerInfo& info) {
+    if (nullptr == node)
+        return nullptr;
+
+    /* test if the identifier matches */
+    if (node->sector.controllerInfo().identifier() == info.identifier())
+        return node;
+
+    /* test if the primary frequencies match and if the callsigns match */
+    if (node->sector.controllerInfo().primaryFrequency() == info.primaryFrequency()) {
+        if (node->sector.controllerInfo().prefix() == info.prefix() && node->sector.controllerInfo().suffix() == info.suffix())
+            return node;
+        else
+            return nullptr;
+    }
+
+    for (const auto& child : std::as_const(node->children)) {
+        auto candidate = SectorControl::findNode(child, info);
+        if (nullptr != candidate)
+            return candidate;
+    }
+
+    return nullptr;
+}
+
 void SectorControl::controllerUpdate(const types::ControllerInfo& info) {
-    auto node = SectorControl::findNodeBasedOnInformation(this->m_rootNode, info);
+    auto node = SectorControl::findNode(this->m_rootNode, info);
     if (nullptr != node) {
-        /* check if the info is already registered */
-        for (auto it = node->controllers.begin(); node->controllers.end() != it; ++it) {
-            /* found the controller -> check if the controller changed the identifier */
-            if (it->controllerName() == info.controllerName() && it->suffix() == info.suffix()) {
-                if (node->sector.controllerInfo().identifier() != info.identifier()) {
-                    node->controllers.erase(it);
-                    this->cleanupHandoffList(node);
-                }
-                else {
-                    *it = info;
-                }
-                return;
-            }
+        auto assoc = this->m_sectorAssociations.find(info.callsign());
+        if (this->m_sectorAssociations.cend() == assoc || assoc->second.identifier() != info.identifier()) {
+            this->controllerOffline(info);
+            this->m_sectorAssociations[info.callsign()] = info;
+            node->controllers.push_back(info);
         }
-
-        /* remove the controller if the position switch was too fast for Euroscope */
-        this->controllerOffline(info);
-
-        this->m_sectorAssociations[info.callsign()] = info.identifier();
-        node->controllers.push_back(info);
     }
     else {
         /* remove the controller if he deactivated the corresponding primary */
@@ -422,14 +385,14 @@ void SectorControl::controllerUpdate(const types::ControllerInfo& info) {
 void SectorControl::controllerOffline(const types::ControllerInfo& info) {
     auto assocIt = this->m_sectorAssociations.find(info.callsign());
     if (this->m_sectorAssociations.end() != assocIt) {
-        auto node = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, assocIt->second);
+        auto node = SectorControl::findNode(this->m_rootNode, assocIt->second);
         if (nullptr != node) {
             /* remove the controller info */
             for (auto it = node->controllers.begin(); node->controllers.end() != it; ++it) {
                 if (it->callsign() == info.callsign()) {
                     node->controllers.erase(it);
                     this->cleanupHandoffList(node);
-                    return;
+                    break;
                 }
             }
         }
@@ -443,18 +406,15 @@ void SectorControl::setOwnSector(const types::ControllerInfo& info) {
     if (nullptr != this->m_ownSector && info.identifier() == this->m_ownSector->sector.controllerInfo().identifier())
         return;
 
-    /* remove the old controller out of the list */
-    if (nullptr != this->m_ownSector) {
-        for (auto it = this->m_ownSector->controllers.begin(); this->m_ownSector->controllers.end() != it; ++it) {
-            if (it->controllerName() == info.controllerName()) {
-                this->m_ownSector->controllers.erase(it);
-                break;
-            }
-        }
-    }
+    auto newOwnSector = SectorControl::findNode(this->m_rootNode, info);
+    if (this->m_ownSector != newOwnSector)
+        this->controllerOffline(info);
 
-    this->m_ownSector = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, info.identifier());
-    this->m_ownSector->controllers.push_back(info);
+    this->m_ownSector = newOwnSector;
+    if (nullptr != this->m_ownSector) {
+        this->m_sectorAssociations[info.callsign()] = info;
+        this->m_ownSector->controllers.push_back(info);
+    }
 }
 
 std::shared_ptr<SectorControl::Node> SectorControl::findSectorInList(const std::list<std::shared_ptr<SectorControl::Node>>& nodes,
@@ -537,14 +497,18 @@ std::shared_ptr<SectorControl::Node> SectorControl::findOnlineResponsible(const 
 
     /* check which deputy is online */
     for (const auto& deputy : std::as_const(node->sector.borders().front().deputies())) {
-        auto deputyNode = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, deputy);
+        ControllerInfo deputyInfo(deputy, "", "", "");
+
+        auto deputyNode = SectorControl::findNode(this->m_rootNode, deputyInfo);
         if (nullptr != deputyNode && 0 != deputyNode->controllers.size())
             return deputyNode;
 
         /* some deliveries do not have the complete deputy-hierarchy -> check the deputies of the deputies */
         if (types::Sector::Type::Delivery == node->sector.type()) {
             for (const auto& depDeputy : std::as_const(deputyNode->sector.borders().front().deputies())) {
-                auto secondStageNode = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, depDeputy);
+                ControllerInfo depDeputyInfo(depDeputy, "", "", "");
+
+                auto secondStageNode = SectorControl::findNode(this->m_rootNode, depDeputyInfo);
                 if (nullptr != secondStageNode && 0 != secondStageNode->controllers.size())
                     return secondStageNode;
             }
@@ -803,7 +767,8 @@ void SectorControl::handoffSectorSelect(const types::Flight& flight, const std::
         it = this->m_handoffs.find(flight.callsign());
     }
 
-    auto node = SectorControl::findNodeBasedOnIdentifier(this->m_rootNode, identifier);
+    ControllerInfo info(identifier, "", "", "");
+    auto node = SectorControl::findNode(this->m_rootNode, info);
     if (nullptr != node) {
         it->second.manuallyChanged = true;
         it->second.handoffPerformed = false;

@@ -64,10 +64,7 @@ namespace topskytower {
                                                                         const std::list<types::Sector>& sectors);
             static std::list<std::list<std::shared_ptr<Node>>> linkSiblings(std::list<std::shared_ptr<Node>>& nodes);
             static void createGraph(std::list<std::list<std::shared_ptr<Node>>>& siblings);
-            static std::shared_ptr<Node> findNodeBasedOnIdentifier(const std::shared_ptr<Node>& node,
-                                                                   const std::string_view& identifier);
-            static std::shared_ptr<Node> findNodeBasedOnInformation(const std::shared_ptr<Node>& node,
-                                                                    const types::ControllerInfo& info);
+            static std::shared_ptr<Node> findNode(const std::shared_ptr<Node>& node, const types::ControllerInfo& info);
             static std::shared_ptr<Node> findSectorInList(const std::list<std::shared_ptr<Node>>& nodes,
                                                           const types::Position& position,
                                                           types::Flight::Type type, bool lowerSectors);
@@ -87,7 +84,7 @@ namespace topskytower {
             std::shared_ptr<Node>                                       m_unicom;
             std::shared_ptr<Node>                                       m_rootNode;
             std::shared_ptr<Node>                                       m_ownSector;
-            std::map<std::string, std::string>                          m_sectorAssociations;
+            std::map<std::string, types::ControllerInfo>                m_sectorAssociations;
             std::map<std::string, FlightData>                           m_handoffs;
             std::map<std::string, std::shared_ptr<SectorControl::Node>> m_sectorsOfFlights;
             std::map<std::string, std::string>                          m_handoffOfFlightsToMe;
