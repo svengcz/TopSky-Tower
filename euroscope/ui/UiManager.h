@@ -59,15 +59,19 @@ namespace topskytower {
         public:
             /**
              * @brief Creates a new UI manager that is responsible for the corresponding RADAR screen
-             * @param[in] hideWindows True if the toolbar needs to be hidden, else false
              * @param[in] parent The corresponding RADAR screen
              */
-            UiManager(bool hideWindows, RadarScreen* parent);
+            UiManager(RadarScreen* parent);
             /**
              * @brief Destroys the manager and all internal structures
              */
             ~UiManager();
 
+            /**
+             * @brief Hides all automatic windows or not
+             * @param[in] hide True if the windows have to be hidden, else false
+             */
+            void hideWindows(bool hide);
             /**
              * @brief Activates an UI element
              * @param[in] id The requested UI element
