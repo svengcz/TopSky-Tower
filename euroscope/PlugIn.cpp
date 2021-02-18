@@ -24,6 +24,7 @@
 #include <helper/String.h>
 #include <management/PdcControl.h>
 #include <surveillance/FlightPlanControl.h>
+#include <surveillance/RadioControl.h>
 #include <system/ConfigurationRegistry.h>
 #include <version.h>
 
@@ -1274,6 +1275,11 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
             break;
         }
     }
+}
+
+void PlugIn::OnTimer(int counter) {
+    (void)counter;
+    surveillance::RadioControl::instance().timeout();
 }
 
 void PlugIn::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) {

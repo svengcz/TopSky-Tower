@@ -176,6 +176,11 @@ namespace topskytower {
              */
             void OnNewMetarReceived(const char* station, const char* fullMetar) override;
             /**
+             * @brief Called once per second
+             * @param[in] counter The current call-cycle-counter
+             */
+            void OnTimer(int counter) override;
+            /**
              * @brief Called as soon as a radar target position is updated
              * @param[in] radarTarget The updated radar target
              */
