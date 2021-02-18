@@ -129,6 +129,18 @@ bool SettingsFileFormat::parse(types::SystemConfiguration& config) {
         else if ("SYS_SurveillanceVisualizationDuration" == entry[0]) {
             config.surveillanceVisualizationDuration = static_cast<float>(std::atoi(value.c_str())) * types::second;
         }
+        else if ("SURV_RDF_Active" == entry[0]) {
+            config.rdfActive = '0' != value[0];
+        }
+        else if ("SURV_RDF_Radius" == entry[0]) {
+            config.rdfRadius = static_cast<float>(std::atoi(value.c_str()));
+        }
+        else if ("SURV_RDF_NonConflictColor" == entry[0]) {
+            retval = this->parseColor(value, config.rdfNonConflictColor, lineOffset);
+        }
+        else if ("SURV_RDF_ConflictColor" == entry[0]) {
+            retval = this->parseColor(value, config.rdfConflictColor, lineOffset);
+        }
         else if ("SURV_FlightPlanCheckEvenOdd" == entry[0]) {
             config.flightPlanCheckEvenOdd = '0' != value[0];
         }
