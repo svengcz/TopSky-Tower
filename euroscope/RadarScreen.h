@@ -90,6 +90,7 @@ namespace topskytower {
             void drawData(std::mutex& lock, std::list<std::pair<std::string, types::Time>>& data,
                           bool surveillanceData, Gdiplus::Graphics& graphics);
             void drawNoTransgressionZones(Gdiplus::Graphics& graphics);
+            void drawTransmittingFlights(Gdiplus::Graphics& graphics);
             std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign);
 
         public:
