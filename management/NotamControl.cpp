@@ -35,12 +35,12 @@ static std::string __receivedData;
 
 NotamControl::NotamControl() :
         m_stopNotamThread(false),
-        m_notamThread(&NotamControl::run, this),
         m_airportUpdates(),
         m_pendingQueueLock(),
         m_enqueuePending(),
         m_dequeuePending(),
-        m_notams() { }
+        m_notams(),
+        m_notamThread(&NotamControl::run, this) { }
 
 NotamControl::~NotamControl() {
     this->m_stopNotamThread = true;
