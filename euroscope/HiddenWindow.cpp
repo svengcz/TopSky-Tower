@@ -25,9 +25,8 @@ LRESULT CALLBACK HiddenWindow(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_COPYDATA:
         data = reinterpret_cast<COPYDATASTRUCT*>(lparam);
 
-        if (nullptr != data && 666 == data->dwData && nullptr != data->lpData && nullptr != __plugin) {
-            int b = 0;
-        }
+        if (nullptr != data && 666 == data->dwData && nullptr != data->lpData && nullptr != __plugin)
+            __plugin->afvMessage(reinterpret_cast<const char*>(data->lpData));
 
         return TRUE;
     default:
