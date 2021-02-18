@@ -25,13 +25,8 @@ namespace topskytower {
         class RadioControl {
         private:
 #ifndef DOXYGEN_IGNORE
-            struct Transmission {
-                std::string                           callsign;
-                std::chrono::system_clock::time_point lastReceived;
-            };
-
-            std::mutex              m_transmissionsLock;
-            std::list<Transmission> m_activeTransmissions;
+            std::mutex             m_transmissionsLock;
+            std::list<std::string> m_activeTransmissions;
 
             RadioControl();
 
@@ -42,14 +37,10 @@ namespace topskytower {
             RadioControl& operator=(RadioControl&&) = delete;
 
             /**
-             * @brief The station is currently transmitting
-             * @param[in] callsign The transmitting station
+             * @brief Updates the currently transmitting stations
+             * @param[in] callsigns The transmitting stations
              */
-            void transmits(const std::string& callsign);
-            /**
-             * @brief Times out the non-sending transmissions
-             */
-            void timeout();
+            void transmissions(const std::vector<std::string>& callsigns);
             /**
              * @brief Checks if a specific flight is transmitting
              * @param[in] flight The requested flight

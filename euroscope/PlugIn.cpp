@@ -69,7 +69,8 @@ PlugIn::PlugIn() :
             NULL,
             "RDFHiddenWindowClass"
         },
-        m_hiddenWindow(nullptr) {
+        m_hiddenWindow(nullptr),
+        m_transmissions() {
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION + " loaded").c_str(),
                              false, false, false, false, false);
 
@@ -1279,7 +1280,17 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
 
 void PlugIn::OnTimer(int counter) {
     (void)counter;
-    surveillance::RadioControl::instance().timeout();
+
+    std::list<std::string> messages;
+
+    this->m_transmissionsLock.lock();
+    messages = std::move(this->m_transmissions);
+    this->m_transmissionsLock.unlock();
+
+    for (const auto& message : std::as_const(messages)) {
+        auto callsigns = helper::String::splitString(message, ":");
+        surveillance::RadioControl::instance().transmissions(callsigns);
+    }
 }
 
 void PlugIn::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) {
@@ -1332,7 +1343,7 @@ void PlugIn::removeRadarScreen(RadarScreen* screen) {
 }
 
 void PlugIn::afvMessage(const std::string& message) {
-    auto callsigns = helper::String::splitString(message, ":");
-    for (const auto& callsign : std::as_const(callsigns))
-        surveillance::RadioControl::instance().transmits(callsign);
+    this->m_transmissionsLock.lock();
+    this->m_transmissions.push_back(message);
+    this->m_transmissionsLock.unlock();
 }

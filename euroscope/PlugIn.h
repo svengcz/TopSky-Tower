@@ -105,6 +105,8 @@ namespace topskytower {
             std::string                             m_pdcNotificationSound;
             WNDCLASSA                               m_windowClass;
             HWND                                    m_hiddenWindow;
+            std::mutex                              m_transmissionsLock;
+            std::list<std::string>                  m_transmissions;
 
             static std::string findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker,
                                                    const std::string& entry);

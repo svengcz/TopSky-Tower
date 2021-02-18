@@ -19,33 +19,13 @@ RadioControl::RadioControl() :
         m_transmissionsLock(),
         m_activeTransmissions() { }
 
-void RadioControl::transmits(const std::string& callsign) {
-    if (false == system::FlightRegistry::instance().flightExists(callsign))
-        return;
-
-    auto now = std::chrono::system_clock::now();
+void RadioControl::transmissions(const std::vector<std::string>& callsigns) {
     std::lock_guard guard(this->m_transmissionsLock);
 
-    for (auto& transmission : this->m_activeTransmissions) {
-        if (transmission.callsign == callsign) {
-            transmission.lastReceived = now;
-            return;
-        }
-    }
-
-    this->m_activeTransmissions.push_back({ callsign, now });
-}
-
-void RadioControl::timeout() {
-    auto now = std::chrono::system_clock::now();
-
-    std::lock_guard guard(this->m_transmissionsLock);
-
-    for (auto it = this->m_activeTransmissions.begin(); this->m_activeTransmissions.end() != it;) {
-        if (std::chrono::duration_cast<std::chrono::seconds>(now - it->lastReceived).count() >= 1)
-            it = this->m_activeTransmissions.erase(it);
-        else
-            ++it;
+    this->m_activeTransmissions.clear();
+    for (auto& callsign : callsigns) {
+        if (true == system::FlightRegistry::instance().flightExists(callsign))
+            this->m_activeTransmissions.push_back(std::move(callsign));
     }
 }
 
@@ -53,7 +33,7 @@ bool RadioControl::isTransmitting(const types::Flight& flight) {
     std::lock_guard guard(this->m_transmissionsLock);
 
     for (const auto& transmission : std::as_const(this->m_activeTransmissions)) {
-        if (transmission.callsign == flight.callsign())
+        if (transmission == flight.callsign())
             return true;
     }
 
@@ -64,9 +44,7 @@ std::list<std::string> RadioControl::transmittingFlights() {
     std::list<std::string> retval;
 
     std::lock_guard guard(this->m_transmissionsLock);
-
-    for (const auto& transmission : std::as_const(this->m_activeTransmissions))
-        retval.push_back(transmission.callsign);
+    retval = this->m_activeTransmissions;
 
     return std::move(retval);
 }
