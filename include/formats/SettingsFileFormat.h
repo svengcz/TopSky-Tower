@@ -105,7 +105,7 @@ namespace topskytower {
          *   </tr>
          *   <tr>
          *     <td>SURV_RDF_Active</td>
-         *     <td>Defines if RDF is active or not.</td>
+         *     <td>Defines if RDF is active or not. Euroscope needs to be restarted, if this entry is changed</td>
          *     <td>1</td><td>Boolean</td>
          *   </tr>
          *   <tr>
