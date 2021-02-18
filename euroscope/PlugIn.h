@@ -218,6 +218,11 @@ namespace topskytower {
              * @param[in] screen The closed screen
              */
             void removeRadarScreen(RadarScreen* screen);
+            /**
+             * @brief Received a message from AfV
+             * @param[in] message The incoming message
+             */
+            void afvMessage(const std::string& message);
         };
     }
 }

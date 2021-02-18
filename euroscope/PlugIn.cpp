@@ -66,7 +66,7 @@ PlugIn::PlugIn() :
             NULL,
             NULL,
             NULL,
-            "TSTHiddenWindowClass"
+            "RDFHiddenWindowClass"
         },
         m_hiddenWindow(nullptr) {
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION + " loaded").c_str(),
@@ -74,7 +74,7 @@ PlugIn::PlugIn() :
 
     /* register the window class and create the window */
     RegisterClassA(&this->m_windowClass);
-    this->m_hiddenWindow = CreateWindowA("TSTHiddenWindowClass", "TSTHiddenWindow", NULL, 0, 0, 0, 0, NULL, NULL,
+    this->m_hiddenWindow = CreateWindowA("RDFHiddenWindowClass", "RDFHiddenWindow", NULL, 0, 0, 0, 0, NULL, NULL,
                                          GetModuleHandle(NULL), reinterpret_cast<LPVOID>(this));
     if (S_OK != GetLastError())
         this->DisplayUserMessage("Message", PLUGIN_NAME, "Unable to open RDF communication", true, true, true, false, false);
@@ -143,6 +143,10 @@ PlugIn::~PlugIn() {
         Gdiplus::GdiplusShutdown(__gdiplusToken);
         curl_global_cleanup();
     }
+
+    if (NULL != this->m_hiddenWindow)
+        DestroyWindow(this->m_hiddenWindow);
+    this->m_hiddenWindow = NULL;
 }
 
 const std::string& PlugIn::settingsPath() const {
@@ -1319,4 +1323,10 @@ void PlugIn::removeRadarScreen(RadarScreen* screen) {
         this->m_screens.erase(it);
         delete screen;
     }
+}
+
+void PlugIn::afvMessage(const std::string& message) {
+    auto callsigns = helper::String::splitString(message, ":");
+    for (const auto& callsign : std::as_const(callsigns))
+        surveillance::RadioControl::instance().transmits(callsign);
 }
