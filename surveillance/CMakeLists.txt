@@ -13,6 +13,7 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/surveillance/DepartureModel.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/FlightPlanControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/MTCDControl.h
+    ${CMAKE_SOURCE_DIR}/include/surveillance/RadioControl.h
     ${CMAKE_SOURCE_DIR}/include/surveillance/STCDControl.h
 )
 SET(SOURCE_FILES
@@ -21,6 +22,7 @@ SET(SOURCE_FILES
     DepartureModel.cpp
     FlightPlanControl.cpp
     MTCDControl.cpp
+    RadioControl.cpp
     STCDControl.cpp
 )
 

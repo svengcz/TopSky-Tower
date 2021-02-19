@@ -24,6 +24,7 @@
 #include <helper/String.h>
 #include <management/PdcControl.h>
 #include <surveillance/FlightPlanControl.h>
+#include <surveillance/RadioControl.h>
 #include <system/ConfigurationRegistry.h>
 #include <version.h>
 
@@ -55,7 +56,21 @@ PlugIn::PlugIn() :
         m_settingsPath(),
         m_screens(),
         m_uiCallback(),
-        m_pdcNotificationSound() {
+        m_pdcNotificationSound(),
+        m_windowClass{
+            NULL,
+            HiddenWindow,
+            NULL,
+            NULL,
+            GetModuleHandle(NULL),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            "RDFHiddenWindowClass"
+        },
+        m_hiddenWindow(nullptr),
+        m_transmissions() {
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION + " loaded").c_str(),
                              false, false, false, false, false);
 
@@ -114,6 +129,17 @@ PlugIn::PlugIn() :
             break;
         }
     }
+
+    const auto& systemConfig = system::ConfigurationRegistry::instance().systemConfiguration();
+    if (true == systemConfig.valid && true == systemConfig.rdfActive) {
+        /* register the window class and create the window */
+        RegisterClassA(&this->m_windowClass);
+        this->m_hiddenWindow = CreateWindowA("RDFHiddenWindowClass", "RDFHiddenWindow", NULL, 0, 0, 0, 0, NULL, NULL,
+                                             GetModuleHandle(NULL), reinterpret_cast<LPVOID>(this));
+
+        if (S_OK != GetLastError())
+            this->DisplayUserMessage("Message", PLUGIN_NAME, "Unable to open RDF communication", true, true, true, false, false);
+    }
 }
 
 PlugIn::~PlugIn() {
@@ -123,6 +149,10 @@ PlugIn::~PlugIn() {
         Gdiplus::GdiplusShutdown(__gdiplusToken);
         curl_global_cleanup();
     }
+
+    if (NULL != this->m_hiddenWindow)
+        DestroyWindow(this->m_hiddenWindow);
+    this->m_hiddenWindow = NULL;
 }
 
 const std::string& PlugIn::settingsPath() const {
@@ -1259,6 +1289,21 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
     }
 }
 
+void PlugIn::OnTimer(int counter) {
+    (void)counter;
+
+    std::list<std::string> messages;
+
+    this->m_transmissionsLock.lock();
+    messages = std::move(this->m_transmissions);
+    this->m_transmissionsLock.unlock();
+
+    for (const auto& message : std::as_const(messages)) {
+        auto callsigns = helper::String::splitString(message, ":");
+        surveillance::RadioControl::instance().transmissions(callsigns);
+    }
+}
+
 void PlugIn::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget radarTarget) {
     if (false == radarTarget.IsValid())
         return;
@@ -1306,4 +1351,10 @@ void PlugIn::removeRadarScreen(RadarScreen* screen) {
         this->m_screens.erase(it);
         delete screen;
     }
+}
+
+void PlugIn::afvMessage(const std::string& message) {
+    this->m_transmissionsLock.lock();
+    this->m_transmissions.push_back(message);
+    this->m_transmissionsLock.unlock();
 }

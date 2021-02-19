@@ -17,6 +17,7 @@
 #include <helper/String.h>
 #include <management/NotamControl.h>
 #include <management/PdcControl.h>
+#include <surveillance/RadioControl.h>
 
 #include "ui/ConfigurationErrorWindow.h"
 #include "ui/elements/Text.h"
@@ -636,6 +637,47 @@ void RadarScreen::drawNoTransgressionZones(Gdiplus::Graphics& graphics) {
     }
 }
 
+void RadarScreen::drawTransmittingFlights(Gdiplus::Graphics& graphics) {
+    if (false == system::ConfigurationRegistry::instance().systemConfiguration().rdfActive)
+        return;
+
+    auto callsigns = surveillance::RadioControl::instance().transmittingFlights();
+
+    const std::uint8_t* colorValues;
+    if (2 > callsigns.size())
+        colorValues = system::ConfigurationRegistry::instance().systemConfiguration().rdfNonConflictColor;
+    else
+        colorValues = system::ConfigurationRegistry::instance().systemConfiguration().rdfConflictColor;
+
+    /* prepare generic data structures */
+    auto area = this->GetRadarArea();
+    Gdiplus::PointF center((area.right - area.left) * 0.5f, (area.bottom - area.top) * 0.5f);
+    Gdiplus::Pen pen(Gdiplus::Color(colorValues[0], colorValues[1], colorValues[2]), 1.0f);
+    Gdiplus::RectF transmissionRect;
+    transmissionRect.Width = system::ConfigurationRegistry::instance().systemConfiguration().rdfRadius * 2.0f;
+    transmissionRect.Height = system::ConfigurationRegistry::instance().systemConfiguration().rdfRadius * 2.0f;
+
+    /* draw all transmitting flights */
+    for (const auto& callsign : std::as_const(callsigns)) {
+        if (false == system::FlightRegistry::instance().flightExists(callsign))
+            continue;
+
+        const auto& flight = system::FlightRegistry::instance().flight(callsign);
+        auto pxPos = this->convertCoordinate(flight.currentPosition().coordinate());
+
+        /* draw the circle */
+        if (pxPos.X >= area.left && pxPos.Y >= area.top && pxPos.X < area.right && pxPos.Y < area.bottom) {
+            transmissionRect.X = pxPos.X - system::ConfigurationRegistry::instance().systemConfiguration().rdfRadius;
+            transmissionRect.Y = pxPos.Y - system::ConfigurationRegistry::instance().systemConfiguration().rdfRadius;
+            graphics.DrawEllipse(&pen, transmissionRect);
+        }
+        /* draw the line */
+        else {
+            graphics.DrawLine(&pen, center, pxPos);
+        }
+    }
+}
+
 void RadarScreen::OnRefresh(HDC hdc, int phase) {
     (void)hdc;
 
@@ -650,6 +692,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     this->drawData(this->m_shortTermConflictVisualizationsLock, this->m_shortTermConflictVisualizations, true, graphics);
     this->drawData(this->m_departureRouteVisualizationsLock, this->m_departureRouteVisualizations, false, graphics);
     this->drawNoTransgressionZones(graphics);
+    this->drawTransmittingFlights(graphics);
 
     this->m_lastRenderingTime = std::chrono::system_clock::now();
 

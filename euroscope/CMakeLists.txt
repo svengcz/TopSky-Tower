@@ -19,6 +19,10 @@ CONFIGURE_FILE(
     ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
     ${CMAKE_BINARY_DIR}/version.h
 )
+CONFIGURE_FILE(
+    ${CMAKE_CURRENT_SOURCE_DIR}/res/TopSky-Tower.rc.in
+    ${CMAKE_BINARY_DIR}/TopSky-Tower.rc
+)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -27,6 +31,8 @@ INCLUDE_DIRECTORIES(
 SET(SOURCE_FILES
     Converter.cpp
     Converter.h
+    HiddenWindow.cpp
+    HiddenWindow.h
     PlugIn.cpp
     PlugIn.h
     RadarScreen.cpp
@@ -36,6 +42,11 @@ SET(SOURCE_FILES
     TopSkyTowerMain.cpp
     VersionChecker.cpp
     VersionChecker.h
+)
+SET(SOURCE_FILES_RES
+    res/resource.h
+    res/targetver.h
+    ${CMAKE_BINARY_DIR}/TopSky-Tower.rc
 )
 SET(SOURCE_FILES_UI
     ui/AriwsToolbarButton.cpp
@@ -123,5 +134,6 @@ IF(MSVC)
 ENDIF()
 
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
+SOURCE_GROUP("Source Files\\res" FILES ${SOURCE_FILES_RES})
 SOURCE_GROUP("Source Files\\ui" FILES ${SOURCE_FILES_UI})
 SOURCE_GROUP("Source Files\\ui\\elements" FILES ${SOURCE_FILES_UI_ELEMENTS})

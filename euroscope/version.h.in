@@ -1,11 +1,12 @@
 /*
  * Author:
  *   Sven Czarnian <devel@svcz.de>
- * License:
- *   Closed source
  * Brief:
- *   Defines all relevant definitions.
- *   The file is auto-generated.
+ *   Defines the version strings and plugin names
+ * Copyright:
+ *   2020-2021 Sven Czarnian
+ * License:
+ *   GNU General Public License v3 (GPLv3)
  */
 
 #pragma once
@@ -17,4 +18,4 @@
 #define PLUGIN_PATCH_VERSION @PROJECT_VERSION_PATCH@
 #define PLUGIN_VERSION       "@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@"
 #define PLUGIN_DEVELOPER     "Sven Czarnian"
-#define PLUGIN_COPYRIGHT     "(c) Sven Czarnian - Closed Source"
+#define PLUGIN_COPYRIGHT     "(c) Sven Czarnian - GPLv3"
