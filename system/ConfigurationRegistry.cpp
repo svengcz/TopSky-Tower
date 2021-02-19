@@ -53,6 +53,7 @@ bool ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
     this->reset();
 
     if (UpdateType::All == type || UpdateType::System == type) {
+        /* parse the global configuration */
         formats::SettingsFileFormat settings(path + "\\TopSkyTowerSettings.txt");
         if (false == settings.parse(this->m_systemConfig)) {
             this->m_errorLine = settings.errorLine();
@@ -60,11 +61,22 @@ bool ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
             return false;
         }
 
+        /* parse the Hoppies code */
         std::ifstream stream(path + "\\TopSkyTowerHoppies.txt");
         for (std::string line; std::getline(stream, line);) {
             if (0 != line.size()) {
                 this->m_systemConfig.hoppiesCode = line;
                 break;
+            }
+        }
+
+        /* parse the local settings */
+        if (true == std::filesystem::exists(path + "\\TopSkyTowerSettingsLocal.txt")) {
+            formats::SettingsFileFormat localSettings(path + "\\TopSkyTowerSettingsLocal.txt");
+            if (false == localSettings.parse(this->m_systemConfig)) {
+                this->m_errorLine = settings.errorLine();
+                this->m_errorMessage = "TopSkyTowerSettingsLocal.txt:\n" + settings.errorMessage();
+                return false;
             }
         }
     }
