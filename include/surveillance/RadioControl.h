@@ -21,6 +21,23 @@ namespace topskytower {
          *
          * This module controls the different radio signals and tracks which
          * aircrafts are transmitting.
+         *
+         * The radio control system tracks information about all transmitting flights
+         * which allows the visualization on the RADAR screen. It helps to identify
+         * conflicting transmissions or to identify the current position of a calling aircraft.
+         *
+         * Two kinds of visualizations are used.
+         * The first one draws a circle around the transmitting aircraft if it is visible on the screen.
+         *
+         * ![RDF Circle](doc/imgs/RDFVisible.png)
+         *
+         * The second one draws a line from the center of the screen into the direction of the transmitting aircraft.
+         *
+         * ![Runway Incursion Warning](doc/imgs/RDFRay.png)
+         *
+         * It is not possible to use this system together with the RDFPlugin or the RDF functions of TopSky.
+         * If one of those plugins is used, is it required to disable the RDF functions of TopSky-Tower.
+         * This can be done via the configuration, but requires an EuroScope restart.
          */
         class RadioControl {
         private:

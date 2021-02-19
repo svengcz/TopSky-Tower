@@ -56,6 +56,8 @@
  *
  * ![Toolbar](doc/imgs/Toolbar.png)
  *
+ * The windows-menu allows to visualize the NOTAMs list.
+ *
  * The Settings-menu is a drop-down menu to reload single configuration files.
  *
  * A PDC-button activates or deactivates the PDC system. It is deactivated after a system start.
@@ -63,6 +65,13 @@
  * The ARIWS-button enables or disables ARIWS including the warnings in the flight's tags.
  *
  * The CMAC-button toggles the CMAC system to track aircrafts on the ground.
+ *
+ * The MTCD-button toggles the MTCD system to predict departure routes between departing aircrafts.
+ *
+ * The STCD-button toggles the STCD system to track inbounds and aircrafts at the holding points
+ * to validate the spacings, etc.
+ *
+ * The IPA-button defines a NTZ between two runways that are configured as IPA- or PRM-capable.
  *
  * An other button is the LVP-button which activates or deactivates the Low-Visibility-Procedures.
  * The normal procedure mode is activated after a system startup. This flag is i.e. used by ARIWS to select the correct

@@ -19,6 +19,28 @@ namespace topskytower {
         /**
          * @brief The departure sequence control tracks all departure ready flights at a holding point or by a marker
          * @ingroup management
+         *
+         * The departure sequence control modules contains information about all departing aircrafts.
+         * It contains information if the aircraft is marked as "Ready for departure", holding at an holding point
+         * or lined up on a runway.
+         *
+         * It contains also information about all departing aircrafts and the required spacings and time distances
+         * between two consecutive departing aircrafts.
+         *
+         * ![Holding point menu](doc/imgs/HPElement.png)
+         *
+         * A departure sequence entry is also defined to show the current holding point or to plan an aircraft
+         * for a specific holding point.
+         *
+         * ![Departure sequence window](doc/imgs/DepSeqWindow.png)
+         *
+         * The departure sequence window visualizes all the departure information in a compact way and allows to
+         * update the ground status or holding point without using the native Euroscope departure list.
+         * The window is automatically shown as soon as a departing aircraft needs a specific spacing or time distance.
+         * It can be closed and it will not be shown until a new aircraft reaches a holding point and needs to wait
+         * for the departure clearance.
+         *
+         * ![Departure sequence window menu](doc/imgs/DepSeqMenu.png)
          */
         class DepartureSequenceControl {
 #ifndef DOXYGEN_IGNORE

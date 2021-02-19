@@ -21,6 +21,18 @@ namespace topskytower {
         /**
          * @brief The NOTAM control handles all available and relevant NOTAMs of the airports
          * @ingroup management
+         *
+         * The NOTAM control contains all NOTAMs of the controlled aerodromes.
+         * It provides a table that contains all downloaded NOTAMs.
+         * The table can be filtered by the aerodrome's ICAO code or by the checkbox that
+         * filters out all NOTAMs that are currently invalid due to the current time.
+         *
+         * ![NOTAM table](doc/imgs/NotamOverview.png)
+         *
+         * A click on a specific NOTAM opens the entry and visualizes a second window that
+         * shows the content of the specific NOTAM.
+         *
+         * ![NOTAM details](doc/imgs/NotamReader.png)
          */
         class NotamControl {
         public:
