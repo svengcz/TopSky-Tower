@@ -35,7 +35,11 @@ void DepartureSequenceControl::reinitialize(system::ConfigurationRegistry::Updat
 
     this->m_holdingPoints.reinitialize();
 
-    const auto& runways = system::ConfigurationRegistry::instance().runtimeConfiguration().activeDepartureRunways.find(this->m_airport)->second;
+    auto itRunways = system::ConfigurationRegistry::instance().runtimeConfiguration().activeDepartureRunways.find(this->m_airport);
+    if (system::ConfigurationRegistry::instance().runtimeConfiguration().activeDepartureRunways.cend() == itRunways)
+        return;
+
+    const auto& runways = itRunways->second;
     bool runwayDisabled = false;
 
     /* delete deactivated runways */
