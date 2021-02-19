@@ -36,7 +36,7 @@ RadarScreen::RadarScreen() :
         m_sectorFileIsMissing(false),
         m_airport(),
         m_elevation(),
-        m_userInterface(nullptr),
+        m_userInterface(new UiManager(this)),
         m_sectorControl(nullptr),
         m_standControl(nullptr),
         m_departureControl(nullptr),
@@ -106,7 +106,7 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
         value = this->GetDataFromAsr("HideWindows");
         if (nullptr != value)
             hideWindows = 0 != std::strlen(value) && '1' == value[0];
-        this->m_userInterface = new UiManager(hideWindows, this);
+        this->m_userInterface->hideWindows(hideWindows);
 
         if (true == system::ConfigurationRegistry::instance().errorFound()) {
             auto viewer = new ConfigurationErrorWindow(this);

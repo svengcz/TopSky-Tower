@@ -18,9 +18,9 @@
 
 using namespace topskytower::euroscope;
 
-UiManager::UiManager(bool hideWindows, RadarScreen* parent) :
+UiManager::UiManager(RadarScreen* parent) :
         m_parent(parent),
-        m_hideWindows(hideWindows),
+        m_hideWindows(false),
         m_toolbar(nullptr),
         m_departureWindow(nullptr),
         m_customWindows(),
@@ -43,6 +43,10 @@ UiManager::~UiManager() {
         delete this->m_departureWindow;
         this->m_departureWindow = nullptr;
     }
+}
+
+void UiManager::hideWindows(bool hide) {
+    this->m_hideWindows = hide;
 }
 
 void UiManager::activateUi(UiManager::WindowId id) {
