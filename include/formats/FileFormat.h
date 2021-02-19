@@ -8,6 +8,8 @@
 
 #pragma once
 
+#ifndef DOXYGEN_IGNORE
+
 #include <map>
 
 #include <types/Runway.h>
@@ -55,3 +57,5 @@ namespace topskytower {
         };
     }
 }
+
+#endif
