@@ -75,12 +75,12 @@ namespace topskytower {
 
         private:
             volatile bool                           m_stopNotamThread;
-            std::thread                             m_notamThread;
             std::map<std::string, TimePoint>        m_airportUpdates;
             std::mutex                              m_pendingQueueLock;
             std::list<std::string>                  m_enqueuePending;
             std::list<std::string>                  m_dequeuePending;
             std::map<std::string, std::list<Notam>> m_notams;
+            std::thread                             m_notamThread;
 
             NotamControl();
 
