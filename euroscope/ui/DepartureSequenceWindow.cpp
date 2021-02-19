@@ -191,6 +191,7 @@ bool DepartureSequenceWindow::visualize(Gdiplus::Graphics* graphics) {
             this->setPosition(Gdiplus::PointF(this->area().X, yPos));
             this->m_departureTable->setPosition(Gdiplus::PointF(this->m_contentArea.GetLeft() + 2.0f,
                                                                 this->m_contentArea.GetTop() - 2.0f));
+            this->m_firstRendering = false;
         }
 
         /* calculate the required size */
