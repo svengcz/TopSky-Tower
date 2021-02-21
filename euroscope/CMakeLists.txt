@@ -37,6 +37,8 @@ SET(SOURCE_FILES
     PlugIn.h
     RadarScreen.cpp
     RadarScreen.h
+    RdfIPC.cpp
+    RdfIPC.h
     stdafx.cpp
     stdafx.h
     TopSkyTowerMain.cpp
