@@ -73,9 +73,9 @@ bool ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
         /* parse the local settings */
         if (true == std::filesystem::exists(path + "\\TopSkyTowerSettingsLocal.txt")) {
             formats::SettingsFileFormat localSettings(path + "\\TopSkyTowerSettingsLocal.txt");
-            if (false == localSettings.parse(this->m_systemConfig)) {
-                this->m_errorLine = settings.errorLine();
-                this->m_errorMessage = "TopSkyTowerSettingsLocal.txt:\n" + settings.errorMessage();
+            if (false == localSettings.parse(this->m_systemConfig) && 0 != localSettings.errorLine()) {
+                this->m_errorLine = localSettings.errorLine();
+                this->m_errorMessage = "TopSkyTowerSettingsLocal.txt:\n" + localSettings.errorMessage();
                 return false;
             }
         }
