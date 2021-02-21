@@ -194,6 +194,12 @@ void PdcDepartureClearanceWindow::sendMessage() {
     management::PdcControl::instance().sendClearanceMessage(this->m_message);
 }
 
+void PdcDepartureClearanceWindow::setActive(bool active) {
+    if (true == active)
+        this->centeredPosition();
+    InsetWindow::setActive(active);
+}
+
 bool PdcDepartureClearanceWindow::visualize(Gdiplus::Graphics* graphics) {
     if (nullptr != this->m_nextFrequencyField) {
         /* controller select an other sector */
