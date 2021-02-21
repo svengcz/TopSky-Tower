@@ -609,21 +609,26 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         }
         break;
     case PlugIn::TagItemElement::SurveillanceAlerts:
+    {
         *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
         itemString[0] = '\0';
 
-        if (true == flightScreen->stcdControl().ntzViolation(flight))
-            std::strcat(itemString, "NTZ");
-        else if (true == flightScreen->stcdControl().separationLoss(flight))
-            std::strcat(itemString, "STC");
-        else if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
-            std::strcat(itemString, "RIW");
-        else if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight, flightScreen->identifyType(flight)))
-            std::strcat(itemString, "CMA");
-        else if (true == flightScreen->mtcdControl().conflictsExist(flight))
-            std::strcat(itemString, "MTC");
+        bool inSector = flightScreen->sectorControl().isInOwnSector(flight, flightScreen->identifyType(flight));
+        if (true == inSector || true == flight.isTracked()) {
+            if (true == flightScreen->stcdControl().ntzViolation(flight))
+                std::strcat(itemString, "NTZ");
+            else if (true == flightScreen->stcdControl().separationLoss(flight))
+                std::strcat(itemString, "STC");
+            else if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
+                std::strcat(itemString, "RIW");
+            else if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight, flightScreen->identifyType(flight)))
+                std::strcat(itemString, "CMA");
+            else if (true == flightScreen->mtcdControl().conflictsExist(flight))
+                std::strcat(itemString, "MTC");
+        }
 
         break;
+    }
     case PlugIn::TagItemElement::HoldingPoint:
         if (true == flightScreen->departureSequenceControl().hasHoldingPoint(flight)) {
             auto& point = flightScreen->departureSequenceControl().holdingPoint(flight);
