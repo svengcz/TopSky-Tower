@@ -194,26 +194,10 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
     this->m_sectorControl->updateFlight(flight, type);
     this->m_standControl->updateFlight(flight, type);
     this->m_departureControl->updateFlight(flight, type);
-
-    /* only tower sectors require these features */
-    if ("TWR" == this->m_sectorControl->ownSector().suffix()) {
-        this->m_mtcdControl->updateFlight(flight, type);
-        this->m_stcdControl->updateFlight(flight, type);
-    }
-    else {
-        this->m_mtcdControl->removeFlight(flight.callsign());
-        this->m_stcdControl->removeFlight(flight.callsign());
-    }
-
-    /* only relevant for own sectors */
-    if (this->m_sectorControl->isInOwnSector(flight, type)) {
-        this->m_ariwsControl->updateFlight(flight, type);
-        this->m_cmacControl->updateFlight(flight, type);
-    }
-    else {
-        this->m_ariwsControl->removeFlight(flight.callsign());
-        this->m_cmacControl->removeFlight(flight.callsign());
-    }
+    this->m_mtcdControl->updateFlight(flight, type);
+    this->m_stcdControl->updateFlight(flight, type);
+    this->m_ariwsControl->updateFlight(flight, type);
+    this->m_cmacControl->updateFlight(flight, type);
 }
 
 void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan, int type) {
@@ -237,26 +221,10 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
     auto flightType = this->identifyType(flight);
 
     this->m_departureControl->updateFlight(flight, flightType);
-
-    /* only tower sectors require these features */
-    if ("TWR" == this->m_sectorControl->ownSector().suffix()) {
-        this->m_mtcdControl->updateFlight(flight, flightType);
-        this->m_stcdControl->updateFlight(flight, flightType);
-    }
-    else {
-        this->m_mtcdControl->removeFlight(flight.callsign());
-        this->m_stcdControl->removeFlight(flight.callsign());
-    }
-
-    /* only relevant for own sectors */
-    if (this->m_sectorControl->isInOwnSector(flight, flightType)) {
-        this->m_ariwsControl->updateFlight(flight, flightType);
-        this->m_cmacControl->updateFlight(flight, flightType);
-    }
-    else {
-        this->m_ariwsControl->removeFlight(flight.callsign());
-        this->m_cmacControl->removeFlight(flight.callsign());
-    }
+    this->m_mtcdControl->updateFlight(flight, flightType);
+    this->m_stcdControl->updateFlight(flight, flightType);
+    this->m_ariwsControl->updateFlight(flight, flightType);
+    this->m_cmacControl->updateFlight(flight, flightType);
 
     /* update the stand if needed */
     std::string stand = flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand));
