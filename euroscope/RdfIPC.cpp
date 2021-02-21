@@ -24,28 +24,26 @@ void RdfIPC::syncThread() {
     using namespace std::chrono_literals;
 
     while (false == this->m_stopThread) {
-        DWORD readBytes;
+        DWORD readBytes = 0;
 
         HANDLE relevantPipe;
         if (false == this->m_slave) {
-            /* wait for the pipe */
-            if (FALSE == WaitNamedPipeA(__pipeSyncName, 50))
-                continue;
-
             relevantPipe = this->m_syncHandle;
         }
         else {
-            /* try again after a short wait period */
             if (NULL == this->m_recvHandle) {
                 std::this_thread::sleep_for(50ms);
                 continue;
             }
 
-            /* wait for the pipe */
-            if (FALSE == WaitNamedPipeA(this->m_slavePipeName.c_str(), 50))
-                continue;
-
             relevantPipe = this->m_recvHandle;
+        }
+
+        /* test if data is available */
+        PeekNamedPipe(relevantPipe, buffer, 512, &readBytes, NULL, NULL);
+        if (0 == readBytes) {
+            std::this_thread::sleep_for(50ms);
+            continue;
         }
 
         if (FALSE != ReadFile(relevantPipe, buffer, 512, &readBytes, NULL)) {
@@ -96,6 +94,7 @@ RdfIPC::RdfIPC(PlugIn* plugin) :
 
         this->m_recvHandle = CreateNamedPipeA(this->m_slavePipeName.c_str(), PIPE_ACCESS_INBOUND, PIPE_TYPE_MESSAGE,
                                               PIPE_UNLIMITED_INSTANCES, 0, 512, 0, NULL);
+
         WriteFile(this->m_syncHandle, this->m_slavePipeName.c_str(), this->m_slavePipeName.length(), NULL, NULL);
     }
     else {
