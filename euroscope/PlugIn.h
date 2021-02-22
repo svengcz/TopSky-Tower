@@ -20,6 +20,7 @@
 
 #include "HiddenWindow.h"
 #include "RadarScreen.h"
+#include "RdfIPC.h"
 
 namespace topskytower {
     namespace euroscope {
@@ -108,6 +109,7 @@ namespace topskytower {
             HWND                                    m_hiddenWindow;
             std::mutex                              m_transmissionsLock;
             std::list<std::string>                  m_transmissions;
+            RdfIPC                                  m_ipc;
 
             static std::string findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker,
                                                    const std::string& entry);
@@ -232,6 +234,11 @@ namespace topskytower {
              * @param[in] message The incoming message
              */
             void afvMessage(const std::string& message);
+            /**
+             * @brief Returns the Rdf IPC instance
+             * @return The communication instance
+             */
+            RdfIPC& rdfCommunication();
         };
     }
 }

@@ -10,6 +10,7 @@
  */
 
 #include "stdafx.h"
+
 #include "HiddenWindow.h"
 #include "PlugIn.h"
 
@@ -25,8 +26,11 @@ LRESULT CALLBACK HiddenWindow(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_COPYDATA:
         data = reinterpret_cast<COPYDATASTRUCT*>(lparam);
 
-        if (nullptr != data && 666 == data->dwData && nullptr != data->lpData && nullptr != __plugin)
-            __plugin->afvMessage(reinterpret_cast<const char*>(data->lpData));
+        if (nullptr != data && 666 == data->dwData && nullptr != data->lpData && nullptr != __plugin) {
+            std::string message(reinterpret_cast<const char*>(data->lpData));
+            __plugin->afvMessage(message);
+            __plugin->rdfCommunication().sendAfvMessage(message);
+        }
 
         return TRUE;
     default:

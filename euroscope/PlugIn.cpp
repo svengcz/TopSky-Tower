@@ -70,7 +70,8 @@ PlugIn::PlugIn() :
             "RDFHiddenWindowClass"
         },
         m_hiddenWindow(nullptr),
-        m_transmissions() {
+        m_transmissions(),
+        m_ipc(this) {
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION + " loaded").c_str(),
                              false, false, false, false, false);
 
@@ -131,7 +132,7 @@ PlugIn::PlugIn() :
     }
 
     const auto& systemConfig = system::ConfigurationRegistry::instance().systemConfiguration();
-    if (true == systemConfig.valid && true == systemConfig.rdfActive) {
+    if (true == systemConfig.valid && true == systemConfig.rdfActive && false == this->m_ipc.isSlave()) {
         /* register the window class and create the window */
         RegisterClassA(&this->m_windowClass);
         this->m_hiddenWindow = CreateWindowA("RDFHiddenWindowClass", "RDFHiddenWindow", NULL, 0, 0, 0, 0, NULL, NULL,
@@ -1400,4 +1401,8 @@ void PlugIn::afvMessage(const std::string& message) {
     this->m_transmissionsLock.lock();
     this->m_transmissions.push_back(message);
     this->m_transmissionsLock.unlock();
+}
+
+RdfIPC& PlugIn::rdfCommunication() {
+    return this->m_ipc;
 }
