@@ -49,7 +49,10 @@ void FlightRegistry::updateFlight(const types::Flight& flight) {
                 depFlags = newFlag;
             }
 
-            it->second.first.flightPlan().setFlag(depFlags);
+            if (types::FlightPlan::AtcCommand::StartUp == newFlag && types::FlightPlan::AtcCommand::Unknown == depFlags)
+                it->second.first.flightPlan().resetFlag(true);
+            else
+                it->second.first.flightPlan().setFlag(depFlags);
         }
         /* restore the old entry */
         else if (types::FlightPlan::AtcCommand::Unknown != depFlags) {
