@@ -542,11 +542,13 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             /* update the initial clearance limit */
             auto& config = system::ConfigurationRegistry::instance().airportConfiguration(flight.flightPlan().origin());
             auto sidIt = config.sids.find(flight.flightPlan().departureRoute());
-            auto esPlan = radarTarget.GetCorrelatedFlightPlan();
 
-            auto clearedFL = static_cast<int>(sidIt->second.clearanceLimit.convert(types::feet));
-            if (esPlan.GetControllerAssignedData().GetClearedAltitude() != clearedFL)
-                esPlan.GetControllerAssignedData().SetClearedAltitude(clearedFL);
+            if (config.sids.cend() != sidIt) {
+                auto esPlan = radarTarget.GetCorrelatedFlightPlan();
+                auto clearedFL = static_cast<int>(sidIt->second.clearanceLimit.convert(types::feet));
+                if (esPlan.GetControllerAssignedData().GetClearedAltitude() != clearedFL)
+                    esPlan.GetControllerAssignedData().SetClearedAltitude(clearedFL);
+            }
         }
 
         break;
