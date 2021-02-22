@@ -982,9 +982,11 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         else if (0 == std::strncmp(itemString, "Assume", 6)) {
             radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "");
             radarTarget.GetCorrelatedFlightPlan().StartTracking();
+            this->OnRadarTargetPositionUpdate(radarTarget);
         }
         else if (0 == std::strncmp(itemString, "Accept", 6)) {
             radarTarget.GetCorrelatedFlightPlan().AcceptHandoff();
+            this->OnRadarTargetPositionUpdate(radarTarget);
         }
         else if (0 == std::strncmp(itemString, "Refuse", 6)) {
             radarTarget.GetCorrelatedFlightPlan().RefuseHandoff();
