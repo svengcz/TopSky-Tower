@@ -49,7 +49,10 @@ void FlightRegistry::updateFlight(const types::Flight& flight) {
                 depFlags = newFlag;
             }
 
-            it->second.first.flightPlan().setFlag(depFlags);
+            if (types::FlightPlan::AtcCommand::StartUp == newFlag && types::FlightPlan::AtcCommand::Unknown == depFlags)
+                it->second.first.flightPlan().resetFlag(true);
+            else
+                it->second.first.flightPlan().setFlag(depFlags);
         }
         /* restore the old entry */
         else if (types::FlightPlan::AtcCommand::Unknown != depFlags) {
@@ -83,6 +86,50 @@ const types::Flight& FlightRegistry::flight(const std::string& callsign) const {
         return it->second.first;
     else
         return fallback;
+}
+
+void FlightRegistry::setAtcClearanceFlag(const types::Flight& flight, std::uint16_t flag) {
+    types::FlightPlan::AtcCommand departure = static_cast<types::FlightPlan::AtcCommand>(flag & 0x0ff);
+    types::FlightPlan::AtcCommand arrival = static_cast<types::FlightPlan::AtcCommand>(flag & 0xf00);
+    auto it = this->m_flights.find(flight.callsign());
+
+    if (this->m_flights.end() == it)
+        return;
+
+    switch (departure) {
+    case types::FlightPlan::AtcCommand::Unknown:
+        if (types::FlightPlan::AtcCommand::Unknown != it->second.second)
+            it->second.second = types::FlightPlan::AtcCommand::StartUp;
+        break;
+    case types::FlightPlan::AtcCommand::StartUp:
+        it->second.second = types::FlightPlan::AtcCommand::StartUp;
+        break;
+    case types::FlightPlan::AtcCommand::Pushback:
+        it->second.second = types::FlightPlan::AtcCommand::Pushback;
+        break;
+    case types::FlightPlan::AtcCommand::TaxiOut:
+    case types::FlightPlan::AtcCommand::LineUp:
+        it->second.second = types::FlightPlan::AtcCommand::TaxiOut;
+        break;
+    case types::FlightPlan::AtcCommand::Departure:
+        it->second.second = types::FlightPlan::AtcCommand::Departure;
+        break;
+    case types::FlightPlan::AtcCommand::Deicing:
+    default:
+        break;
+    }
+
+    /* update the departure status */
+    if (types::FlightPlan::AtcCommand::Unknown == departure)
+        it->second.first.flightPlan().resetFlag(true);
+    else
+        it->second.first.flightPlan().setFlag(departure);
+
+    /* update the arrival status */
+    if (types::FlightPlan::AtcCommand::Unknown == arrival)
+        it->second.first.flightPlan().resetFlag(false);
+    else
+        it->second.first.flightPlan().setFlag(arrival);
 }
 
 FlightRegistry& FlightRegistry::instance() {

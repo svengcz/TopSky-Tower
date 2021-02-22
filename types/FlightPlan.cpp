@@ -171,6 +171,13 @@ void FlightPlan::setFlag(FlightPlan::AtcCommand command) {
     }
 }
 
+void FlightPlan::resetFlag(bool departure) {
+    if (true == departure)
+        this->m_atcCommand = this->m_atcCommand & 0xf00;
+    else
+        this->m_atcCommand = this->m_atcCommand & 0x0ff;
+}
+
 FlightPlan::AtcCommand FlightPlan::departureFlag() const {
     return static_cast<FlightPlan::AtcCommand>(this->m_atcCommand & 0x0ff);
 }

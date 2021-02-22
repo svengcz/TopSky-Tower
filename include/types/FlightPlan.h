@@ -228,6 +228,11 @@ namespace topskytower {
              */
             void setFlag(AtcCommand command);
             /**
+             * @brief Resets the ATC command flag
+             * @param[in] departure True if the departure flag needs to be reset, else the arrival flags
+             */
+            void resetFlag(bool departure);
+            /**
              * @brief Returns the departure-relevant ATC command
              * @return The departure relevant ATC command
              */
