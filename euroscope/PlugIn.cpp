@@ -811,6 +811,8 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
         }
     }
 
+    system::FlightRegistry::instance().setAtcClearanceFlag(flight, mask);
+
     if (0 != scratchPadExtend.length()) {
         auto split = helper::String::splitString(scratchPadExtend, ";");
         for (const auto& entry : std::as_const(split)) {
