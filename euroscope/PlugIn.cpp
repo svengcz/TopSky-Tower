@@ -752,7 +752,11 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
     if (false == arrival) {
         mask |= static_cast<std::uint16_t>(flight.flightPlan().arrivalFlag());
 
-        if ("ST-UP" == view) {
+        if ("CLEAR" == view) {
+            scratchPadExtend = "ST-UP";
+            overwrite = true;
+        }
+        else if ("ST-UP" == view) {
             mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::StartUp);
             scratchPadExtend = "ST-UP";
             overwrite = true;
@@ -785,7 +789,11 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
     else {
         mask |= static_cast<std::uint16_t>(flight.flightPlan().departureFlag());
 
-        if ("APPR" == view) {
+        if ("CLEAR" == view) {
+            if (true == flight.onMissedApproach())
+                PlugIn::updateManuallyAlerts(target, "MISAP_");
+        }
+        else if ("APPR" == view) {
             mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Approach);
             scratchPadExtend = "APPROACH";
             if (true == flight.onMissedApproach())
@@ -1215,6 +1223,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::DepartureGroundStatusMenu:
         if (false == flight.isTrackedByOther()) {
             this->OpenPopupList(area, "Status", 1);
+            this->AddPopupListElement("CLEAR", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
             this->AddPopupListElement("ST-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
             this->AddPopupListElement("DEICE", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
             this->AddPopupListElement("PUSH", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
@@ -1229,6 +1238,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::ArrivalGroundStatusMenu:
         if (false == flight.isTrackedByOther()) {
             this->OpenPopupList(area, "Status", 1);
+            this->AddPopupListElement("CLEAR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
             this->AddPopupListElement("APPR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
             this->AddPopupListElement("LAND", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
             this->AddPopupListElement("TAXI", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
