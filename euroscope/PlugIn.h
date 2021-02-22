@@ -33,9 +33,10 @@ namespace topskytower {
              * @brief Defines the indices of the flight strip annotations
              */
             enum class AnnotationIndex {
-                Unknown    = -1, /**< The annotation is unknown */
-                Stand      = 6,  /**< Defines the stand annotation */
-                Marker     = 7,  /**< Defines the marker annotation */
+                Unknown = -1, /**< The annotation is unknown     */
+                Stand   =  6, /**< Defines the stand annotation  */
+                Marker  =  7, /**< Defines the marker annotation */
+                Handoff =  8, /**< Defines the handoff indicator */
             };
 
             /**
@@ -123,6 +124,7 @@ namespace topskytower {
                                     const types::Flight& flight, bool arrival);
             void updateStand(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
             void updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
+            void updateSectorHandoff(const types::Flight& flight);
 
         public:
             /**
