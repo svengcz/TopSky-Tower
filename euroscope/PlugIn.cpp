@@ -656,7 +656,12 @@ void PlugIn::handleHandoffPerform(POINT point, RECT area, const types::Flight& f
                 else
                     radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(controllers.front().c_str());
             }
-            screen->sectorControl().handoffPerformed(flight);
+
+            /* update all screens */
+            for (auto& radarScreen : this->m_screens) {
+                if (true == radarScreen->sectorControl().handoffRequired(flight))
+                    radarScreen->sectorControl().handoffPerformed(flight);
+            }
         }
         else {
             RadarScreen::EuroscopeEvent eventEntry = {
@@ -956,8 +961,12 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             /* check if a handoff to UNICOM is ongoing */
             if (true == flightScreen->sectorControl().handoffRequired(flight)) {
                 auto controllers = flightScreen->sectorControl().handoffStations(flight);
-                if (0 == controllers.front().size())
-                    flightScreen->sectorControl().handoffPerformed(flight);
+                if (0 == controllers.front().size()) {
+                    for (auto& screen : this->m_screens) {
+                        if (true == screen->sectorControl().handoffRequired(flight))
+                            screen->sectorControl().handoffPerformed(flight);
+                    }
+                }
             }
         }
         else if (0 == std::strncmp(itemString, "Assume", 6)) {
@@ -989,7 +998,12 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         if (true == flightScreen->sectorControl().handoffRequired(flight)) {
             if (true == flight.isTracked())
                 radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
-            flightScreen->sectorControl().handoffPerformed(flight);
+
+            /* update all windows */
+            for (auto& screen : this->m_screens) {
+                if (true == screen->sectorControl().handoffRequired(flight))
+                    screen->sectorControl().handoffPerformed(flight);
+            }
         }
         break;
     case PlugIn::TagItemFunction::HandoffSectorChangeEvent:
