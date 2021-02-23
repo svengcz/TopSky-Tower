@@ -227,7 +227,7 @@ namespace topskytower {
              * @param[in] flight The flight structure
              * @return True if new messages are available, else false
              */
-            bool messagesAvailable(const types::Flight& flight) const;
+            bool messagesAvailable(const types::Flight& flight);
             /**
              * @brief Returns the next message in the queue
              * @param[in] flight The flight structure

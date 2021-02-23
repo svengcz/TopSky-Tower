@@ -479,9 +479,11 @@ bool PdcControl::airportOnline(const std::string& icao) {
     return this->m_airports.cend() != it;
 }
 
-bool PdcControl::messagesAvailable(const types::Flight& flight) const {
+bool PdcControl::messagesAvailable(const types::Flight& flight) {
     if (types::FlightPlan::Type::IFR != flight.flightPlan().type())
         return false;
+
+    std::lock_guard(this->m_comChannelsLock);
 
     auto it = this->m_comChannels.find(flight.callsign());
     if (this->m_comChannels.cend() != it)
