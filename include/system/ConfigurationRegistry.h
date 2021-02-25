@@ -38,6 +38,7 @@ namespace topskytower {
             };
 
         private:
+            std::mutex                                         m_configurationLock;
             types::SystemConfiguration                         m_systemConfig;
             types::RuntimeConfiguration                        m_runtimeConfig;
             std::map<std::string, formats::AirportFileFormat*> m_airportConfigurations;
@@ -70,7 +71,7 @@ namespace topskytower {
              * @brief Returns the system configuration
              * @return The constant reference to the system configuration
              */
-            const types::SystemConfiguration& systemConfiguration() const;
+            const types::SystemConfiguration& systemConfiguration();
             /**
              * @brief Sets the new runtime configuration
              * @param[in] configuration The new runtime configuration
@@ -86,18 +87,18 @@ namespace topskytower {
              * @brief Returns the runtime configuration
              * @return The constant reference to the runtime configuration
              */
-            const types::RuntimeConfiguration& runtimeConfiguration() const;
+            const types::RuntimeConfiguration& runtimeConfiguration();
             /**
              * @brief Returns an airport configuration
              * @param[in] icao The airport's ICAO code
              * @return The airport configuration
              */
-            const types::AirportConfiguration& airportConfiguration(const std::string& icao) const;
+            const types::AirportConfiguration& airportConfiguration(const std::string& icao);
             /**
              * @brief Returns the parsed aircrafts
              * @return A map of aircrafts
              */
-            const std::map<std::string, types::Aircraft>& aircrafts() const;
+            const std::map<std::string, types::Aircraft>& aircrafts();
             /**
              * @brief Registers a callback that is triggered as soon as a new configuration is loaded
              * @tparam T The element which registers the callback
