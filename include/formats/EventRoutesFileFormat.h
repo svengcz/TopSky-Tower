@@ -17,6 +17,43 @@ namespace topskytower {
         /**
          * @brief Defines the event routes file format
          * @ingroup format
+         *
+         * The event routes file format describes the way to describe VATSIM-event specific routes.
+         * It allows to define valid routes that need to be flown by aircrafts that want to participate in the events.
+         *
+         * An event can have multiple entries to specifiy different routes and it allows different flight level rules
+         * and minimum and maximum flight levels.
+         *
+         * The event definition has to begin with the following block:
+         * @code{.xml}
+         * EVENT:NAME
+         * AIRPORTS:ORIGIN:DESTINATION
+         * @endcode
+         *
+         * The name will be used in the window to activate and deactivate the event routes.
+         * It is required to define the origin and destination of the event city pair.
+         * If an event includes multiple airports is it required to define multiple events with the same name.
+         * All events with the same name will be clustered to one event for the controller.
+         *
+         * Afterwards is it possible to describe flight level constraints and rules that are required for flightplans.
+         * @code{.xml}
+         * LEVELS:MIN:MAX:[RULE]
+         * @endcode
+         *
+         * The minimum and maximum flight level are described by three digits and the flight rule has to contain
+         * an 'E' for even flight levels or 'O' for odd ones. The complete LEVELS-block is optional and the default
+         * configuration will be FL000 to FL999 with all kinds of allowed flight levels.
+         *
+         * Afterwards are the route definitions which take the city-pair and flight level definitions.
+         * @code{.xml}
+         * ROUTE:WAYPOINTS AND AIRWAYS
+         * @endcode
+         *
+         * The first waypoint needs to be the exit of the SID and the last waypoint needs to be the entry of the STAR or transition.
+         * It is possible to define multiple routes for one event. It takes the preceeding city-pair and flight level constraints.
+         *
+         * If the flight level constraints change between different routes is it possible to define LEVELS/ROUTE pairs
+         * before the new route definition.
          */
         class EventRoutesFileFormat : public FileFormat {
         private:
