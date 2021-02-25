@@ -270,7 +270,7 @@ namespace topskytower {
 
         public:
             /**
-             * @brief Parses an airport configuration
+             * @brief Parses a settings configuration
              * If the file does not exist, the constructor throws an exeption.
              * @param[in] filename The filename of the configuration
              */
