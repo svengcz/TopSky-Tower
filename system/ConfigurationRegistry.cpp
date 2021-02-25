@@ -114,6 +114,17 @@ bool ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
                 return false;
             }
         }
+
+        if (UpdateType::All == type || UpdateType::Events == type) {
+            formats::EventRoutesFileFormat events(path + "\\TopSkyTowerEventRoutes.txt");
+            if (false == events.parse(this->m_eventsConfig)) {
+                if (0 != events.errorLine()) {
+                    this->m_errorLine = events.errorLine();
+                    this->m_errorMessage = events.errorMessage();
+                }
+                return false;
+            }
+        }
     }
 
     for (const auto& notification : std::as_const(this->m_notificationCallbacks))
@@ -165,6 +176,11 @@ const types::AirportConfiguration& ConfigurationRegistry::airportConfiguration(c
 const std::map<std::string, types::Aircraft>& ConfigurationRegistry::aircrafts() {
     std::lock_guard guard(this->m_configurationLock);
     return this->m_aircraftConfiguration->aircrafts();
+}
+
+const types::EventRoutesConfiguration& ConfigurationRegistry::eventRoutesConfiguration() {
+    std::lock_guard guard(this->m_configurationLock);
+    return this->m_eventsConfig;
 }
 
 ConfigurationRegistry& ConfigurationRegistry::instance() {

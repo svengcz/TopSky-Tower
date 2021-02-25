@@ -13,6 +13,7 @@
 
 #include <formats/AircraftFileFormat.h>
 #include <formats/AirportFileFormat.h>
+#include <formats/EventRoutesFileFormat.h>
 #include <formats/FileFormat.h>
 #include <types/RuntimeConfiguration.h>
 #include <types/SystemConfiguration.h>
@@ -34,13 +35,15 @@ namespace topskytower {
                 Airports  = 0x02, /**< The airport settings are updated */
                 Aircrafts = 0x04, /**< The aircraft settings are updated */
                 Runtime   = 0x08, /**< The runtime settings are updated */
-                Metar     = 0x10  /**< The METAR data is updated */
+                Metar     = 0x10, /**< The METAR data is updated */
+                Events    = 0x20  /**< The event route settings are updated */
             };
 
         private:
             std::mutex                                         m_configurationLock;
             types::SystemConfiguration                         m_systemConfig;
             types::RuntimeConfiguration                        m_runtimeConfig;
+            types::EventRoutesConfiguration                    m_eventsConfig;
             std::map<std::string, formats::AirportFileFormat*> m_airportConfigurations;
             formats::AircraftFileFormat*                       m_aircraftConfiguration;
             std::map<void*, std::function<void(UpdateType)>>   m_notificationCallbacks;
@@ -99,6 +102,11 @@ namespace topskytower {
              * @return A map of aircrafts
              */
             const std::map<std::string, types::Aircraft>& aircrafts();
+            /**
+             * @brief Returns the event routes configuration
+             * @return The event configuration
+             */
+            const types::EventRoutesConfiguration& eventRoutesConfiguration();
             /**
              * @brief Registers a callback that is triggered as soon as a new configuration is loaded
              * @tparam T The element which registers the callback
