@@ -12,6 +12,7 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/types/AirportConfiguration.h
     ${CMAKE_SOURCE_DIR}/include/types/ControllerInfo.h
     ${CMAKE_SOURCE_DIR}/include/types/Coordinate.h
+    ${CMAKE_SOURCE_DIR}/include/types/EventRoutesConfiguration.h
     ${CMAKE_SOURCE_DIR}/include/types/Flight.h
     ${CMAKE_SOURCE_DIR}/include/types/FlightPlan.h
     ${CMAKE_SOURCE_DIR}/include/types/Position.h
