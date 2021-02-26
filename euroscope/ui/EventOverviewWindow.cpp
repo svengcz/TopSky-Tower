@@ -22,7 +22,6 @@ using namespace topskytower::euroscope;
 EventOverviewWindow::EventOverviewWindow(RadarScreen* parent) :
         InsetWindow("Events", parent, Gdiplus::RectF(0, 40, 400, 300), false, true),
         m_firstRendering(true),
-        m_windowLock(),
         m_updateViaClick(false),
         m_eventOverview(new TableViewer(this->m_parent, { "TITLE" },
                                         Gdiplus::RectF(this->m_contentArea.X, this->m_contentArea.Y,
@@ -47,8 +46,6 @@ void EventOverviewWindow::setOverviewContent(system::ConfigurationRegistry::Upda
         return;
     }
 
-    std::lock_guard guard(this->m_windowLock);
-
     this->m_eventOverview->clear();
 
     std::size_t i = 0;
@@ -60,8 +57,6 @@ void EventOverviewWindow::setOverviewContent(system::ConfigurationRegistry::Upda
 }
 
 bool EventOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
-    std::lock_guard guard(this->m_windowLock);
-
     if (true == UiElement::isInRectangle(pt, this->m_contentArea) && true == this->m_eventOverview->click(pt, button)) {
         std::size_t row, column;
 
@@ -93,8 +88,6 @@ bool EventOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButto
 bool EventOverviewWindow::visualize(Gdiplus::Graphics* graphics) {
     if (0 == this->m_eventOverview->numberOfRows())
         this->setOverviewContent(system::ConfigurationRegistry::UpdateType::Events);
-
-    std::lock_guard guard(this->m_windowLock);
 
     /* calculate the required size */
     this->m_eventOverview->prepareVisualization(graphics);

@@ -24,7 +24,6 @@ namespace topskytower {
         class EventOverviewWindow : public InsetWindow {
         private:
             bool         m_firstRendering;
-            std::mutex   m_windowLock;
             bool         m_updateViaClick;
             TableViewer* m_eventOverview;
 
