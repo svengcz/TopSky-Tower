@@ -27,7 +27,7 @@ EventOverviewWindow::EventOverviewWindow(RadarScreen* parent) :
                                         Gdiplus::RectF(this->m_contentArea.X, this->m_contentArea.Y,
                                                        this->m_contentArea.Width, this->m_contentArea.Height))) {
     this->m_eventOverview->visualizeHeader(false);
-    this->m_eventOverview->setMaxVisibleRows(15);
+    this->m_eventOverview->setMaxVisibleRows(10);
     this->m_elements.push_back(this->m_eventOverview);
 
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &EventOverviewWindow::setOverviewContent);
