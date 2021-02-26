@@ -108,6 +108,12 @@ namespace topskytower {
              */
             const types::EventRoutesConfiguration& eventRoutesConfiguration();
             /**
+             * @brief Activates or deactivates an event
+             * @param[in] event The event's name
+             * @param[in] active True if the event is active, else false
+             */
+            void activateEvent(const std::string& event, bool active);
+            /**
              * @brief Registers a callback that is triggered as soon as a new configuration is loaded
              * @tparam T The element which registers the callback
              * @tparam F The callback function

@@ -183,6 +183,24 @@ const types::EventRoutesConfiguration& ConfigurationRegistry::eventRoutesConfigu
     return this->m_eventsConfig;
 }
 
+void ConfigurationRegistry::activateEvent(const std::string& event, bool active) {
+    if (false == this->m_eventsConfig.valid)
+        return;
+
+    {
+        std::lock_guard guard(this->m_configurationLock);
+        for (auto it = this->m_eventsConfig.events.begin(); this->m_eventsConfig.events.end() != it; ++it) {
+            if (it->name == event) {
+                it->active = active;
+                break;
+            }
+        }
+    }
+
+    for (const auto& notification : std::as_const(this->m_notificationCallbacks))
+        notification.second(ConfigurationRegistry::UpdateType::Events);
+}
+
 ConfigurationRegistry& ConfigurationRegistry::instance() {
     static ConfigurationRegistry __instance;
     return __instance;
