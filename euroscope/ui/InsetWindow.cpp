@@ -246,6 +246,13 @@ bool InsetWindow::move(const Gdiplus::PointF& pt, bool released) {
     return true;
 }
 
+void InsetWindow::setCenteredPosition() {
+    auto width = this->m_parent->GetRadarArea().right - this->m_parent->GetRadarArea().left;
+    auto height = this->m_parent->GetRadarArea().bottom - this->m_parent->GetRadarArea().top;
+    InsetWindow::setPosition(Gdiplus::PointF(static_cast<float>(width) * 0.5f - this->m_area.Width * 0.5f,
+                             static_cast<float>(height) * 0.5f - this->m_area.Height * 0.5f));
+}
+
 bool InsetWindow::visualize(Gdiplus::Graphics* graphics) {
     /* no need to render the window */
     if (false == this->m_active)

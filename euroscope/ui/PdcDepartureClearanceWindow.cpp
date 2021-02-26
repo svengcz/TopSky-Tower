@@ -161,14 +161,6 @@ bool PdcDepartureClearanceWindow::click(const Gdiplus::PointF& pt, UiManager::Mo
     }
 }
 
-void PdcDepartureClearanceWindow::centeredPosition() {
-    /* place the window in the center of the screen */
-    auto width = this->m_parent->GetRadarArea().right - this->m_parent->GetRadarArea().left;
-    auto height = this->m_parent->GetRadarArea().bottom - this->m_parent->GetRadarArea().top;
-    InsetWindow::setPosition(Gdiplus::PointF(static_cast<float>(width) * 0.5f - this->m_area.Width * 0.5f,
-                             static_cast<float>(height) * 0.5f - this->m_area.Height * 0.5f));
-}
-
 void PdcDepartureClearanceWindow::sendMessage() {
     auto it = this->m_elements.cbegin();
 
@@ -188,7 +180,7 @@ void PdcDepartureClearanceWindow::sendMessage() {
 
 void PdcDepartureClearanceWindow::setActive(bool active) {
     if (true == active)
-        this->centeredPosition();
+        this->setCenteredPosition();
     InsetWindow::setActive(active);
 }
 

@@ -21,6 +21,7 @@ using namespace topskytower::euroscope;
 
 EventOverviewWindow::EventOverviewWindow(RadarScreen* parent) :
         InsetWindow("Events", parent, Gdiplus::RectF(0, 40, 400, 300), false, true),
+        m_firstRendering(true),
         m_windowLock(),
         m_updateViaClick(false),
         m_eventOverview(new TableViewer(this->m_parent, { "TITLE" },
@@ -105,6 +106,11 @@ bool EventOverviewWindow::visualize(Gdiplus::Graphics* graphics) {
     Gdiplus::SizeF tableSize;
     this->m_eventOverview->area().GetSize(&tableSize);
     this->setContentSize(tableSize);
+
+    if (true == this->m_firstRendering) {
+        this->setCenteredPosition();
+        this->m_firstRendering = false;
+    }
 
     return InsetWindow::visualize(graphics);
 }

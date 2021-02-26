@@ -45,7 +45,7 @@ public:
 
 HoppiesLogonWindow::HoppiesLogonWindow(RadarScreen* parent) :
         InsetWindow("PDC", parent, Gdiplus::RectF(0, 40, 200, 105), false, true) {
-    this->centeredPosition();
+    this->setCenteredPosition();
 
     /* add an edit text for the station */
     Gdiplus::RectF dimension = Gdiplus::RectF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y + 15.0f,
@@ -74,16 +74,9 @@ void HoppiesLogonWindow::setActive(bool active) {
     }
 
     if (false == active)
-        this->centeredPosition();
+        this->setCenteredPosition();
 
     InsetWindow::setActive(active);
-}
-
-void HoppiesLogonWindow::centeredPosition() {
-    /* place the window in the center of the screen */
-    auto width = this->m_parent->GetRadarArea().right - this->m_parent->GetRadarArea().left;
-    auto height = this->m_parent->GetRadarArea().bottom - this->m_parent->GetRadarArea().top;
-    InsetWindow::setPosition(Gdiplus::PointF(static_cast<float>(width) * 0.5f - 100.0f, static_cast<float>(height) * 0.5f - 50.0f));
 }
 
 const std::string& HoppiesLogonWindow::station() const {

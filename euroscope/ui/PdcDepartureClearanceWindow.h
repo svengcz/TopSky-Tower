@@ -24,8 +24,6 @@ namespace topskytower {
             management::PdcControl::ClearanceMessagePtr m_message;
             EditText*                                   m_nextFrequencyField;
 
-            void centeredPosition();
-
         public:
             /**
              * @brief Creates a new logon window

@@ -20,8 +20,6 @@ namespace topskytower {
         private:
             bool m_firstRendering;
 
-            void centeredPosition();
-
         public:
             /**
              * @brief Creates a new PDC message viewer
