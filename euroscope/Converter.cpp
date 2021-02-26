@@ -161,6 +161,45 @@ void Converter::convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, type
         plan.GetControllerAssignedData().SetScratchPadString(scratchpad.c_str());
 }
 
+void Converter::convertRoute(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan) {
+    std::string route(plan.GetFlightPlanData().GetRoute());
+
+    /* check if we need to delete the SID */
+    if (0 != flightPlan.departureRoute().length()) {
+        auto pos = route.find(flightPlan.departureRoute());
+        if (std::string::npos != pos) {
+            route = route.erase(0, pos);
+            pos = route.find_first_of(' ', 0);
+            route = route.erase(0, pos + 1);
+        }
+
+        /* check if we have to delete more */
+        auto firstWaypoint(flightPlan.departureRoute());
+        pos = firstWaypoint.find_first_of("0123456789", 0);
+        if (std::string::npos != pos)
+            firstWaypoint = firstWaypoint.erase(pos, std::numeric_limits<std::size_t>::max());
+
+        pos = route.find(firstWaypoint);
+        if (0 != pos)
+            route = route.erase(0, pos);
+    }
+
+    /* check if we need to delete the STAR/transition */
+    if (0 != flightPlan.arrivalRoute().length()) {
+        auto pos = route.find(flightPlan.arrivalRoute());
+        if (std::string::npos != pos)
+            route = route.erase(pos, std::numeric_limits<std::size_t>::max());
+    }
+
+    /* check if we have to remove a DCT in the end */
+    if (true == route.ends_with(" DCT"))
+        route = route.erase(route.length() - 4, std::numeric_limits<std::size_t>::max());
+    else if (true == route.ends_with(" DCT "))
+        route = route.erase(route.length() - 5, std::numeric_limits<std::size_t>::max());
+
+    flightPlan.setTextRoute(route);
+}
+
 types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     types::FlightPlan retval;
 
@@ -240,6 +279,7 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     retval.setClearanceFlag(plan.GetClearenceFlag());
 
     Converter::convertAtcCommand(plan, retval);
+    Converter::convertRoute(plan, retval);
 
     /* convert the route */
     std::vector<types::Waypoint> waypoints;

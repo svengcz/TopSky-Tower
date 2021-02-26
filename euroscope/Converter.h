@@ -28,6 +28,7 @@ namespace topskytower {
         class Converter {
         private:
             static void convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan);
+            static void convertRoute(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan);
 
         public:
             /**
