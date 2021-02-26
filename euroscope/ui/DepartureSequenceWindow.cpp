@@ -189,8 +189,6 @@ bool DepartureSequenceWindow::visualize(Gdiplus::Graphics* graphics) {
         if (true == this->m_firstRendering) {
             float yPos = this->m_parent->GetRadarArea().bottom * 0.6f;
             this->setPosition(Gdiplus::PointF(this->area().X, yPos));
-            this->m_departureTable->setPosition(Gdiplus::PointF(this->m_contentArea.GetLeft() + 2.0f,
-                                                                this->m_contentArea.GetTop() - 2.0f));
             this->m_firstRendering = false;
         }
 

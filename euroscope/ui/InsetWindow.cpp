@@ -103,8 +103,20 @@ void InsetWindow::move(const Gdiplus::PointF& direction) {
 void InsetWindow::setPosition(const Gdiplus::PointF& position) {
     this->m_area.X = position.X;
     this->m_area.Y = position.Y;
+
+    Gdiplus::PointF oldPosition;
+    this->m_contentArea.GetLocation(&oldPosition);
+
     this->m_contentArea.X = position.X;
     this->m_contentArea.Y = position.Y + HEADER_HEIGHT;
+
+    for (auto& element : this->m_elements) {
+        float dx = element->area().X - oldPosition.X;
+        float dy = element->area().Y - oldPosition.Y;
+
+        Gdiplus::PointF elemPos(this->m_contentArea.X + dx, this->m_contentArea.Y + dy);
+        element->setPosition(elemPos);
+    }
 }
 
 bool InsetWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {

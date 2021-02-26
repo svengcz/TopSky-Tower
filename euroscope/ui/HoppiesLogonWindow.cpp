@@ -84,22 +84,6 @@ void HoppiesLogonWindow::centeredPosition() {
     auto width = this->m_parent->GetRadarArea().right - this->m_parent->GetRadarArea().left;
     auto height = this->m_parent->GetRadarArea().bottom - this->m_parent->GetRadarArea().top;
     InsetWindow::setPosition(Gdiplus::PointF(static_cast<float>(width) * 0.5f - 100.0f, static_cast<float>(height) * 0.5f - 50.0f));
-
-    /* update the positions of the elements */
-    if (0 != this->m_elements.size()) {
-        auto it = this->m_elements.begin();
-
-        /* set the station's EditText */
-        (*it)->setPosition(Gdiplus::PointF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y + 15.0f));
-
-        /* set the password's EditText */
-        std::advance(it, 1);
-        (*it)->setPosition(Gdiplus::PointF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y + 55.0f));
-
-        /* set the logon button */
-        std::advance(it, 1);
-        (*it)->setPosition(Gdiplus::PointF(this->m_contentArea.X + 145.0f, this->m_contentArea.Y + 83.0f));
-    }
 }
 
 const std::string& HoppiesLogonWindow::station() const {

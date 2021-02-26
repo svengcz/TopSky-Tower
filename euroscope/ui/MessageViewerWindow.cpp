@@ -39,9 +39,6 @@ void MessageViewerWindow::centeredPosition() {
     auto height = this->m_parent->GetRadarArea().bottom - this->m_parent->GetRadarArea().top;
     InsetWindow::setPosition(Gdiplus::PointF(static_cast<float>(width) * 0.5f - this->m_area.Width * 0.5f,
                              static_cast<float>(height) * 0.5f - this->m_area.Height * 0.5f));
-
-    if (0 != this->m_elements.size())
-        this->m_elements.front()->setPosition(Gdiplus::PointF(this->m_contentArea.X, this->m_contentArea.Y));
 }
 
 bool MessageViewerWindow::visualize(Gdiplus::Graphics* graphics) {
