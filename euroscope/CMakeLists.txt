@@ -59,6 +59,8 @@ SET(SOURCE_FILES_UI
     ui/ConfigurationErrorWindow.h
     ui/DepartureSequenceWindow.cpp
     ui/DepartureSequenceWindow.h
+    ui/EventOverviewWindow.cpp
+    ui/EventOverviewWindow.h
     ui/HoppiesLogonWindow.cpp
     ui/HoppiesLogonWindow.h
     ui/InsetWindow.cpp
