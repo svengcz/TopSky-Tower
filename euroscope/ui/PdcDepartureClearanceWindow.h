@@ -31,10 +31,6 @@ namespace topskytower {
              * @param[in] message The clearance message
              */
             PdcDepartureClearanceWindow(RadarScreen* parent, const management::PdcControl::ClearanceMessagePtr& message);
-            /**
-             * @brief Destroys the window
-             */
-            ~PdcDepartureClearanceWindow();
 
             /**
              * @brief Handles the click events

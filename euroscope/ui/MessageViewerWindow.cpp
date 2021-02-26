@@ -27,12 +27,6 @@ MessageViewerWindow::MessageViewerWindow(RadarScreen* parent, const std::string&
     this->m_elements.push_back(new TextViewer(this->m_parent, message, this->m_contentArea));
 }
 
-MessageViewerWindow::~MessageViewerWindow() {
-    if (0 != this->m_elements.size())
-        delete this->m_elements.front();
-    this->m_elements.clear();
-}
-
 bool MessageViewerWindow::visualize(Gdiplus::Graphics* graphics) {
     if (0 != this->m_elements.size() && true == this->m_firstRendering) {
         auto viewer = static_cast<TextViewer*>(this->m_elements.front());

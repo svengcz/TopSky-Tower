@@ -34,10 +34,6 @@ namespace topskytower {
              * @param[in] parent The corresponding RADAR screen
              */
             NotamOverviewWindow(RadarScreen* parent);
-            /**
-             * @brief Destroys the window
-             */
-            ~NotamOverviewWindow();
 
             /**
              * @brief Handles the click events

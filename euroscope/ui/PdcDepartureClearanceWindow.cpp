@@ -123,12 +123,6 @@ PdcDepartureClearanceWindow::PdcDepartureClearanceWindow(RadarScreen* parent,
     this->m_elements.push_back(button);
 }
 
-PdcDepartureClearanceWindow::~PdcDepartureClearanceWindow() {
-    for (auto it = this->m_elements.begin(); this->m_elements.end() != it; ++it)
-        delete* it;
-    this->m_elements.clear();
-}
-
 bool PdcDepartureClearanceWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     /* we are only interested in left clicks */
     if (UiManager::MouseButton::Left != button)

@@ -43,13 +43,6 @@ NotamOverviewWindow::NotamOverviewWindow(RadarScreen* parent) :
     this->m_elements.push_back(this->m_notamOverview);
 }
 
-NotamOverviewWindow::~NotamOverviewWindow() {
-    while (0 != this->m_elements.size()) {
-        delete this->m_elements.front();
-        this->m_elements.pop_front();
-    }
-}
-
 void NotamOverviewWindow::setOverviewContent() {
     std::size_t oldSize = this->m_notamOverview->numberOfRows();
     std::string filter = this->m_airportFilter->content();

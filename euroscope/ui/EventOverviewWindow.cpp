@@ -36,11 +36,6 @@ EventOverviewWindow::EventOverviewWindow(RadarScreen* parent) :
 
 EventOverviewWindow::~EventOverviewWindow() {
     system::ConfigurationRegistry::instance().deleteNotificationCallback(this);
-
-    while (0 != this->m_elements.size()) {
-        delete this->m_elements.front();
-        this->m_elements.pop_front();
-    }
 }
 
 void EventOverviewWindow::setOverviewContent(system::ConfigurationRegistry::UpdateType type) {

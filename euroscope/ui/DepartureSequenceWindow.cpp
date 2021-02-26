@@ -33,12 +33,6 @@ DepartureSequenceWindow::DepartureSequenceWindow(RadarScreen* parent) :
     this->m_elements.push_back(this->m_departureTable);
 }
 
-DepartureSequenceWindow::~DepartureSequenceWindow() {
-    if (0 != this->m_elements.size())
-        delete this->m_elements.front();
-    this->m_elements.clear();
-}
-
 bool DepartureSequenceWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     if (true == UiElement::isInRectangle(pt, this->m_contentArea) && true == this->m_departureTable->click(pt, button)) {
         std::size_t row, column;
