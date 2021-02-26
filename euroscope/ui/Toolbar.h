@@ -38,8 +38,10 @@ namespace topskytower {
                 ReloadSystem    = 4,
                 ReloadAircrafts = 5,
                 ReloadAirports  = 6,
-                Windows         = 7,
-                Notams          = 8
+                ReloadEvents    = 7,
+                Windows         = 8,
+                Notams          = 9,
+                Events          = 10
             };
 
             struct Element {
