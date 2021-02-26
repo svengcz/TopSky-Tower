@@ -19,6 +19,7 @@ FlightPlan::FlightPlan() :
         m_aircraft(),
         m_atcCommand(),
         m_origin(),
+        m_textRoute(),
         m_departureRoute(),
         m_departureRunway(),
         m_destination(),
@@ -134,6 +135,14 @@ void FlightPlan::setRoute(Route&& route) {
 
 const Route& FlightPlan::route() const {
     return this->m_route;
+}
+
+void FlightPlan::setTextRoute(const std::string& route) {
+    this->m_textRoute = route;
+}
+
+const std::string& FlightPlan::textRoute() const {
+    return this->m_textRoute;
 }
 
 void FlightPlan::setDepartureRunway(const std::string& runway) {
