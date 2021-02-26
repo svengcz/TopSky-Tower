@@ -21,6 +21,7 @@ namespace topskytower {
          */
         class NotamOverviewWindow : public InsetWindow {
         private:
+            bool         m_firstRendering;
             EditText*    m_airportFilter;
             Checkbox*    m_activeFilter;
             TableViewer* m_notamOverview;

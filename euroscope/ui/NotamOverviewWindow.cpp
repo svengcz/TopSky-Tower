@@ -28,6 +28,7 @@ using namespace topskytower::euroscope;
 
 NotamOverviewWindow::NotamOverviewWindow(RadarScreen* parent) :
         InsetWindow("NOTAMs", parent, Gdiplus::RectF(0, 40, 400, 300), false, true),
+        m_firstRendering(true),
         m_airportFilter(new EditText(this->m_parent, "ICAO", Gdiplus::RectF(this->m_contentArea.X + 5.0f, this->m_contentArea.Y + 15.0f,
                                                                             100.0f, MENU_HEIGHT))),
         m_activeFilter(new Checkbox(this->m_parent, "Show active ", Gdiplus::RectF(this->m_contentArea.X + this->m_contentArea.Width - 115.0f, this->m_contentArea.Y + 15.0f,
@@ -138,8 +139,23 @@ bool NotamOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButto
 }
 
 bool NotamOverviewWindow::visualize(Gdiplus::Graphics* graphics) {
-    if (0 != this->m_elements.size()) {
+    if (0 != this->m_elements.size())
         this->setOverviewContent();
+
+    if (true == this->m_firstRendering) {
+        auto area = this->m_parent->GetRadarArea();
+
+        float width = static_cast<float>(area.right - area.left);
+        float height = static_cast<float>(area.bottom - area.top);
+        float x = width - this->m_notamOverview->area().Width - 100.0f;
+        if (0.0f > x)
+            x = 0.0f;
+        float y = height - this->m_notamOverview->area().Height - 20.0f;
+        if (0.0f > y)
+            y = 0.0f;
+        this->setPosition(Gdiplus::PointF(x, y));
+
+        this->m_firstRendering = false;
     }
 
     /* calculate the required size */
