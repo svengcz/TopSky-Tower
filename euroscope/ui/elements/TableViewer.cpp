@@ -243,7 +243,7 @@ bool TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
     int rowCount = 0 == maxRowCount ? this->m_visibleRows : (this->m_rows.size() - emptyLines);
     if (true == this->m_visualizeHeader)
         rowCount += 1;
-    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 2.0f + 3.0f * (this->m_header.size() - 1), rowCount * this->m_rowHeight);
+    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 3.0f * (this->m_header.size() - 1), rowCount * this->m_rowHeight);
 
     this->m_overallWidth = overallWidth + 3.0f * (this->m_header.size() - 1);
     if (this->m_rows.size() > this->m_visibleRows) {
@@ -337,6 +337,12 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
     if (this->m_visibleRows < this->m_rows.size()) {
         this->m_scrollUp = Gdiplus::RectF(offsetX, this->m_area.Y + 4.0f, 8.0f, 8.0f);
         this->m_scrollDown = Gdiplus::RectF(offsetX, this->m_area.Y + this->m_area.Height - 12.0f, 8.0f, 8.0f);
+
+        /* draw the background of the slider */
+        Gdiplus::RectF sliderBackground(this->m_scrollUp.X, this->m_scrollUp.Y,
+                                        this->m_scrollDown.GetRight() - this->m_scrollUp.X,
+                                        this->m_scrollDown.GetBottom() - this->m_scrollUp.Y);
+        graphics->FillRectangle(&tableBrush, sliderBackground);
 
         /* draw the slider button */
         Gdiplus::SolidBrush sliderBrush(UiElement::foregroundColor());
