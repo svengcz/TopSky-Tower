@@ -116,6 +116,8 @@ bool ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
         }
 
         if (UpdateType::All == type || UpdateType::Events == type) {
+            this->m_eventsConfig.events.clear();
+
             formats::EventRoutesFileFormat events(path + "\\TopSkyTowerEventRoutes.txt");
             if (false == events.parse(this->m_eventsConfig)) {
                 if (0 != events.errorLine()) {
