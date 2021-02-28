@@ -103,8 +103,20 @@ void InsetWindow::move(const Gdiplus::PointF& direction) {
 void InsetWindow::setPosition(const Gdiplus::PointF& position) {
     this->m_area.X = position.X;
     this->m_area.Y = position.Y;
+
+    Gdiplus::PointF oldPosition;
+    this->m_contentArea.GetLocation(&oldPosition);
+
     this->m_contentArea.X = position.X;
     this->m_contentArea.Y = position.Y + HEADER_HEIGHT;
+
+    for (auto& element : this->m_elements) {
+        float dx = element->area().X - oldPosition.X;
+        float dy = element->area().Y - oldPosition.Y;
+
+        Gdiplus::PointF elemPos(this->m_contentArea.X + dx, this->m_contentArea.Y + dy);
+        element->setPosition(elemPos);
+    }
 }
 
 bool InsetWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
@@ -232,6 +244,13 @@ bool InsetWindow::move(const Gdiplus::PointF& pt, bool released) {
     }
 
     return true;
+}
+
+void InsetWindow::setCenteredPosition() {
+    auto width = this->m_parent->GetRadarArea().right - this->m_parent->GetRadarArea().left;
+    auto height = this->m_parent->GetRadarArea().bottom - this->m_parent->GetRadarArea().top;
+    InsetWindow::setPosition(Gdiplus::PointF(static_cast<float>(width) * 0.5f - this->m_area.Width * 0.5f,
+                             static_cast<float>(height) * 0.5f - this->m_area.Height * 0.5f));
 }
 
 bool InsetWindow::visualize(Gdiplus::Graphics* graphics) {

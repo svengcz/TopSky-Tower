@@ -1,6 +1,6 @@
 /*
- * @brief Defines the NOTAM overview window
- * @file ui/NotamOverviewWindow.h
+ * @brief Defines the event overview window
+ * @file ui/EventOverviewWindow.h
  * @author Sven Czarnian <devel@svcz.de>
  * @copyright Copyright 2020-2021 Sven Czarnian
  * @license This project is published under the GNU General Public License v3 (GPLv3)
@@ -8,32 +8,37 @@
 
 #pragma once
 
-#include "elements/Checkbox.h"
-#include "elements/EditText.h"
+#include <mutex>
+
+#include <system/ConfigurationRegistry.h>
+
 #include "elements/TableViewer.h"
 #include "InsetWindow.h"
 
 namespace topskytower {
     namespace euroscope {
         /**
-         * @brief Defines the inset window to give an overview NOTAM
+         * @brief Defines the inset window to give an overview about all event route checks
          * @ingroup euroscope
          */
-        class NotamOverviewWindow : public InsetWindow {
+        class EventOverviewWindow : public InsetWindow {
         private:
             bool         m_firstRendering;
-            EditText*    m_airportFilter;
-            Checkbox*    m_activeFilter;
-            TableViewer* m_notamOverview;
+            bool         m_updateViaClick;
+            TableViewer* m_eventOverview;
 
-            void setOverviewContent();
+            void setOverviewContent(system::ConfigurationRegistry::UpdateType type);
 
         public:
             /**
-             * @brief Creates a new NOTAM overview viewer
+             * @brief Creates a new event overview viewer
              * @param[in] parent The corresponding RADAR screen
              */
-            NotamOverviewWindow(RadarScreen* parent);
+            EventOverviewWindow(RadarScreen* parent);
+            /**
+             * @brief Destroys the window
+             */
+            ~EventOverviewWindow();
 
             /**
              * @brief Handles the click events

@@ -303,6 +303,9 @@ bool PlugIn::summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanCo
         case surveillance::FlightPlanControl::ErrorCode::NoError:
             code = "OK";
             break;
+        case surveillance::FlightPlanControl::ErrorCode::Event:
+            code = "EVT";
+            break;
         case surveillance::FlightPlanControl::ErrorCode::Route:
             code = "RTE";
             break;
@@ -523,17 +526,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
             /* check if the route is already configured */
             if (std::string::npos == route.find(departure, 0)) {
-                auto pos = flight.flightPlan().departureRoute().find_first_of("0123456789", 0);
-                std::string firstWaypoint = flight.flightPlan().departureRoute().substr(0, pos);
-                auto entries = helper::String::splitString(route, " ");
-
-                /* find the first waypoint and ignore all before it */
-                auto wpIt = std::find(entries.cbegin(), entries.cend(), firstWaypoint);
-
-                /* create the new route */
-                std::string newRoute(departure + " ");
-                for (auto routeIt = wpIt; entries.cend() != routeIt; ++routeIt)
-                    newRoute += *routeIt + " ";
+                auto newRoute = departure + " " + flight.flightPlan().textRoute();
 
                 /* write into the flight plan */
                 radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().SetRoute(newRoute.c_str());
@@ -731,6 +724,9 @@ std::string PlugIn::flightPlanCheckResultLog(const std::list<surveillance::Fligh
                 break;
             case surveillance::FlightPlanControl::ErrorCode::NoError:
                 retval += "Valid flight plan - No errors found!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::Event:
+                retval += "Invalid event route filed!\n";
                 break;
             case surveillance::FlightPlanControl::ErrorCode::Route:
                 retval += "No or an invalid route received!\n";

@@ -18,6 +18,7 @@
 #include "AriwsToolbarButton.h"
 #include "CmacToolbarButton.h"
 #include "ConfigurationErrorWindow.h"
+#include "EventOverviewWindow.h"
 #include "IpaToolbarButton.h"
 #include "LvpToolbarButton.h"
 #include "PdcToolbarButton.h"
@@ -137,9 +138,19 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
                                                                        system::ConfigurationRegistry::UpdateType::Aircrafts);
         break;
+    case Toolbar::ClickId::ReloadEvents:
+        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                                       system::ConfigurationRegistry::UpdateType::Events);
+        break;
     case Toolbar::ClickId::Notams:
         if (false == this->m_parent->uiManager().windowIsActive("NOTAMs")) {
             auto viewer = new NotamOverviewWindow(this->m_parent);
+            viewer->setActive(true);
+        }
+        break;
+    case Toolbar::ClickId::Events:
+        if (false == this->m_parent->uiManager().windowIsActive("Events")) {
+            auto viewer = new EventOverviewWindow(this->m_parent);
             viewer->setActive(true);
         }
         break;
@@ -293,6 +304,7 @@ void Toolbar::initialize() {
     Toolbar::createElement("WINDOWS", Toolbar::ClickId::Windows, this->m_toplevel);
     this->m_toplevel->elements.back().child = std::shared_ptr<Toolbar::Level>(new Toolbar::Level);
     Toolbar::createElement("NOTAMS", Toolbar::ClickId::Notams, this->m_toplevel->elements.back().child);
+    Toolbar::createElement("EVENTS", Toolbar::ClickId::Events, this->m_toplevel->elements.back().child);
 
     /* set the settings menu */
     Toolbar::createElement("SETTINGS", Toolbar::ClickId::Settings, this->m_toplevel);

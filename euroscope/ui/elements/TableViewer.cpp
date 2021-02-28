@@ -18,6 +18,7 @@ using namespace topskytower::euroscope;
 
 TableViewer::TableViewer(RadarScreen* parent, const std::vector<std::string>& header, const Gdiplus::RectF& dimension) :
         UiElement(parent, dimension),
+        m_visualizeHeader(true),
         m_headerContent(header),
         m_header(),
         m_rowContent(),
@@ -42,12 +43,22 @@ TableViewer::TableViewer(RadarScreen* parent, const std::vector<std::string>& he
     }
 }
 
+void TableViewer::clear() {
+    this->m_rows.clear();
+    this->m_rowContent.clear();
+    this->m_calculateArea = true;
+}
+
 std::size_t TableViewer::numberOfRows() const {
     return this->m_rows.size();
 }
 
 std::size_t TableViewer::numberOfColumns() const {
     return this->m_header.size();
+}
+
+void TableViewer::visualizeHeader(bool visible) {
+    this->m_visualizeHeader = visible;
 }
 
 void TableViewer::setMaxVisibleRows(std::size_t count) {
@@ -58,7 +69,7 @@ void TableViewer::setMaxVisibleRows(std::size_t count) {
 
 void TableViewer::addRow() {
     this->m_rowContent.push_back(std::move(std::vector<std::string>(this->m_header.size())));
-    this->m_rows.push_back(std::move(std::vector<Text>(this->m_header.size())));
+    this->m_rows.push_back(std::move(std::vector<TableViewer::Cell>(this->m_header.size())));
     this->m_calculateArea = true;
 }
 
@@ -80,12 +91,12 @@ void TableViewer::setElement(std::size_t rowIdx, std::size_t columnIdx, const st
     if (rowIdx < this->m_rows.size() && columnIdx < this->m_header.size()) {
         auto it = this->m_rows.begin();
         std::advance(it, rowIdx);
-        (*it)[columnIdx].setFontColor(UiElement::foregroundColor());
+        (*it)[columnIdx].content.setFontColor(UiElement::foregroundColor());
 
         auto cit = this->m_rowContent.begin();
         std::advance(cit, rowIdx);
 
-        this->m_calculateArea = (*cit)[columnIdx].length() < element.length();
+        this->m_calculateArea |= (*cit)[columnIdx].length() < element.length();
         (*cit)[columnIdx] = element;
     }
 }
@@ -94,7 +105,15 @@ void TableViewer::setTextColor(std::size_t rowIdx, std::size_t columnIdx, const 
     if (rowIdx < this->m_rows.size() && columnIdx < this->m_header.size()) {
         auto it = this->m_rows.begin();
         std::advance(it, rowIdx);
-        (*it)[columnIdx].setFontColor(color);
+        (*it)[columnIdx].content.setFontColor(color);
+    }
+}
+
+void TableViewer::setBackgroundColor(std::size_t rowIdx, std::size_t columnIdx, const Gdiplus::Color& color) {
+    if (rowIdx < this->m_rows.size() && columnIdx < this->m_header.size()) {
+        auto it = this->m_rows.begin();
+        std::advance(it, rowIdx);
+        (*it)[columnIdx].backgroundColor = color;
     }
 }
 
@@ -106,6 +125,17 @@ const std::string& TableViewer::entry(std::size_t rowIdx, std::size_t columnIdx)
     }
 
     static std::string __fallback;
+    return __fallback;
+}
+
+const Gdiplus::Color& TableViewer::backgroundColor(std::size_t rowIdx, std::size_t columnIdx) const {
+    if (rowIdx < this->m_rowContent.size() && columnIdx < this->m_header.size()) {
+        auto it = this->m_rows.cbegin();
+        std::advance(it, rowIdx);
+        return (*it)[columnIdx].backgroundColor;
+    }
+
+    static Gdiplus::Color __fallback;
     return __fallback;
 }
 
@@ -127,11 +157,13 @@ bool TableViewer::click(const Gdiplus::PointF& pt, UiManager::MouseButton button
             float yPos = pt.Y - this->m_area.Y;
 
             /* clicked on the header*/
-            if (yPos < this->m_rowHeight) {
+            if (true == this->m_visualizeHeader && yPos < this->m_rowHeight) {
                 this->m_clickedRow = this->m_clickedColumn = std::numeric_limits<std::size_t>::max();
             }
             else {
-                this->m_clickedRow = static_cast<std::size_t>((yPos - this->m_rowHeight) / this->m_rowHeight);
+                this->m_clickedRow = static_cast<std::size_t>(yPos / this->m_rowHeight);
+                if (true == this->m_visualizeHeader)
+                    this->m_clickedRow -= 1;
                 this->m_clickedRow += this->m_visibleRowOffset;
 
                 this->m_clickedColumn = 0;
@@ -167,14 +199,17 @@ bool TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
 
     /* contains the per-column widths */
     this->m_columnWidths = std::vector<float>(this->m_header.size(), 0.0f);
+    this->m_rowHeight = 0.0f;
     std::size_t emptyLines = 0;
 
     /* get the widths of the header */
-    for (std::size_t i = 0; i < this->m_header.size(); ++i) {
-        this->m_header[i].setGraphics(graphics);
-        this->m_header[i].setText(this->m_headerContent[i]);
-        this->m_columnWidths[i] = std::max(this->m_columnWidths[i], this->m_header[i].rectangle().Width);
-        this->m_rowHeight = std::max(this->m_rowHeight, this->m_header[i].rectangle().Height);
+    if (true == this->m_visualizeHeader) {
+        for (std::size_t i = 0; i < this->m_header.size(); ++i) {
+            this->m_header[i].setGraphics(graphics);
+            this->m_header[i].setText(this->m_headerContent[i]);
+            this->m_columnWidths[i] = std::max(this->m_columnWidths[i], this->m_header[i].rectangle().Width);
+            this->m_rowHeight = std::max(this->m_rowHeight, this->m_header[i].rectangle().Height);
+        }
     }
 
     /* get the width of every row element */
@@ -184,11 +219,11 @@ bool TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
         bool emptyRow = true;
 
         for (std::size_t i = 0; i < it->size(); ++i) {
-            (*it)[i].setGraphics(graphics);
-            (*it)[i].setText((*cit)[i]);
-            this->m_columnWidths[i] = std::max(this->m_columnWidths[i], (*it)[i].rectangle().Width);
-            this->m_rowHeight = std::max(this->m_rowHeight, (*it)[i].rectangle().Height);
-            if (false == helper::Math::almostEqual(0.0f, (*it)[i].rectangle().Width))
+            (*it)[i].content.setGraphics(graphics);
+            (*it)[i].content.setText((*cit)[i]);
+            this->m_columnWidths[i] = std::max(this->m_columnWidths[i], (*it)[i].content.rectangle().Width);
+            this->m_rowHeight = std::max(this->m_rowHeight, (*it)[i].content.rectangle().Height);
+            if (false == helper::Math::almostEqual(0.0f, (*it)[i].content.rectangle().Width))
                 emptyRow = false;
         }
 
@@ -205,8 +240,10 @@ bool TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
     for (const auto& width : std::as_const(this->m_columnWidths))
         overallWidth += width;
 
-    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 2.0f + 3.0f * (this->m_header.size() - 1),
-                                  (0 == maxRowCount ? (this->m_visibleRows + 1) : (this->m_rows.size() - emptyLines + 1)) * this->m_rowHeight);
+    std::size_t rowCount = 0 == maxRowCount ? this->m_visibleRows : (this->m_rows.size() - emptyLines);
+    if (true == this->m_visualizeHeader)
+        rowCount += 1;
+    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 3.0f * (this->m_header.size() - 1), rowCount * this->m_rowHeight);
 
     this->m_overallWidth = overallWidth + 3.0f * (this->m_header.size() - 1);
     if (this->m_rows.size() > this->m_visibleRows) {
@@ -222,10 +259,10 @@ void TableViewer::prepareVisualization(Gdiplus::Graphics* graphics) {
     if (false == this->calculateRequiredArea(graphics)) {
         for (auto it = this->m_rows.begin(); this->m_rows.end() != it; ++it) {
             for (std::size_t i = 0; i < it->size(); ++i) {
-                (*it)[i].setGraphics(graphics);
-                (*it)[i].setText((*cit)[i]);
-                this->m_columnWidths[i] = std::max(this->m_columnWidths[i], (*it)[i].rectangle().Width);
-                this->m_rowHeight = std::max(this->m_rowHeight, (*it)[i].rectangle().Height);
+                (*it)[i].content.setGraphics(graphics);
+                (*it)[i].content.setText((*cit)[i]);
+                this->m_columnWidths[i] = std::max(this->m_columnWidths[i], (*it)[i].content.rectangle().Width);
+                this->m_rowHeight = std::max(this->m_rowHeight, (*it)[i].content.rectangle().Height);
             }
 
             std::advance(cit, 1);
@@ -245,16 +282,20 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
     Gdiplus::Pen pen(UiElement::foregroundColor(), 1.0f);
 
     /* draw the header */
-    for (std::size_t i = 0; i < this->m_header.size(); ++i) {
-        this->m_header[i].setPosition(Gdiplus::PointF(offsetX, offsetY));
-        this->m_header[i].setGraphics(graphics);
-        this->m_header[i].visualize();
-        offsetX += this->m_columnWidths[i] + 3.0f;
+    if (true == this->m_visualizeHeader) {
+        for (std::size_t i = 0; i < this->m_header.size(); ++i) {
+            this->m_header[i].setPosition(Gdiplus::PointF(offsetX, offsetY));
+            this->m_header[i].setGraphics(graphics);
+            this->m_header[i].visualize();
+            offsetX += this->m_columnWidths[i] + 3.0f;
+        }
+        offsetY += this->m_rowHeight;
+        graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY),
+                           Gdiplus::PointF(this->m_area.X + this->m_overallWidth, offsetY));
     }
-    offsetY += this->m_rowHeight;
-    graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY), Gdiplus::PointF(this->m_area.X + this->m_overallWidth, offsetY));
 
     /* draw the rows */
+    auto defaultBgColor(UiElement::backgroundColor());
     auto it = this->m_rows.begin();
     std::advance(it, this->m_visibleRowOffset);
     std::size_t maxRowCount = this->m_visibleRows;
@@ -263,10 +304,16 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
         bool emptyRow = true;
 
         for (std::size_t i = 0; i < this->m_header.size(); ++i) {
-            if (false == helper::Math::almostEqual(0.0f, (*it)[i].rectangle().Height)) {
-                (*it)[i].setPosition(Gdiplus::PointF(offsetX, offsetY));
-                (*it)[i].setGraphics(graphics);
-                (*it)[i].visualize();
+            if (false == helper::Math::almostEqual(0.0f, (*it)[i].content.rectangle().Height)) {
+                if ((*it)[i].backgroundColor.GetValue() != defaultBgColor.GetValue()) {
+                    Gdiplus::SolidBrush elementBrush((*it)[i].backgroundColor);
+                    Gdiplus::RectF cellRect((*it)[i].content.rectangle().X, (*it)[i].content.rectangle().Y, this->m_columnWidths[i], this->m_rowHeight);
+                    graphics->FillRectangle(&elementBrush, cellRect);
+                }
+
+                (*it)[i].content.setPosition(Gdiplus::PointF(offsetX, offsetY));
+                (*it)[i].content.setGraphics(graphics);
+                (*it)[i].content.visualize();
                 emptyRow = false;
             }
             offsetX += this->m_columnWidths[i] + 3.0f;
@@ -290,6 +337,12 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
     if (this->m_visibleRows < this->m_rows.size()) {
         this->m_scrollUp = Gdiplus::RectF(offsetX, this->m_area.Y + 4.0f, 8.0f, 8.0f);
         this->m_scrollDown = Gdiplus::RectF(offsetX, this->m_area.Y + this->m_area.Height - 12.0f, 8.0f, 8.0f);
+
+        /* draw the background of the slider */
+        Gdiplus::RectF sliderBackground(this->m_scrollUp.X, this->m_scrollUp.Y,
+                                        this->m_scrollDown.GetRight() - this->m_scrollUp.X,
+                                        this->m_scrollDown.GetBottom() - this->m_scrollUp.Y);
+        graphics->FillRectangle(&tableBrush, sliderBackground);
 
         /* draw the slider button */
         Gdiplus::SolidBrush sliderBrush(UiElement::foregroundColor());

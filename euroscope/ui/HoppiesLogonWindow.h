@@ -17,9 +17,6 @@ namespace topskytower {
          * @ingroup euroscope
          */
         class HoppiesLogonWindow : public InsetWindow {
-        private:
-            void centeredPosition();
-
         public:
             /**
              * @brief Creates a new logon window

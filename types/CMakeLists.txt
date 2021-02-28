@@ -12,6 +12,7 @@ SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/types/AirportConfiguration.h
     ${CMAKE_SOURCE_DIR}/include/types/ControllerInfo.h
     ${CMAKE_SOURCE_DIR}/include/types/Coordinate.h
+    ${CMAKE_SOURCE_DIR}/include/types/EventRoutesConfiguration.h
     ${CMAKE_SOURCE_DIR}/include/types/Flight.h
     ${CMAKE_SOURCE_DIR}/include/types/FlightPlan.h
     ${CMAKE_SOURCE_DIR}/include/types/Position.h
@@ -47,6 +48,10 @@ ADD_LIBRARY(
 TARGET_LINK_LIBRARIES(types helper)
 TARGET_LINK_LIBRARIES(types debug Geographic_d.lib optimized Geographic.lib)
 ADD_DEPENDENCIES(types GeographicLib Boost)
+
+IF (CODE_ANALYSIS)
+    SET_PROPERTY(TARGET types PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATHS})
+ENDIF ()
 
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
 SOURCE_GROUP("Header Files" FILES ${HEADER_FILES})

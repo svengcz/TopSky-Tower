@@ -95,7 +95,7 @@ RdfIPC::RdfIPC(PlugIn* plugin) :
         this->m_recvHandle = CreateNamedPipeA(this->m_slavePipeName.c_str(), PIPE_ACCESS_INBOUND, PIPE_TYPE_MESSAGE,
                                               PIPE_UNLIMITED_INSTANCES, 0, 512, 0, NULL);
 
-        WriteFile(this->m_syncHandle, this->m_slavePipeName.c_str(), this->m_slavePipeName.length(), NULL, NULL);
+        WriteFile(this->m_syncHandle, this->m_slavePipeName.c_str(), static_cast<DWORD>(this->m_slavePipeName.length()), NULL, NULL);
     }
     else {
         this->m_syncHandle = CreateNamedPipeA(__pipeSyncName, PIPE_ACCESS_INBOUND, PIPE_TYPE_MESSAGE,
@@ -108,7 +108,7 @@ RdfIPC::~RdfIPC() {
     this->m_syncThread.join();
 
     if (true == this->m_slave) {
-        WriteFile(this->m_syncHandle, this->m_slavePipeName.c_str(), this->m_slavePipeName.length(), NULL, NULL);
+        WriteFile(this->m_syncHandle, this->m_slavePipeName.c_str(), static_cast<DWORD>(this->m_slavePipeName.length()), NULL, NULL);
         CloseHandle(this->m_recvHandle);
     }
     else {
@@ -128,7 +128,7 @@ void RdfIPC::sendAfvMessage(const std::string& message) {
     std::lock_guard guard(this->m_slavesLock);
 
     for (auto it = this->m_slaves.begin(); this->m_slaves.end() != it;) {
-        if (FALSE == WriteFile(it->receiver, message.c_str(), message.length() + 1, NULL, NULL)) {
+        if (FALSE == WriteFile(it->receiver, message.c_str(), static_cast<DWORD>(message.length() + 1), NULL, NULL)) {
             switch (GetLastError()) {
             case ERROR_INVALID_USER_BUFFER:
             case ERROR_OPERATION_ABORTED:

@@ -32,7 +32,20 @@ IF (MSVC)
 ENDIF ()
 
 # define the options
+OPTION(CODE_ANALYSIS "Run some code analysis during the build" OFF)
 OPTION(BUILD_TESTS "Build the tests and test framework" OFF)
+
+IF (CODE_ANALYSIS)
+    FIND_PROGRAM(IWYU_PATHS NAMES include-what-you-use iwyu)
+    IF (NOT IWYU_PATHS)
+        MESSAGE(FATAL_ERROR "Unable to find include-whay-you-use")
+    ENDIF ()
+
+    FIND_PROGRAM(CLANG_TIDY_PATH NAMES clang-tidy)
+    IF (NOT CLANG_TIDY_PATH)
+        MESSAGE(FATAL_ERROR "Unable to find clang-tidy")
+    ENDIF ()
+ENDIF ()
 
 # add the binary, include and installation directories to the search paths
 INCLUDE_DIRECTORIES(
