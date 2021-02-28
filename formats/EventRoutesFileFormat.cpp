@@ -26,7 +26,7 @@ EventRoutesFileFormat::EventRoutesFileFormat(const std::string& filename) :
 bool EventRoutesFileFormat::mergeEvents(std::map<std::string, types::Event>& events, types::Event& event, std::size_t lineCount) {
     if (0 == event.routes.size()) {
         this->m_errorMessage = "No route defined for " + event.name;
-        this->m_errorLine = lineCount;
+        this->m_errorLine = static_cast<std::uint32_t>(lineCount);
         return false;
     }
 

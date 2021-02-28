@@ -267,7 +267,7 @@ EseFileFormat::EseFileFormat() :
         m_foundSectorFile(false) { }
 
 bool EseFileFormat::parse(const std::string& sectorName) {
-    auto threadCount = std::thread::hardware_concurrency();
+    std::size_t threadCount = static_cast<std::size_t>(std::thread::hardware_concurrency());
     if (0 == threadCount)
         threadCount = 3;
 
