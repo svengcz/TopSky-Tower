@@ -30,17 +30,19 @@ void IpaToolbarButton::clicked() {
     configuration.ipaActive = false;
 
     /* no active arrival runways found configuration found */
-    if (configuration.activeArrivalRunways.cend() == configuration.activeArrivalRunways.find(this->m_parent->airportIcao()))
+    auto arrivalIt = configuration.activeArrivalRunways.find(this->m_parent->airportIcao());
+    if (configuration.activeArrivalRunways.cend() == arrivalIt)
         return;
 
-    const auto& arrivalRunways = configuration.activeArrivalRunways.find(this->m_parent->airportIcao())->second;
+    const auto& arrivalRunways = arrivalIt->second;
     bool ipaAvailable = false, prmAvailable = false;
     for (auto it = arrivalRunways.cbegin(); arrivalRunways.cend() != it; ++it) {
         auto cit = it;
         std::advance(cit, 1);
 
         if (airportConfig.ipaRunways.cend() != airportConfig.ipaRunways.find(*it)) {
-            const auto& partnerRwys = airportConfig.ipaRunways.find(*it)->second;
+            auto partnerIt = airportConfig.ipaRunways.find(*it);
+            const auto& partnerRwys = partnerIt->second;
 
             for (; arrivalRunways.cend() != cit; ++cit) {
                 auto partner = std::find(partnerRwys.cbegin(), partnerRwys.cend(), *cit);
@@ -51,7 +53,8 @@ void IpaToolbarButton::clicked() {
             }
         }
         else if (airportConfig.prmRunways.cend() != airportConfig.prmRunways.find(*it)) {
-            const auto& partnerRwys = airportConfig.prmRunways.find(*it)->second;
+            auto partnerIt = airportConfig.prmRunways.find(*it);
+            const auto& partnerRwys = partnerIt->second;
 
             for (; arrivalRunways.cend() != cit; ++cit) {
                 auto partner = std::find(partnerRwys.cbegin(), partnerRwys.cend(), *cit);

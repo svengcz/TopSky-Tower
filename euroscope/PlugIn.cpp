@@ -1313,6 +1313,10 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
 
     /* find the wind entry */
     for (const auto& entry : std::as_const(split)) {
+        /* minimum format DDDSSKT, maximum format DDDSSGSSKT */
+        if (entry.length() != 7 && entry.length() != 10)
+            continue;
+
         /* find the wind entry */
         auto pos = entry.find("KT", 0);
         if (entry.length() - 2 == pos) {
@@ -1324,7 +1328,7 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
             information.direction = static_cast<float>(std::atoi(windData.substr(0, 3).c_str())) * types::degree;
             information.speed = static_cast<float>(std::atoi(windData.substr(3, 5).c_str())) * types::knot;
 
-            if (std::string::npos != windData.find("G"))
+            if (std::string::npos != windData.find("G") && 10 == entry.length())
                 information.gusts = static_cast<float>(std::atoi(windData.substr(6, 8).c_str())) * types::knot;
 
             system::ConfigurationRegistry::instance().setMetarInformation(station, information);

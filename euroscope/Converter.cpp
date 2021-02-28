@@ -106,25 +106,15 @@ static __inline void __convertEuroScopeAtcStatus(const std::string_view& sts, ty
         plan.setFlag(types::FlightPlan::AtcCommand::Departure);
 }
 
-static __inline void __convertTopSkyTowerAtcPad(const std::string& entry, types::FlightPlan& flightPlan) {
-    int mask = std::atoi(entry.c_str());
-    std::uint16_t departure = static_cast<std::uint16_t>(mask & 0x0ff);
-    std::uint16_t arrival = static_cast<std::uint16_t>(mask & 0xf00);
-
-    /* validate the values to avoid buffer overruns */
-    if (departure <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Departure) &&
-        arrival <= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::TaxiIn))
-    {
-        flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(departure));
-        flightPlan.setFlag(static_cast<types::FlightPlan::AtcCommand>(arrival));
-    }
-}
-
 void Converter::convertAtcCommand(const EuroScopePlugIn::CFlightPlan& plan, types::FlightPlan& flightPlan) {
     /* get the ground status and check if this or an other TopSky-Tower set something */
     __convertEuroScopeAtcStatus(plan.GetGroundState(), flightPlan);
 
-    std::string scratchpad = plan.GetControllerAssignedData().GetScratchPadString();
+    auto scratch = plan.GetControllerAssignedData().GetScratchPadString();
+    if (nullptr == scratch)
+        return;
+
+    std::string scratchpad(scratch);
     bool updated = true;
     std::size_t pos;
 
@@ -274,8 +264,8 @@ types::Flight Converter::convert(const EuroScopePlugIn::CRadarTarget& target) {
         std::string_view destination(flightPlan.GetFlightPlanData().GetDestination());
 
         retval.setTrackedState(flightPlan.GetTrackingControllerIsMe());
-        bool isTrackedByOther = nullptr != flightPlan.GetTrackingControllerId() && 0 != std::strlen(flightPlan.GetTrackingControllerId());
-        isTrackedByOther &= false == retval.isTracked();
+        bool isTrackedByOther = false == retval.isTracked();
+        isTrackedByOther &= nullptr != flightPlan.GetTrackingControllerId() && 0 != std::strlen(flightPlan.GetTrackingControllerId());
         retval.setTrackedByOtherState(isTrackedByOther);
         /* an flight was tracked by an other controller and we keep this information */
         if (EuroScopePlugIn::FLIGHT_PLAN_STATE_TRANSFER_TO_ME_INITIATED == flightPlan.GetState()) {
