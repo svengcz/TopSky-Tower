@@ -51,6 +51,16 @@ namespace topskytower {
          *
          * The first waypoint needs to be the exit of the SID and the last waypoint needs to be the entry of the STAR or transition.
          * It is possible to define multiple routes for one event. It takes the preceeding city-pair and flight level constraints.
+         * The route needs to be as short as possible. Waypoints on the same airway need to be eliminated and DCTs need to be removed.
+         * An example below shows how a route can look like. The first line shows a normal filed route and the second one that is used by TopSky-Tower.
+         * The second line needs to be set in the configuration.
+         * @code{.xml}
+         * ROUTE:POVEL DCT ALOSI T157 KERAX
+         * ROUTE:POVEL ALOSI T157 KERAX
+         * @endcode
+         *
+         * TopSky-Tower optimizes the filed route of a pilot in that way that it contains only the relevant and minimal information.
+         * It erases waypoints for step-climbs, the step-climbs and DCT entries out of the route to compare it with the minimal route of the configuration.
          *
          * If the flight level constraints change between different routes is it possible to define LEVELS/ROUTE pairs
          * before the new route definition.
