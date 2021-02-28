@@ -18,6 +18,10 @@ using namespace topskytower;
 using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
+#define EVENT_ROUTE_IRRELEVANT 0
+#define EVENT_ROUTE_VALID      1
+#define EVENT_ROUTE_INVALID    2
+
 FlightPlanControl::FlightPlanControl() :
         m_flightChecks() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &FlightPlanControl::reinitialize);
@@ -30,9 +34,103 @@ FlightPlanControl::~FlightPlanControl() {
 }
 
 void FlightPlanControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
-    if (system::ConfigurationRegistry::UpdateType::All != type && system::ConfigurationRegistry::UpdateType::System != type)
+    bool updateRelevant = system::ConfigurationRegistry::UpdateType::All == type;
+    updateRelevant |= system::ConfigurationRegistry::UpdateType::System == type;
+    updateRelevant |= system::ConfigurationRegistry::UpdateType::Events == type;
+
+    if (false == updateRelevant)
         return;
+
     this->m_flightChecks.clear();
+}
+
+std::string FlightPlanControl::optimizeFiledRoute(const std::string& route) {
+    /*
+     * The code assumes a route in the following format:
+     *   WAYPOINT DCT/AIRWAY WAYPOINT DCT/AIRWAY WAYPOINT
+     */
+
+    auto split = helper::String::splitString(route, " ");
+    std::string retval, lastAirway, nextWaypoint;
+    bool expectWaypoint = true;
+
+    for (std::size_t i = 0; i < split.size(); ++i) {
+        /* start of route */
+        if (0 == retval.length()) {
+            retval += helper::String::splitString(split[i], "/")[0] + " ";
+            expectWaypoint = false;
+        }
+        /* direct found */
+        else if ("DCT" == split[i]) {
+            if (0 != nextWaypoint.length())
+                retval += nextWaypoint + " ";
+            nextWaypoint.clear();
+
+            expectWaypoint = true;
+            lastAirway.clear();
+        }
+        /* found a next waypoint candidate */
+        else if (true == expectWaypoint) {
+            nextWaypoint = helper::String::splitString(split[i], "/")[0] + " ";
+            expectWaypoint = false;
+        }
+        /* new airway -> insert last waypoint candidate */
+        else if (lastAirway != split[i]) {
+            retval += nextWaypoint + split[i] + " ";
+            lastAirway = split[i];
+            expectWaypoint = true;
+            nextWaypoint.clear();
+        }
+        /* found a point on a known route */
+        else {
+            expectWaypoint = false;
+            nextWaypoint.clear();
+        }
+    }
+
+    /* insert the last waypoint */
+    if (0 != nextWaypoint.length())
+        retval += nextWaypoint;
+
+    if (0 != retval.length() && ' ' == retval[retval.length() - 1])
+        retval.erase(retval.find_last_of(' '));
+
+    return retval;
+}
+
+int FlightPlanControl::validateEventRoute(const types::EventRoute& route, const types::FlightPlan& plan) {
+    /* wrong city pair */
+    if (plan.origin() != route.origin || plan.destination() != route.destination)
+        return EVENT_ROUTE_IRRELEVANT;
+
+    auto optRoute = FlightPlanControl::optimizeFiledRoute(plan.textRoute());
+    if (route.route == optRoute)
+        return EVENT_ROUTE_VALID;
+    else
+        return EVENT_ROUTE_INVALID;
+}
+
+bool FlightPlanControl::validateFiledRoute(const types::FlightPlan& plan) {
+    const auto& config = system::ConfigurationRegistry::instance().eventRoutesConfiguration();
+    if (false == config.valid)
+        return true;
+
+    int relevantRoutes = 0;
+
+    for (const auto& event : std::as_const(config.events)) {
+        if (true == event.active) {
+            for (const auto& route : std::as_const(event.routes)) {
+                int retval = FlightPlanControl::validateEventRoute(route, plan);
+                if (EVENT_ROUTE_IRRELEVANT != retval)
+                    relevantRoutes += 1;
+
+                if (EVENT_ROUTE_VALID == retval)
+                    return true;
+            }
+        }
+    }
+
+    return 0 == relevantRoutes;
 }
 
 bool FlightPlanControl::validate(const types::Flight& flight) {
@@ -62,6 +160,7 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
     bool validationRequired = this->m_flightChecks.end() == it;
     if (false == validationRequired) {
         validationRequired |= flight.flightPlan().type() != it->second.type;
+        validationRequired |= flight.flightPlan().textRoute() != it->second.route;
         validationRequired |= flight.flightPlan().departureRoute() != it->second.departureRoute;
         validationRequired |= flight.flightPlan().destination() != it->second.destination;
         validationRequired |= flight.flightPlan().flightLevel() != it->second.requestedFlightLevel;
@@ -77,6 +176,7 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
     if (true == validationRequired) {
         /* update the information */
         it->second.destination = flight.flightPlan().destination();
+        it->second.route = flight.flightPlan().textRoute();
         it->second.departureRoute = flight.flightPlan().departureRoute();
         it->second.type =  flight.flightPlan().type();
         it->second.overwritten = false;
@@ -113,6 +213,10 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
         /* check the flight level constraints */
         if (sit->second.minimumCruiseLevel > flight.flightPlan().flightLevel() || sit->second.maximumCruiseLevel < flight.flightPlan().flightLevel())
             it->second.errorCodes.push_back(ErrorCode::FlightLevel);
+
+        /* check the event routes */
+        if (false == FlightPlanControl::validateFiledRoute(flight.flightPlan()))
+            it->second.errorCodes.push_back(ErrorCode::Event);
 
         /* prepare for the even-odd checks */
         bool even = 0 == static_cast<int>(flight.flightPlan().flightLevel().convert(types::feet)) % 2000;

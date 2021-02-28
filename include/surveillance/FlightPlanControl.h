@@ -29,6 +29,7 @@ namespace topskytower {
          *
          * The flight plan checker shows abbreviation:
          *  - VFR - Defined as VFR flight
+         *  - EVT - Invalid event route
          *  - RTE - Invalid route with no SID exit point
          *  - SID - Unknown SID
          *  - FL - Does not match flight level constraints
@@ -62,13 +63,14 @@ namespace topskytower {
                 Unknown        = 0x00, /**< The flight plan is not analyzed */
                 VFR            = 0x01, /**< It is an VFR flight */
                 NoError        = 0x02, /**< No error found */
-                Route          = 0x03, /**< No valid route found */
-                DepartureRoute = 0x04, /**< The SID is unknown */
-                EngineType     = 0x05, /**< The engine type does not match */
-                Navigation     = 0x06, /**< The navigation type (RNAV) does not match */
-                Transponder    = 0x07, /**< The transponder does not match */
-                FlightLevel    = 0x08, /**< The minimum or maximum flight level does not match */
-                EvenOddLevel   = 0x09, /**< The flight level does not match to the even/odd constraint */
+                Event          = 0x03, /**< No valid event route */
+                Route          = 0x04, /**< No valid route found */
+                DepartureRoute = 0x05, /**< The SID is unknown */
+                EngineType     = 0x06, /**< The engine type does not match */
+                Navigation     = 0x07, /**< The navigation type (RNAV) does not match */
+                Transponder    = 0x08, /**< The transponder does not match */
+                FlightLevel    = 0x09, /**< The minimum or maximum flight level does not match */
+                EvenOddLevel   = 0x0a, /**< The flight level does not match to the even/odd constraint */
             };
 
         private:
@@ -76,6 +78,7 @@ namespace topskytower {
                 std::list<ErrorCode>    errorCodes;
                 bool                    overwritten;
                 std::string             destination;
+                std::string             route;
                 std::string             departureRoute;
                 types::FlightPlan::Type type;
                 bool                    rnavCapable;
@@ -86,6 +89,7 @@ namespace topskytower {
                         errorCodes(),
                         overwritten(false),
                         destination(),
+                        route(),
                         departureRoute(),
                         type(types::FlightPlan::Type::Unknown),
                         rnavCapable(false),
@@ -98,6 +102,9 @@ namespace topskytower {
             FlightPlanControl();
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
+            static std::string optimizeFiledRoute(const std::string& route);
+            static int validateEventRoute(const types::EventRoute& route, const types::FlightPlan& plan);
+            static bool validateFiledRoute(const types::FlightPlan& plan);
 
         public:
             /**
