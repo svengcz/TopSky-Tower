@@ -526,17 +526,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
             /* check if the route is already configured */
             if (std::string::npos == route.find(departure, 0)) {
-                auto pos = flight.flightPlan().departureRoute().find_first_of("0123456789", 0);
-                std::string firstWaypoint = flight.flightPlan().departureRoute().substr(0, pos);
-                auto entries = helper::String::splitString(route, " ");
-
-                /* find the first waypoint and ignore all before it */
-                auto wpIt = std::find(entries.cbegin(), entries.cend(), firstWaypoint);
-
-                /* create the new route */
-                std::string newRoute(departure + " ");
-                for (auto routeIt = wpIt; entries.cend() != routeIt; ++routeIt)
-                    newRoute += *routeIt + " ";
+                auto newRoute = departure + " " + flight.flightPlan().textRoute();
 
                 /* write into the flight plan */
                 radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().SetRoute(newRoute.c_str());
