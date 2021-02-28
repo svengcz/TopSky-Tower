@@ -303,6 +303,9 @@ bool PlugIn::summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanCo
         case surveillance::FlightPlanControl::ErrorCode::NoError:
             code = "OK";
             break;
+        case surveillance::FlightPlanControl::ErrorCode::Event:
+            code = "EVT";
+            break;
         case surveillance::FlightPlanControl::ErrorCode::Route:
             code = "RTE";
             break;
@@ -731,6 +734,9 @@ std::string PlugIn::flightPlanCheckResultLog(const std::list<surveillance::Fligh
                 break;
             case surveillance::FlightPlanControl::ErrorCode::NoError:
                 retval += "Valid flight plan - No errors found!\n";
+                break;
+            case surveillance::FlightPlanControl::ErrorCode::Event:
+                retval += "Invalid event route filed!\n";
                 break;
             case surveillance::FlightPlanControl::ErrorCode::Route:
                 retval += "No or an invalid route received!\n";
