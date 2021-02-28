@@ -35,5 +35,9 @@ ADD_LIBRARY(
 TARGET_LINK_LIBRARIES(surveillance types formats system)
 ADD_DEPENDENCIES(surveillance Curl GeographicLib Nanoflann Boost)
 
+IF (CODE_ANALYSIS)
+    SET_PROPERTY(TARGET surveillance PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATHS})
+ENDIF ()
+
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
 SOURCE_GROUP("Header Files" FILES ${HEADER_FILES})

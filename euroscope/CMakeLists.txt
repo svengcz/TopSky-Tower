@@ -124,6 +124,10 @@ TARGET_LINK_LIBRARIES(TopSky-Tower debug Geographic_d.lib optimized Geographic.l
 TARGET_LINK_LIBRARIES(TopSky-Tower Gdiplus Shlwapi.lib Crypt32.lib Ws2_32.lib Winmm.lib)
 ADD_DEPENDENCIES(TopSky-Tower Eigen)
 
+IF (CODE_ANALYSIS)
+    SET_PROPERTY(TARGET TopSky-Tower PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATHS})
+ENDIF ()
+
 # configure the debugger and update the linker flags
 IF(MSVC)
     SET_TARGET_PROPERTIES(TopSky-Tower
