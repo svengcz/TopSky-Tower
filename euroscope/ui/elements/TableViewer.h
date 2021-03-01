@@ -38,11 +38,13 @@ namespace topskytower {
             std::vector<Text>                   m_header;
             std::list<std::vector<std::string>> m_rowContent;
             std::list<std::vector<Cell>>        m_rows;
+            std::size_t                         m_minimumVisibleRows;
             std::size_t                         m_visibleRows;
             std::size_t                         m_visibleRowOffset;
             Gdiplus::RectF                      m_scrollUp;
             Gdiplus::RectF                      m_scrollDown;
             Gdiplus::RectF                      m_sliderRectangle;
+            std::vector<float>                  m_minimumColumnWidths;
             std::vector<float>                  m_columnWidths;
             float                               m_rowHeight;
             std::size_t                         m_clickedRow;
@@ -85,10 +87,26 @@ namespace topskytower {
              */
             void visualizeHeader(bool visible);
             /**
+             * @brief Sets the minimum number of visible rows
+             * @param[in] count The number of minimum visible rows
+             */
+            void setMinVisibleRows(std::size_t count);
+            /**
              * @brief Sets the maximum number of visible rows
              * @param[in] count The number of maximum visible rows
              */
             void setMaxVisibleRows(std::size_t count);
+            /**
+             * @brief Define the minimum widths of the columns
+             * @param[in] widths All widths for the columns
+             */
+            void setMinimumColumnWidths(std::initializer_list<float> widths);
+            /**
+             * @brief Defines the width for a specific column
+             * @param[in] idx The column's index
+             * @param[in] width The new minimum width
+             */
+            void setMinimumColumnWidth(std::size_t idx, float width);
             /**
              * @brief Adds an empty row
              */
