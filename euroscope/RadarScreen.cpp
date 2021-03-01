@@ -17,6 +17,7 @@
 #include <helper/String.h>
 #include <management/NotamControl.h>
 #include <management/PdcControl.h>
+#include <surveillance/RadioControl.h>
 
 #include "ui/ConfigurationErrorWindow.h"
 #include "ui/elements/Text.h"
@@ -35,7 +36,7 @@ RadarScreen::RadarScreen() :
         m_sectorFileIsMissing(false),
         m_airport(),
         m_elevation(),
-        m_userInterface(nullptr),
+        m_userInterface(new UiManager(this)),
         m_sectorControl(nullptr),
         m_standControl(nullptr),
         m_departureControl(nullptr),
@@ -105,7 +106,7 @@ void RadarScreen::OnAsrContentLoaded(bool loaded) {
         value = this->GetDataFromAsr("HideWindows");
         if (nullptr != value)
             hideWindows = 0 != std::strlen(value) && '1' == value[0];
-        this->m_userInterface = new UiManager(hideWindows, this);
+        this->m_userInterface->hideWindows(hideWindows);
 
         if (true == system::ConfigurationRegistry::instance().errorFound()) {
             auto viewer = new ConfigurationErrorWindow(this);
@@ -193,26 +194,10 @@ void RadarScreen::OnRadarTargetPositionUpdate(EuroScopePlugIn::CRadarTarget rada
     this->m_sectorControl->updateFlight(flight, type);
     this->m_standControl->updateFlight(flight, type);
     this->m_departureControl->updateFlight(flight, type);
-
-    /* only tower sectors require these features */
-    if ("TWR" == this->m_sectorControl->ownSector().suffix()) {
-        this->m_mtcdControl->updateFlight(flight, type);
-        this->m_stcdControl->updateFlight(flight, type);
-    }
-    else {
-        this->m_mtcdControl->removeFlight(flight.callsign());
-        this->m_stcdControl->removeFlight(flight.callsign());
-    }
-
-    /* only relevant for own sectors */
-    if (this->m_sectorControl->isInOwnSector(flight, type)) {
-        this->m_ariwsControl->updateFlight(flight, type);
-        this->m_cmacControl->updateFlight(flight, type);
-    }
-    else {
-        this->m_ariwsControl->removeFlight(flight.callsign());
-        this->m_cmacControl->removeFlight(flight.callsign());
-    }
+    this->m_mtcdControl->updateFlight(flight, type);
+    this->m_stcdControl->updateFlight(flight, type);
+    this->m_ariwsControl->updateFlight(flight, type);
+    this->m_cmacControl->updateFlight(flight, type);
 }
 
 void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFlightPlan flightPlan, int type) {
@@ -236,26 +221,10 @@ void RadarScreen::OnFlightPlanControllerAssignedDataUpdate(EuroScopePlugIn::CFli
     auto flightType = this->identifyType(flight);
 
     this->m_departureControl->updateFlight(flight, flightType);
-
-    /* only tower sectors require these features */
-    if ("TWR" == this->m_sectorControl->ownSector().suffix()) {
-        this->m_mtcdControl->updateFlight(flight, flightType);
-        this->m_stcdControl->updateFlight(flight, flightType);
-    }
-    else {
-        this->m_mtcdControl->removeFlight(flight.callsign());
-        this->m_stcdControl->removeFlight(flight.callsign());
-    }
-
-    /* only relevant for own sectors */
-    if (this->m_sectorControl->isInOwnSector(flight, flightType)) {
-        this->m_ariwsControl->updateFlight(flight, flightType);
-        this->m_cmacControl->updateFlight(flight, flightType);
-    }
-    else {
-        this->m_ariwsControl->removeFlight(flight.callsign());
-        this->m_cmacControl->removeFlight(flight.callsign());
-    }
+    this->m_mtcdControl->updateFlight(flight, flightType);
+    this->m_stcdControl->updateFlight(flight, flightType);
+    this->m_ariwsControl->updateFlight(flight, flightType);
+    this->m_cmacControl->updateFlight(flight, flightType);
 
     /* update the stand if needed */
     std::string stand = flightPlan.GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Stand));
@@ -636,6 +605,47 @@ void RadarScreen::drawNoTransgressionZones(Gdiplus::Graphics& graphics) {
     }
 }
 
+void RadarScreen::drawTransmittingFlights(Gdiplus::Graphics& graphics) {
+    if (false == system::ConfigurationRegistry::instance().systemConfiguration().rdfActive)
+        return;
+
+    auto callsigns = surveillance::RadioControl::instance().transmittingFlights();
+
+    const std::uint8_t* colorValues;
+    if (2 > callsigns.size())
+        colorValues = system::ConfigurationRegistry::instance().systemConfiguration().rdfNonConflictColor;
+    else
+        colorValues = system::ConfigurationRegistry::instance().systemConfiguration().rdfConflictColor;
+
+    /* prepare generic data structures */
+    auto area = this->GetRadarArea();
+    Gdiplus::PointF center((area.right - area.left) * 0.5f, (area.bottom - area.top) * 0.5f);
+    Gdiplus::Pen pen(Gdiplus::Color(colorValues[0], colorValues[1], colorValues[2]), 1.0f);
+    Gdiplus::RectF transmissionRect;
+    transmissionRect.Width = system::ConfigurationRegistry::instance().systemConfiguration().rdfRadius * 2.0f;
+    transmissionRect.Height = system::ConfigurationRegistry::instance().systemConfiguration().rdfRadius * 2.0f;
+
+    /* draw all transmitting flights */
+    for (const auto& callsign : std::as_const(callsigns)) {
+        if (false == system::FlightRegistry::instance().flightExists(callsign))
+            continue;
+
+        const auto& flight = system::FlightRegistry::instance().flight(callsign);
+        auto pxPos = this->convertCoordinate(flight.currentPosition().coordinate());
+
+        /* draw the circle */
+        if (pxPos.X >= area.left && pxPos.Y >= area.top && pxPos.X < area.right && pxPos.Y < area.bottom) {
+            transmissionRect.X = pxPos.X - system::ConfigurationRegistry::instance().systemConfiguration().rdfRadius;
+            transmissionRect.Y = pxPos.Y - system::ConfigurationRegistry::instance().systemConfiguration().rdfRadius;
+            graphics.DrawEllipse(&pen, transmissionRect);
+        }
+        /* draw the line */
+        else {
+            graphics.DrawLine(&pen, center, pxPos);
+        }
+    }
+}
+
 void RadarScreen::OnRefresh(HDC hdc, int phase) {
     (void)hdc;
 
@@ -650,6 +660,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     this->drawData(this->m_shortTermConflictVisualizationsLock, this->m_shortTermConflictVisualizations, true, graphics);
     this->drawData(this->m_departureRouteVisualizationsLock, this->m_departureRouteVisualizations, false, graphics);
     this->drawNoTransgressionZones(graphics);
+    this->drawTransmittingFlights(graphics);
 
     this->m_lastRenderingTime = std::chrono::system_clock::now();
 

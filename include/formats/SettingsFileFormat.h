@@ -104,6 +104,26 @@ namespace topskytower {
          *     <td>10</td><td>NM</td>
          *   </tr>
          *   <tr>
+         *     <td>SURV_RDF_Active</td>
+         *     <td>Defines if RDF is active or not. Euroscope needs to be restarted, if this entry is changed</td>
+         *     <td>1</td><td>Boolean</td>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_RDF_Radius</td>
+         *     <td>Defines the radius of the transmission circle.</td>
+         *     <td>20</td><td>Pixelstd>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_RDF_NonConflictColor</td>
+         *     <td>Defines the visualization color if only one aircraft is transmitting.</td>
+         *     <td>200,200,200</td><td>RGB</td>
+         *   </tr>
+         *   <tr>
+         *     <td>SURV_RDF_ConflictColor</td>
+         *     <td>Defines the visualization color if more than one aircraft is transmitting.</td>
+         *     <td>200,0,2000td><td>RGB</td>
+         *   </tr>
+         *   <tr>
          *     <td>SYS_SurveillanceVisualizationDuration</td>
          *     <td>Defines the visualization duration of surveillance results.</td>
          *     <td>10</td><td>Seconds</td>
@@ -250,7 +270,7 @@ namespace topskytower {
 
         public:
             /**
-             * @brief Parses an airport configuration
+             * @brief Parses a settings configuration
              * If the file does not exist, the constructor throws an exeption.
              * @param[in] filename The filename of the configuration
              */

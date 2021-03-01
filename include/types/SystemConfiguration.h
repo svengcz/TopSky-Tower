@@ -35,6 +35,10 @@ namespace topskytower {
             std::string         fontFamily;                            /**< Defines the font family of the visualizations */
             float               fontSize;                              /**< Defines the font size of the visualizations */
             bool                trackingOnGround;                      /**< Defines if the ground controllers track flights */
+            bool                rdfActive;                             /**< Defines if the radio direction finder is active */
+            float               rdfRadius;                             /**< Defines the radius of the transmitter circle */
+            std::uint8_t        rdfNonConflictColor[3];                /**< Defines the non-conflict color of the RDF circle */
+            std::uint8_t        rdfConflictColor[3];                   /**< Defines the conflict color of the RDF circle */
             bool                flightPlanCheckEvenOdd;                /**< Defines if the generic even-odd checks are performed */
             bool                flightPlanCheckNavigation;             /**< Defines if the flight plan checker tests for RNAV-capabilities */
             types::Length       standAssociationDistance;              /**< Defines the maximum distance to assign automatically an aircraft to a stand */
@@ -78,6 +82,10 @@ namespace topskytower {
                     fontFamily(),
                     fontSize(3.2f),
                     trackingOnGround(false),
+                    rdfActive(true),
+                    rdfRadius(20.0f),
+                    rdfNonConflictColor{ 200, 200, 200 },
+                    rdfConflictColor{ 200, 0, 0 },
                     flightPlanCheckEvenOdd(true),
                     flightPlanCheckNavigation(true),
                     standAssociationDistance(10_nm),

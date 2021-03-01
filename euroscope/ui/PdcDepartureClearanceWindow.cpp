@@ -123,12 +123,6 @@ PdcDepartureClearanceWindow::PdcDepartureClearanceWindow(RadarScreen* parent,
     this->m_elements.push_back(button);
 }
 
-PdcDepartureClearanceWindow::~PdcDepartureClearanceWindow() {
-    for (auto it = this->m_elements.begin(); this->m_elements.end() != it; ++it)
-        delete* it;
-    this->m_elements.clear();
-}
-
 bool PdcDepartureClearanceWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     /* we are only interested in left clicks */
     if (UiManager::MouseButton::Left != button)
@@ -161,22 +155,6 @@ bool PdcDepartureClearanceWindow::click(const Gdiplus::PointF& pt, UiManager::Mo
     }
 }
 
-void PdcDepartureClearanceWindow::centeredPosition() {
-    auto oldWindowPos = Gdiplus::PointF(this->m_contentArea.X, this->m_contentArea.Y);
-
-    /* place the window in the center of the screen */
-    auto width = this->m_parent->GetRadarArea().right - this->m_parent->GetRadarArea().left;
-    auto height = this->m_parent->GetRadarArea().bottom - this->m_parent->GetRadarArea().top;
-    InsetWindow::setPosition(Gdiplus::PointF(static_cast<float>(width) * 0.5f - this->m_area.Width * 0.5f,
-                             static_cast<float>(height) * 0.5f - this->m_area.Height * 0.5f));
-
-    for (auto& element : this->m_elements) {
-        auto oldPos = Gdiplus::PointF(element->area().X, element->area().Y);
-        element->setPosition(Gdiplus::PointF(oldPos.X - oldWindowPos.X + this->m_contentArea.X,
-                                             oldPos.Y - oldWindowPos.Y + this->m_contentArea.Y));
-    }
-}
-
 void PdcDepartureClearanceWindow::sendMessage() {
     auto it = this->m_elements.cbegin();
 
@@ -192,6 +170,12 @@ void PdcDepartureClearanceWindow::sendMessage() {
     this->m_message->frequency = this->m_nextFrequencyField->content();
 
     management::PdcControl::instance().sendClearanceMessage(this->m_message);
+}
+
+void PdcDepartureClearanceWindow::setActive(bool active) {
+    if (true == active)
+        this->setCenteredPosition();
+    InsetWindow::setActive(active);
 }
 
 bool PdcDepartureClearanceWindow::visualize(Gdiplus::Graphics* graphics) {

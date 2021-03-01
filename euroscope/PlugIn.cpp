@@ -24,6 +24,7 @@
 #include <helper/String.h>
 #include <management/PdcControl.h>
 #include <surveillance/FlightPlanControl.h>
+#include <surveillance/RadioControl.h>
 #include <system/ConfigurationRegistry.h>
 #include <version.h>
 
@@ -55,7 +56,22 @@ PlugIn::PlugIn() :
         m_settingsPath(),
         m_screens(),
         m_uiCallback(),
-        m_pdcNotificationSound() {
+        m_pdcNotificationSound(),
+        m_windowClass{
+            NULL,
+            HiddenWindow,
+            NULL,
+            NULL,
+            GetModuleHandle(NULL),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            "RDFHiddenWindowClass"
+        },
+        m_hiddenWindow(nullptr),
+        m_transmissions(),
+        m_ipc(this) {
     this->DisplayUserMessage("Message", PLUGIN_NAME, (std::string(PLUGIN_NAME) + " " + PLUGIN_VERSION + " loaded").c_str(),
                              false, false, false, false, false);
 
@@ -114,6 +130,17 @@ PlugIn::PlugIn() :
             break;
         }
     }
+
+    const auto& systemConfig = system::ConfigurationRegistry::instance().systemConfiguration();
+    if (true == systemConfig.valid && true == systemConfig.rdfActive && false == this->m_ipc.isSlave()) {
+        /* register the window class and create the window */
+        RegisterClassA(&this->m_windowClass);
+        this->m_hiddenWindow = CreateWindowA("RDFHiddenWindowClass", "RDFHiddenWindow", NULL, 0, 0, 0, 0, NULL, NULL,
+                                             GetModuleHandle(NULL), reinterpret_cast<LPVOID>(this));
+
+        if (S_OK != GetLastError())
+            this->DisplayUserMessage("Message", PLUGIN_NAME, "Unable to open RDF communication", true, true, true, false, false);
+    }
 }
 
 PlugIn::~PlugIn() {
@@ -123,6 +150,10 @@ PlugIn::~PlugIn() {
         Gdiplus::GdiplusShutdown(__gdiplusToken);
         curl_global_cleanup();
     }
+
+    if (NULL != this->m_hiddenWindow)
+        DestroyWindow(this->m_hiddenWindow);
+    this->m_hiddenWindow = NULL;
 }
 
 const std::string& PlugIn::settingsPath() const {
@@ -272,6 +303,9 @@ bool PlugIn::summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanCo
         case surveillance::FlightPlanControl::ErrorCode::NoError:
             code = "OK";
             break;
+        case surveillance::FlightPlanControl::ErrorCode::Event:
+            code = "EVT";
+            break;
         case surveillance::FlightPlanControl::ErrorCode::Route:
             code = "RTE";
             break;
@@ -362,6 +396,13 @@ void PlugIn::updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CF
     }
 }
 
+void PlugIn::updateSectorHandoff(const types::Flight& flight) {
+    for (auto& screen : this->m_screens) {
+        if (true == screen->sectorControl().handoffRequired(flight))
+            screen->sectorControl().handoffPerformed(flight);
+    }
+}
+
 void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlugIn::CRadarTarget radarTarget,
                           int itemCode, int tagData, char itemString[16], int* colorCode, COLORREF* rgb,
                           double* fontSize) {
@@ -384,6 +425,13 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
     auto flightScreen = this->findLastActiveScreen();
     if (nullptr == flightScreen)
         return;
+
+    if (true == flightScreen->sectorControl().handoffRequired(flight)) {
+        std::string_view view(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff)));
+
+        if ("H" == view)
+            this->updateSectorHandoff(flight);
+    }
 
     switch (static_cast<PlugIn::TagItemElement>(itemCode)) {
     case PlugIn::TagItemElement::HandoffFrequency:
@@ -478,17 +526,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
             /* check if the route is already configured */
             if (std::string::npos == route.find(departure, 0)) {
-                auto pos = flight.flightPlan().departureRoute().find_first_of("0123456789", 0);
-                std::string firstWaypoint = flight.flightPlan().departureRoute().substr(0, pos);
-                auto entries = helper::String::splitString(route, " ");
-
-                /* find the first waypoint and ignore all before it */
-                auto wpIt = std::find(entries.cbegin(), entries.cend(), firstWaypoint);
-
-                /* create the new route */
-                std::string newRoute(departure + " ");
-                for (auto routeIt = wpIt; entries.cend() != routeIt; ++routeIt)
-                    newRoute += *routeIt + " ";
+                auto newRoute = departure + " " + flight.flightPlan().textRoute();
 
                 /* write into the flight plan */
                 radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().SetRoute(newRoute.c_str());
@@ -498,11 +536,13 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
             /* update the initial clearance limit */
             auto& config = system::ConfigurationRegistry::instance().airportConfiguration(flight.flightPlan().origin());
             auto sidIt = config.sids.find(flight.flightPlan().departureRoute());
-            auto esPlan = radarTarget.GetCorrelatedFlightPlan();
 
-            auto clearedFL = static_cast<int>(sidIt->second.clearanceLimit.convert(types::feet));
-            if (esPlan.GetControllerAssignedData().GetClearedAltitude() != clearedFL)
-                esPlan.GetControllerAssignedData().SetClearedAltitude(clearedFL);
+            if (config.sids.cend() != sidIt) {
+                auto esPlan = radarTarget.GetCorrelatedFlightPlan();
+                auto clearedFL = static_cast<int>(sidIt->second.clearanceLimit.convert(types::feet));
+                if (esPlan.GetControllerAssignedData().GetClearedAltitude() != clearedFL)
+                    esPlan.GetControllerAssignedData().SetClearedAltitude(clearedFL);
+            }
         }
 
         break;
@@ -579,21 +619,26 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         }
         break;
     case PlugIn::TagItemElement::SurveillanceAlerts:
+    {
         *colorCode = EuroScopePlugIn::TAG_COLOR_EMERGENCY;
         itemString[0] = '\0';
 
-        if (true == flightScreen->stcdControl().ntzViolation(flight))
-            std::strcat(itemString, "NTZ");
-        else if (true == flightScreen->stcdControl().separationLoss(flight))
-            std::strcat(itemString, "STC");
-        else if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
-            std::strcat(itemString, "RIW");
-        else if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight, flightScreen->identifyType(flight)))
-            std::strcat(itemString, "CMA");
-        else if (true == flightScreen->mtcdControl().conflictsExist(flight))
-            std::strcat(itemString, "MTC");
+        bool inSector = flightScreen->sectorControl().isInOwnSector(flight, flightScreen->identifyType(flight));
+        if (true == inSector || true == flight.isTracked()) {
+            if (true == flightScreen->stcdControl().ntzViolation(flight))
+                std::strcat(itemString, "NTZ");
+            else if (true == flightScreen->stcdControl().separationLoss(flight))
+                std::strcat(itemString, "STC");
+            else if (true == flightScreen->ariwsControl().runwayIncursionWarning(flight))
+                std::strcat(itemString, "RIW");
+            else if (true == flightScreen->cmacControl().conformanceMonitoringAlert(flight, flightScreen->identifyType(flight)))
+                std::strcat(itemString, "CMA");
+            else if (true == flightScreen->mtcdControl().conflictsExist(flight))
+                std::strcat(itemString, "MTC");
+        }
 
         break;
+    }
     case PlugIn::TagItemElement::HoldingPoint:
         if (true == flightScreen->departureSequenceControl().hasHoldingPoint(flight)) {
             auto& point = flightScreen->departureSequenceControl().holdingPoint(flight);
@@ -621,7 +666,10 @@ void PlugIn::handleHandoffPerform(POINT point, RECT area, const types::Flight& f
                 else
                     radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(controllers.front().c_str());
             }
-            screen->sectorControl().handoffPerformed(flight);
+
+            /* update all screens */
+            this->updateSectorHandoff(flight);
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
         }
         else {
             RadarScreen::EuroscopeEvent eventEntry = {
@@ -677,6 +725,9 @@ std::string PlugIn::flightPlanCheckResultLog(const std::list<surveillance::Fligh
             case surveillance::FlightPlanControl::ErrorCode::NoError:
                 retval += "Valid flight plan - No errors found!\n";
                 break;
+            case surveillance::FlightPlanControl::ErrorCode::Event:
+                retval += "Invalid event route filed!\n";
+                break;
             case surveillance::FlightPlanControl::ErrorCode::Route:
                 retval += "No or an invalid route received!\n";
                 break;
@@ -717,7 +768,11 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
     if (false == arrival) {
         mask |= static_cast<std::uint16_t>(flight.flightPlan().arrivalFlag());
 
-        if ("ST-UP" == view) {
+        if ("CLEAR" == view) {
+            scratchPadExtend = "ST-UP";
+            overwrite = true;
+        }
+        else if ("ST-UP" == view) {
             mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::StartUp);
             scratchPadExtend = "ST-UP";
             overwrite = true;
@@ -750,7 +805,11 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
     else {
         mask |= static_cast<std::uint16_t>(flight.flightPlan().departureFlag());
 
-        if ("APPR" == view) {
+        if ("CLEAR" == view) {
+            if (true == flight.onMissedApproach())
+                PlugIn::updateManuallyAlerts(target, "MISAP_");
+        }
+        else if ("APPR" == view) {
             mask |= static_cast<std::uint16_t>(types::FlightPlan::AtcCommand::Approach);
             scratchPadExtend = "APPROACH";
             if (true == flight.onMissedApproach())
@@ -775,6 +834,8 @@ void PlugIn::updateGroundStatus(EuroScopePlugIn::CRadarTarget target, const std:
                 PlugIn::updateManuallyAlerts(target, "MISAP_");
         }
     }
+
+    system::FlightRegistry::instance().setAtcClearanceFlag(flight, mask);
 
     if (0 != scratchPadExtend.length()) {
         auto split = helper::String::splitString(scratchPadExtend, ";");
@@ -921,15 +982,20 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             /* check if a handoff to UNICOM is ongoing */
             if (true == flightScreen->sectorControl().handoffRequired(flight)) {
                 auto controllers = flightScreen->sectorControl().handoffStations(flight);
-                if (0 == controllers.front().size())
-                    flightScreen->sectorControl().handoffPerformed(flight);
+                if (0 == controllers.front().size()) {
+                    this->updateSectorHandoff(flight);
+                    radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
+                }
             }
         }
         else if (0 == std::strncmp(itemString, "Assume", 6)) {
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "");
             radarTarget.GetCorrelatedFlightPlan().StartTracking();
+            this->OnRadarTargetPositionUpdate(radarTarget);
         }
         else if (0 == std::strncmp(itemString, "Accept", 6)) {
             radarTarget.GetCorrelatedFlightPlan().AcceptHandoff();
+            this->OnRadarTargetPositionUpdate(radarTarget);
         }
         else if (0 == std::strncmp(itemString, "Refuse", 6)) {
             radarTarget.GetCorrelatedFlightPlan().RefuseHandoff();
@@ -954,7 +1020,9 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         if (true == flightScreen->sectorControl().handoffRequired(flight)) {
             if (true == flight.isTracked())
                 radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
-            flightScreen->sectorControl().handoffPerformed(flight);
+
+            this->updateSectorHandoff(flight);
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
         }
         break;
     case PlugIn::TagItemFunction::HandoffSectorChangeEvent:
@@ -1178,6 +1246,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::DepartureGroundStatusMenu:
         if (false == flight.isTrackedByOther()) {
             this->OpenPopupList(area, "Status", 1);
+            this->AddPopupListElement("CLEAR", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
             this->AddPopupListElement("ST-UP", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
             this->AddPopupListElement("DEICE", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
             this->AddPopupListElement("PUSH", "", static_cast<int>(PlugIn::TagItemFunction::DepartureGroundStatusSelect));
@@ -1192,6 +1261,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::ArrivalGroundStatusMenu:
         if (false == flight.isTrackedByOther()) {
             this->OpenPopupList(area, "Status", 1);
+            this->AddPopupListElement("CLEAR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
             this->AddPopupListElement("APPR", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
             this->AddPopupListElement("LAND", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
             this->AddPopupListElement("TAXI", "", static_cast<int>(PlugIn::TagItemFunction::ArrivalGroundStatusSelect));
@@ -1239,6 +1309,10 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
 
     /* find the wind entry */
     for (const auto& entry : std::as_const(split)) {
+        /* minimum format DDDSSKT, maximum format DDDSSGSSKT */
+        if (entry.length() != 7 && entry.length() != 10)
+            continue;
+
         /* find the wind entry */
         auto pos = entry.find("KT", 0);
         if (entry.length() - 2 == pos) {
@@ -1250,12 +1324,27 @@ void PlugIn::OnNewMetarReceived(const char* station, const char* fullMetar) {
             information.direction = static_cast<float>(std::atoi(windData.substr(0, 3).c_str())) * types::degree;
             information.speed = static_cast<float>(std::atoi(windData.substr(3, 5).c_str())) * types::knot;
 
-            if (std::string::npos != windData.find("G"))
+            if (std::string::npos != windData.find("G") && 10 == entry.length())
                 information.gusts = static_cast<float>(std::atoi(windData.substr(6, 8).c_str())) * types::knot;
 
             system::ConfigurationRegistry::instance().setMetarInformation(station, information);
             break;
         }
+    }
+}
+
+void PlugIn::OnTimer(int counter) {
+    (void)counter;
+
+    std::list<std::string> messages;
+
+    this->m_transmissionsLock.lock();
+    messages = std::move(this->m_transmissions);
+    this->m_transmissionsLock.unlock();
+
+    for (const auto& message : std::as_const(messages)) {
+        auto callsigns = helper::String::splitString(message, ":");
+        surveillance::RadioControl::instance().transmissions(callsigns);
     }
 }
 
@@ -1306,4 +1395,14 @@ void PlugIn::removeRadarScreen(RadarScreen* screen) {
         this->m_screens.erase(it);
         delete screen;
     }
+}
+
+void PlugIn::afvMessage(const std::string& message) {
+    this->m_transmissionsLock.lock();
+    this->m_transmissions.push_back(message);
+    this->m_transmissionsLock.unlock();
+}
+
+RdfIPC& PlugIn::rdfCommunication() {
+    return this->m_ipc;
 }

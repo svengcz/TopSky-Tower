@@ -35,7 +35,11 @@ void DepartureSequenceControl::reinitialize(system::ConfigurationRegistry::Updat
 
     this->m_holdingPoints.reinitialize();
 
-    const auto& runways = system::ConfigurationRegistry::instance().runtimeConfiguration().activeDepartureRunways.find(this->m_airport)->second;
+    auto itRunways = system::ConfigurationRegistry::instance().runtimeConfiguration().activeDepartureRunways.find(this->m_airport);
+    if (system::ConfigurationRegistry::instance().runtimeConfiguration().activeDepartureRunways.cend() == itRunways)
+        return;
+
+    const auto& runways = itRunways->second;
     bool runwayDisabled = false;
 
     /* delete deactivated runways */
@@ -204,6 +208,10 @@ const types::HoldingPoint& DepartureSequenceControl::holdingPoint(const types::F
 }
 
 void DepartureSequenceControl::setHoldingPoint(const types::Flight& flight, const std::string& name) {
+    auto holdingPoint = this->m_holdingPoints.holdingPoint(flight, name);
+    if (0 == holdingPoint.name.length())
+        return;
+
     auto it = this->m_departureReady.find(flight.callsign());
 
     if (this->m_departureReady.end() == it) {
@@ -214,7 +222,7 @@ void DepartureSequenceControl::setHoldingPoint(const types::Flight& flight, cons
             false,
             false,
             normalProc,
-            this->m_holdingPoints.holdingPoint(flight, name),
+            holdingPoint,
             flight.flightPlan().aircraft().wtc(),
             TimePoint(),
             flight.currentPosition().coordinate(),
@@ -222,7 +230,7 @@ void DepartureSequenceControl::setHoldingPoint(const types::Flight& flight, cons
         };
     }
     else {
-        it->second.holdingPoint = this->m_holdingPoints.holdingPoint(flight, name);
+        it->second.holdingPoint = holdingPoint;
     }
 }
 

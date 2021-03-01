@@ -13,6 +13,7 @@
 
 #include <formats/AircraftFileFormat.h>
 #include <formats/AirportFileFormat.h>
+#include <formats/EventRoutesFileFormat.h>
 #include <formats/FileFormat.h>
 #include <types/RuntimeConfiguration.h>
 #include <types/SystemConfiguration.h>
@@ -34,12 +35,15 @@ namespace topskytower {
                 Airports  = 0x02, /**< The airport settings are updated */
                 Aircrafts = 0x04, /**< The aircraft settings are updated */
                 Runtime   = 0x08, /**< The runtime settings are updated */
-                Metar     = 0x10  /**< The METAR data is updated */
+                Metar     = 0x10, /**< The METAR data is updated */
+                Events    = 0x20  /**< The event route settings are updated */
             };
 
         private:
+            std::mutex                                         m_configurationLock;
             types::SystemConfiguration                         m_systemConfig;
             types::RuntimeConfiguration                        m_runtimeConfig;
+            types::EventRoutesConfiguration                    m_eventsConfig;
             std::map<std::string, formats::AirportFileFormat*> m_airportConfigurations;
             formats::AircraftFileFormat*                       m_aircraftConfiguration;
             std::map<void*, std::function<void(UpdateType)>>   m_notificationCallbacks;
@@ -70,7 +74,7 @@ namespace topskytower {
              * @brief Returns the system configuration
              * @return The constant reference to the system configuration
              */
-            const types::SystemConfiguration& systemConfiguration() const;
+            const types::SystemConfiguration& systemConfiguration();
             /**
              * @brief Sets the new runtime configuration
              * @param[in] configuration The new runtime configuration
@@ -86,18 +90,29 @@ namespace topskytower {
              * @brief Returns the runtime configuration
              * @return The constant reference to the runtime configuration
              */
-            const types::RuntimeConfiguration& runtimeConfiguration() const;
+            const types::RuntimeConfiguration& runtimeConfiguration();
             /**
              * @brief Returns an airport configuration
              * @param[in] icao The airport's ICAO code
              * @return The airport configuration
              */
-            const types::AirportConfiguration& airportConfiguration(const std::string& icao) const;
+            const types::AirportConfiguration& airportConfiguration(const std::string& icao);
             /**
              * @brief Returns the parsed aircrafts
              * @return A map of aircrafts
              */
-            const std::map<std::string, types::Aircraft>& aircrafts() const;
+            const std::map<std::string, types::Aircraft>& aircrafts();
+            /**
+             * @brief Returns the event routes configuration
+             * @return The event configuration
+             */
+            const types::EventRoutesConfiguration& eventRoutesConfiguration();
+            /**
+             * @brief Activates or deactivates an event
+             * @param[in] event The event's name
+             * @param[in] active True if the event is active, else false
+             */
+            void activateEvent(const std::string& event, bool active);
             /**
              * @brief Registers a callback that is triggered as soon as a new configuration is loaded
              * @tparam T The element which registers the callback

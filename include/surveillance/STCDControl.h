@@ -31,8 +31,12 @@ namespace topskytower {
          *
          * The system checks for every flight if it violates a NTZ or if the minimum required distance between two aircrafts is fulfilled.
          *
+         *  ![Non Transgression Zone](doc/imgs/NTZ.png)
+         *
          * If an aircraft violates the NTZ, the system indicates it in the surveillance alert tag-entry via a "NTZ" message and the flag
          * is never removed until the aircraft is marked for a go-around.
+         *
+         * ![NTZ violation](doc/imgs/NTZViolation.png)
          *
          * To estimate the separation minimums, the system finds the nearest aircraft that flies in front of the current one
          * and estimates the required minimum distance.
@@ -42,6 +46,18 @@ namespace topskytower {
          *   - if IPA is inactive does it checks if both aircrafts are approaching different runways
          *      - If yes, a 3nm spacing is defined as the minimum
          *      - If no, it calculates the required spacing based on the WTCs of both flights
+         *
+         * An other function is to track aircrafts at the holding points.
+         * If a departing aircraft waits for a departure clearance, the system checks the next inbound for the runway or
+         * if the runways are not marked as independent on all active arrival runways and indicates via the STC-flag that
+         * the next inbound is too close for a departure.
+         *
+         * ![Departure spacing](doc/imgs/STCDeparture.png)
+         *
+         * It is possible to visualize the area of the conflicting aircraft to identify the other aircraft that is part of the conflict.
+         * The function draws a circle around the aircraft with a radius of the required distance.
+         *
+         * ![STC circle](doc/imgs/STCCircle.png)
          */
         class STCDControl {
         private:

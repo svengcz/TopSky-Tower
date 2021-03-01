@@ -19,6 +19,10 @@ CONFIGURE_FILE(
     ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
     ${CMAKE_BINARY_DIR}/version.h
 )
+CONFIGURE_FILE(
+    ${CMAKE_CURRENT_SOURCE_DIR}/res/TopSky-Tower.rc.in
+    ${CMAKE_BINARY_DIR}/TopSky-Tower.rc
+)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -27,15 +31,24 @@ INCLUDE_DIRECTORIES(
 SET(SOURCE_FILES
     Converter.cpp
     Converter.h
+    HiddenWindow.cpp
+    HiddenWindow.h
     PlugIn.cpp
     PlugIn.h
     RadarScreen.cpp
     RadarScreen.h
+    RdfIPC.cpp
+    RdfIPC.h
     stdafx.cpp
     stdafx.h
     TopSkyTowerMain.cpp
     VersionChecker.cpp
     VersionChecker.h
+)
+SET(SOURCE_FILES_RES
+    res/resource.h
+    res/targetver.h
+    ${CMAKE_BINARY_DIR}/TopSky-Tower.rc
 )
 SET(SOURCE_FILES_UI
     ui/AriwsToolbarButton.cpp
@@ -46,6 +59,8 @@ SET(SOURCE_FILES_UI
     ui/ConfigurationErrorWindow.h
     ui/DepartureSequenceWindow.cpp
     ui/DepartureSequenceWindow.h
+    ui/EventOverviewWindow.cpp
+    ui/EventOverviewWindow.h
     ui/HoppiesLogonWindow.cpp
     ui/HoppiesLogonWindow.h
     ui/InsetWindow.cpp
@@ -109,6 +124,10 @@ TARGET_LINK_LIBRARIES(TopSky-Tower debug Geographic_d.lib optimized Geographic.l
 TARGET_LINK_LIBRARIES(TopSky-Tower Gdiplus Shlwapi.lib Crypt32.lib Ws2_32.lib Winmm.lib)
 ADD_DEPENDENCIES(TopSky-Tower Eigen)
 
+IF (CODE_ANALYSIS)
+    SET_PROPERTY(TARGET TopSky-Tower PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATHS})
+ENDIF ()
+
 # configure the debugger and update the linker flags
 IF(MSVC)
     SET_TARGET_PROPERTIES(TopSky-Tower
@@ -123,5 +142,6 @@ IF(MSVC)
 ENDIF()
 
 SOURCE_GROUP("Source Files" FILES ${SOURCE_FILES})
+SOURCE_GROUP("Source Files\\res" FILES ${SOURCE_FILES_RES})
 SOURCE_GROUP("Source Files\\ui" FILES ${SOURCE_FILES_UI})
 SOURCE_GROUP("Source Files\\ui\\elements" FILES ${SOURCE_FILES_UI_ELEMENTS})

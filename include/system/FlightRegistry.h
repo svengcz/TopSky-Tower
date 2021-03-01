@@ -54,6 +54,12 @@ namespace topskytower {
              */
             const types::Flight& flight(const std::string& callsign) const;
             /**
+             * @brief Overwrites the ATC clearance flag for a specific flight
+             * @param[in] flight The updated flight
+             * @param[in] flag The new clearance flag for departure and arrival
+             */
+            void setAtcClearanceFlag(const types::Flight& flight, std::uint16_t flag);
+            /**
              * @brief Returns the flight registry instance
              * @return The registry
              */

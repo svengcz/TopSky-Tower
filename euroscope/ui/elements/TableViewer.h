@@ -24,10 +24,20 @@ namespace topskytower {
          */
         class TableViewer : public UiElement {
         private:
+            struct Cell {
+                Gdiplus::Color backgroundColor;
+                Text           content;
+
+                Cell() :
+                        backgroundColor(UiElement::backgroundColor()),
+                        content() { }
+            };
+
+            bool                                m_visualizeHeader;
             std::vector<std::string>            m_headerContent;
             std::vector<Text>                   m_header;
             std::list<std::vector<std::string>> m_rowContent;
-            std::list<std::vector<Text>>        m_rows;
+            std::list<std::vector<Cell>>        m_rows;
             std::size_t                         m_visibleRows;
             std::size_t                         m_visibleRowOffset;
             Gdiplus::RectF                      m_scrollUp;
@@ -56,6 +66,10 @@ namespace topskytower {
             virtual ~TableViewer() { }
 
             /**
+             * @brief Clears all rows
+             */
+            void clear();
+            /**
              * @brief Returns the number of rows without the headline
              * @return The number of rows
              */
@@ -65,6 +79,11 @@ namespace topskytower {
              * @return The column count
              */
             std::size_t numberOfColumns() const;
+            /**
+             * @brief Defines if the header is visualized or not
+             * @param[in] visible True if the header needs to be visible, else false
+             */
+            void visualizeHeader(bool visible);
             /**
              * @brief Sets the maximum number of visible rows
              * @param[in] count The number of maximum visible rows
@@ -94,12 +113,26 @@ namespace topskytower {
              */
             void setTextColor(std::size_t rowIdx, std::size_t columnIdx, const Gdiplus::Color& color);
             /**
+             * @brief Sets the background color for a specific element
+             * @param[in] rowIdx The row index
+             * @param[in] columnIdx The column index
+             * @param[in] color The new color
+             */
+            void setBackgroundColor(std::size_t rowIdx, std::size_t columnIdx, const Gdiplus::Color& color);
+            /**
              * @brief Returns the content of a cell
              * @param[in] rowIdx The row index
              * @param[in] columnIdx The column index
              * @return The content of the cell
              */
             const std::string& entry(std::size_t rowIdx, std::size_t columnIdx) const;
+            /**
+             * @brief Returns the background color of a cell
+             * @param[in] rowIdx The row index
+             * @param[in] columnIdx The column index
+             * @return The background color of the cell
+             */
+            const Gdiplus::Color& backgroundColor(std::size_t rowIdx, std::size_t columnIdx) const;
             /**
              * @brief Handles the click events
              * @param[in] pt The position of the mouse

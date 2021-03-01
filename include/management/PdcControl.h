@@ -215,19 +215,19 @@ namespace topskytower {
              * @param[in] icao The airport's ICAO code
              * @return True if it is online, else false
              */
-            bool airportLoggedIn(const std::string& icao) const;
+            bool airportLoggedIn(const std::string& icao);
             /**
              * @brief Checks if an airport is active in Hoppies
              * @param[in] icao The ICAO of the airport
              * @return True if the airport is online, else false
              */
-            bool airportOnline(const std::string& icao) const;
+            bool airportOnline(const std::string& icao);
             /**
              * @brief Checks if new messages are available
              * @param[in] flight The flight structure
              * @return True if new messages are available, else false
              */
-            bool messagesAvailable(const types::Flight& flight) const;
+            bool messagesAvailable(const types::Flight& flight);
             /**
              * @brief Returns the next message in the queue
              * @param[in] flight The flight structure

@@ -32,10 +32,6 @@ namespace topskytower {
              * @param[in] parent The corresponding RADAR screen
              */
             DepartureSequenceWindow(RadarScreen* parent);
-            /**
-             * @brief Destroys the window
-             */
-            ~DepartureSequenceWindow();
 
             /**
              * @brief Handles the click events

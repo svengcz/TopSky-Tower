@@ -8,6 +8,8 @@
 
 #pragma once
 
+#ifndef DOXYGEN_IGNORE
+
 #include <map>
 
 #include <types/Runway.h>
@@ -23,8 +25,8 @@ namespace topskytower {
          */
         class FileFormat {
         protected:
-            std::uint32_t m_errorLine;
-            std::string   m_errorMessage;
+            std::uint32_t m_errorLine;    /**< Defines the line number if a parser detected an error */
+            std::string   m_errorMessage; /**< Defines the descriptive error message */
 
             /**
              * @brief Creates the default file format
@@ -55,3 +57,5 @@ namespace topskytower {
         };
     }
 }
+
+#endif

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#ifndef DOXYGEN_IGNORE
+
 #include <filesystem>
 #include <map>
 #include <mutex>
@@ -72,3 +74,5 @@ namespace topskytower {
         };
     }
 }
+
+#endif

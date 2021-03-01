@@ -8,7 +8,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 
 # define the project
-PROJECT(TopSky-Tower LANGUAGES CXX VERSION "0.7.0")
+PROJECT(TopSky-Tower LANGUAGES CXX VERSION "0.10.0")
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,14 +24,28 @@ IF (MSVC)
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
         SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /MP")
     ENDIF ()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /sdl")
-    SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /sdl")
-ELSE ()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /sdl /permissive-")
+    SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /sdl /permissive-")
+    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFESTUAC:NO")
+    ADD_DEFINITIONS(/D_USRDLL)
 ENDIF ()
 
 # define the options
+OPTION(CODE_ANALYSIS "Run some code analysis during the build" OFF)
 OPTION(BUILD_TESTS "Build the tests and test framework" OFF)
+
+IF (CODE_ANALYSIS)
+    FIND_PROGRAM(IWYU_PATHS NAMES include-what-you-use iwyu)
+    IF (NOT IWYU_PATHS)
+        MESSAGE(FATAL_ERROR "Unable to find include-whay-you-use")
+    ENDIF ()
+
+    FIND_PROGRAM(CLANG_TIDY_PATH NAMES clang-tidy)
+    IF (NOT CLANG_TIDY_PATH)
+        MESSAGE(FATAL_ERROR "Unable to find clang-tidy")
+    ENDIF ()
+ENDIF ()
 
 # add the binary, include and installation directories to the search paths
 INCLUDE_DIRECTORIES(

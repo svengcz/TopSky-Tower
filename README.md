@@ -24,6 +24,8 @@ The following management systems are integrated and are documented in the corres
 - Stand managment: \ref topskytower::management::StandControl
 - PDC system: \ref topskytower::management::PdcControl
 - Sector relation: \ref topskytower::management::SectorControl
+- Departure sequence: \ref topskytower::management::DepartureSequenceControl
+- NOTAMs: \ref topskytower::management::NotamControl
 
 ### Surveillance systems
 
@@ -32,8 +34,10 @@ to control that aircrafts are moving as expected and cleared by the controller.
 
 The following surveillance systems are integrated and are documented in the corresponding areas:
 - Flight plan check: \ref topskytower::surveillance::FlightPlanControl
+- Radio Direction Finder: \ref topskytower::surveillance::RadioControl
 - Conformance Monitoring Alerts for Controllers: \ref topskytower::surveillance::CMACControl
 - Autonomous Runway Incursion Warning System: \ref topskytower::surveillance::ARIWSControl
+- Short Term Collision Detection: \ref topskytower::surveillance::STCDControl
 - Medium Term Collision Detection: \ref topskytower::surveillance::MTCDControl
 
 ## Setup
@@ -57,8 +61,13 @@ The used ASR-file needs an extension at the end of the field that TopSky-Tower i
 @code{.xml}
 PLUGIN:TopSky-Tower:Airport:ICAO
 PLUGIN:TopSky-Tower:Elevation:FEET
+PLUGIN:TopSky-Tower:HideWindows:[0/1]
 @endcode
+
 The ICAO code is the code of the controlled airport.
+The elevation defines the altitude which is used to assume an aircraft on the ground.
+The flag to hide windows defines if the toolbar and all automatic windows should be deactivated or not.
+This flag is intended to be used if TopSky is used in the same profile.
 
 The departure and arrival lists need to be updated.
 It makes sense to integrate the following entries to the departure list:
@@ -70,6 +79,8 @@ It makes sense to integrate the following entries to the departure list:
   - Right button: TopSky-Tower / PDC menu bar
 - TopSky-Tower / Departure Ground status
   - Right button: TopSky-Tower / Departure Ground status menu
+- TopSky-Tower / Holding point
+  - Right button: TopSky-Tower / Holding point menu
 
 The arrival list should have the following entries:
 - TopSky-Tower / Assigned stand

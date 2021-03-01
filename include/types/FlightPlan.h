@@ -53,6 +53,7 @@ namespace topskytower {
             types::Aircraft m_aircraft;
             std::uint16_t   m_atcCommand;
             std::string     m_origin;
+            std::string     m_textRoute;
             std::string     m_departureRoute;
             std::string     m_departureRunway;
             std::string     m_destination;
@@ -112,6 +113,15 @@ namespace topskytower {
              * @return The destination as ICAO
              */
             const std::string& destination() const;
+            /**
+             * @brief Sets the new text route
+             * @param[in] route The filed route
+             */
+            void setTextRoute(const std::string& route);
+            /**
+             * @brief Returns the filed text route
+             */
+            const std::string& textRoute() const;
             /**
              * @brief Sets the cruise flight level
              * @param[in] flightLevel The new cruise flight level
@@ -227,6 +237,11 @@ namespace topskytower {
              * @param[in] command The new command flag, but no combination between arrival and departure is allowed
              */
             void setFlag(AtcCommand command);
+            /**
+             * @brief Resets the ATC command flag
+             * @param[in] departure True if the departure flag needs to be reset, else the arrival flags
+             */
+            void resetFlag(bool departure);
             /**
              * @brief Returns the departure-relevant ATC command
              * @return The departure relevant ATC command

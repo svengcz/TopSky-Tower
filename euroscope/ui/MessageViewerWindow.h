@@ -20,8 +20,6 @@ namespace topskytower {
         private:
             bool m_firstRendering;
 
-            void centeredPosition();
-
         public:
             /**
              * @brief Creates a new PDC message viewer
@@ -30,10 +28,6 @@ namespace topskytower {
              * @param[in] message The message
              */
             MessageViewerWindow(RadarScreen* parent, const std::string& title, const std::string& message);
-            /**
-             * @brief Destroys the window
-             */
-            ~MessageViewerWindow();
 
             /**
              * @brief Visualizes the toolbar with all active sub-menus

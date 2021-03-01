@@ -27,23 +27,6 @@ MessageViewerWindow::MessageViewerWindow(RadarScreen* parent, const std::string&
     this->m_elements.push_back(new TextViewer(this->m_parent, message, this->m_contentArea));
 }
 
-MessageViewerWindow::~MessageViewerWindow() {
-    if (0 != this->m_elements.size())
-        delete this->m_elements.front();
-    this->m_elements.clear();
-}
-
-void MessageViewerWindow::centeredPosition() {
-    /* place the window in the center of the screen */
-    auto width = this->m_parent->GetRadarArea().right - this->m_parent->GetRadarArea().left;
-    auto height = this->m_parent->GetRadarArea().bottom - this->m_parent->GetRadarArea().top;
-    InsetWindow::setPosition(Gdiplus::PointF(static_cast<float>(width) * 0.5f - this->m_area.Width * 0.5f,
-                             static_cast<float>(height) * 0.5f - this->m_area.Height * 0.5f));
-
-    if (0 != this->m_elements.size())
-        this->m_elements.front()->setPosition(Gdiplus::PointF(this->m_contentArea.X, this->m_contentArea.Y));
-}
-
 bool MessageViewerWindow::visualize(Gdiplus::Graphics* graphics) {
     if (0 != this->m_elements.size() && true == this->m_firstRendering) {
         auto viewer = static_cast<TextViewer*>(this->m_elements.front());
@@ -61,7 +44,7 @@ bool MessageViewerWindow::visualize(Gdiplus::Graphics* graphics) {
         Gdiplus::RectF newArea(Gdiplus::PointF(viewer->area().X, viewer->area().Y), size);
         viewer->setArea(newArea);
 
-        this->centeredPosition();
+        this->setCenteredPosition();
 
         this->m_firstRendering = false;
     }

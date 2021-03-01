@@ -18,7 +18,9 @@
 #include <types/AirportConfiguration.h>
 #include <types/SystemConfiguration.h>
 
+#include "HiddenWindow.h"
 #include "RadarScreen.h"
+#include "RdfIPC.h"
 
 namespace topskytower {
     namespace euroscope {
@@ -32,9 +34,10 @@ namespace topskytower {
              * @brief Defines the indices of the flight strip annotations
              */
             enum class AnnotationIndex {
-                Unknown    = -1, /**< The annotation is unknown */
-                Stand      = 6,  /**< Defines the stand annotation */
-                Marker     = 7,  /**< Defines the marker annotation */
+                Unknown = -1, /**< The annotation is unknown     */
+                Stand   =  6, /**< Defines the stand annotation  */
+                Marker  =  7, /**< Defines the marker annotation */
+                Handoff =  8, /**< Defines the handoff indicator */
             };
 
             /**
@@ -102,6 +105,11 @@ namespace topskytower {
             std::list<RadarScreen*>                 m_screens;
             std::function<void(const std::string&)> m_uiCallback;
             std::string                             m_pdcNotificationSound;
+            WNDCLASSA                               m_windowClass;
+            HWND                                    m_hiddenWindow;
+            std::mutex                              m_transmissionsLock;
+            std::list<std::string>                  m_transmissions;
+            RdfIPC                                  m_ipc;
 
             static std::string findScratchPadEntry(const EuroScopePlugIn::CFlightPlan& plan, const std::string& marker,
                                                    const std::string& entry);
@@ -118,6 +126,7 @@ namespace topskytower {
                                     const types::Flight& flight, bool arrival);
             void updateStand(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
             void updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
+            void updateSectorHandoff(const types::Flight& flight);
 
         public:
             /**
@@ -173,6 +182,11 @@ namespace topskytower {
              */
             void OnNewMetarReceived(const char* station, const char* fullMetar) override;
             /**
+             * @brief Called once per second
+             * @param[in] counter The current call-cycle-counter
+             */
+            void OnTimer(int counter) override;
+            /**
              * @brief Called as soon as a radar target position is updated
              * @param[in] radarTarget The updated radar target
              */
@@ -215,6 +229,16 @@ namespace topskytower {
              * @param[in] screen The closed screen
              */
             void removeRadarScreen(RadarScreen* screen);
+            /**
+             * @brief Received a message from AfV
+             * @param[in] message The incoming message
+             */
+            void afvMessage(const std::string& message);
+            /**
+             * @brief Returns the Rdf IPC instance
+             * @return The communication instance
+             */
+            RdfIPC& rdfCommunication();
         };
     }
 }

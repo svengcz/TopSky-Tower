@@ -90,6 +90,10 @@ namespace topskytower {
              */
             void setPosition(const Gdiplus::PointF& position) override;
             /**
+             * @brief Place the window in the center of the screen
+             */
+            void setCenteredPosition();
+            /**
              * @brief Handles the click events
              * @param[in] pt The position of the mouse
              * @param[in] button The clicked mouse button
