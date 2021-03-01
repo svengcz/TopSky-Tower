@@ -8,6 +8,8 @@
 
 #pragma once
 
+#ifndef DOXYGEN_IGNORE
+
 #include <types/Coordinate.h>
 
 namespace topskytower {
@@ -118,3 +120,5 @@ namespace topskytower {
         struct StandNotam : public ClosedSectionNotam { };
     }
 }
+
+#endif
