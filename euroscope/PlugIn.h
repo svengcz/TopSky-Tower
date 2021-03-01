@@ -80,7 +80,9 @@ namespace topskytower {
                 HoldingPointCandidatesSelect        = 3801, /**< Sets the new used holding point */
                 UiElementIds                        = 4000, /**< Elements of the UI entries */
                 UiEditTextRequest                   = 4001, /**< Request an edit-field */
-                UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */
+                UiEditTextResponse                  = 4002, /**< Get the answer of the requested edit-field */
+                UiDropDownRequest                   = 4003, /**< Request a drop down menu */
+                UiDropDownResponse                  = 4004  /**< Get the answer of the drop down menu */
             };
 
         private:

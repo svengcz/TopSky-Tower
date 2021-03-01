@@ -865,6 +865,17 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             if (nullptr != this->m_uiCallback)
                 this->OpenPopupEdit(area, static_cast<int>(PlugIn::TagItemFunction::UiEditTextResponse), itemString);
             break;
+        case PlugIn::TagItemFunction::UiDropDownRequest:
+        {
+            this->OpenPopupList(area, "", 1);
+            auto split = helper::String::splitString(itemString, ";");
+            for (const auto& element : std::as_const(split)) {
+                if (0 != element.length())
+                    this->AddPopupListElement(element.c_str(), "", static_cast<int>(PlugIn::TagItemFunction::UiDropDownResponse));
+            }
+            break;
+        }
+        case PlugIn::TagItemFunction::UiDropDownResponse:
         case PlugIn::TagItemFunction::UiEditTextResponse:
             if (nullptr != this->m_uiCallback) {
                 this->m_uiCallback(itemString);
