@@ -10,6 +10,7 @@
 SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/management/DepartureSequenceControl.h
     ${CMAKE_SOURCE_DIR}/include/management/HoldingPointMap.h
+    ${CMAKE_SOURCE_DIR}/include/management/Notam.h
     ${CMAKE_SOURCE_DIR}/include/management/NotamControl.h
     ${CMAKE_SOURCE_DIR}/include/management/PdcControl.h
     ${CMAKE_SOURCE_DIR}/include/management/SectorControl.h
