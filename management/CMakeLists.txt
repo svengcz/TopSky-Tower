@@ -20,10 +20,12 @@ SET(SOURCE_GRAMMAR_FILES
     grammar/AstBase.hpp
     grammar/AstNotam.hpp
     grammar/AstRunway.hpp
+    grammar/AstStand.hpp
     grammar/AstTransformation.hpp
     grammar/Notam.hpp
     grammar/Parser.hpp
     grammar/Runway.hpp
+    grammar/Stand.hpp
 )
 SET(SOURCE_FILES
     DepartureSequenceControl.cpp
