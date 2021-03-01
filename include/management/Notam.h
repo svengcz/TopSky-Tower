@@ -99,5 +99,22 @@ namespace topskytower {
                     message(),
                     rawMessage() { }
         };
+
+        /**
+         * @brief Defines a notam that closes aerodrome sections
+         */
+        struct ClosedSectionNotam : public Notam {
+            std::vector<std::string> sections; /**< The closed sections */
+        };
+
+        /**
+         * @brief Describes closed runways
+         */
+        struct RunwayNotam : public ClosedSectionNotam { };
+
+        /**
+         * @brief Describes closed stands
+         */
+        struct StandNotam : public ClosedSectionNotam { };
     }
 }
