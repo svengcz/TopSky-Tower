@@ -271,12 +271,12 @@ bool TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
         rowCount = this->m_minimumVisibleRows;
     if (true == this->m_visualizeHeader)
         rowCount += 1;
-    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 3.0f * (this->m_header.size() - 1), rowCount * this->m_rowHeight);
+    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth, rowCount * this->m_rowHeight);
 
-    this->m_overallWidth = overallWidth + 3.0f * (this->m_header.size() - 1);
+    this->m_overallWidth = overallWidth;
     if (this->m_rows.size() > this->m_visibleRows) {
-        this->m_overallWidth += 10.0f;
-        this->m_area.Width += 10.0f;
+        this->m_overallWidth += 8.0f;
+        this->m_area.Width += 8.0f;
     }
 
     return true;
@@ -315,7 +315,7 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
             this->m_header[i].setPosition(Gdiplus::PointF(offsetX, offsetY));
             this->m_header[i].setGraphics(graphics);
             this->m_header[i].visualize();
-            offsetX += this->m_columnWidths[i] + 3.0f;
+            offsetX += this->m_columnWidths[i];
         }
         offsetY += this->m_rowHeight;
         graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY),
@@ -344,7 +344,7 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
                 (*it)[i].content.visualize();
                 emptyRow = false;
             }
-            offsetX += this->m_columnWidths[i] + 3.0f;
+            offsetX += this->m_columnWidths[i];
         }
 
         if (false == emptyRow) {
