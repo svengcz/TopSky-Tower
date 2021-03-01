@@ -35,7 +35,7 @@ NotamOverviewWindow::NotamOverviewWindow(RadarScreen* parent) :
         m_activeFilter(new Checkbox(this->m_parent, "Show active ", Gdiplus::RectF(this->m_contentArea.X + this->m_contentArea.Width - 115.0f, this->m_contentArea.Y + 15.0f,
                                                                                    100.0f, MENU_HEIGHT))),
         m_notamOverview(new TableViewer(this->m_parent, { "ICAO", "CATEGORY", "TITLE", "START", "END" },
-                                        Gdiplus::RectF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y + 10.0f + MENU_HEIGHT + MENU_CONTENT_SPACING,
+                                        Gdiplus::RectF(this->m_contentArea.X + 1.0f, this->m_contentArea.Y + 10.0f + MENU_HEIGHT + MENU_CONTENT_SPACING,
                                                        this->m_contentArea.Width, this->m_contentArea.Height - MENU_TABLE_SPACING))) {
     this->m_notamOverview->setMinVisibleRows(10);
     this->m_notamOverview->setMaxVisibleRows(10);
@@ -263,7 +263,7 @@ bool NotamOverviewWindow::visualize(Gdiplus::Graphics* graphics) {
     this->m_notamOverview->prepareVisualization(graphics);
     Gdiplus::SizeF tableSize;
     this->m_notamOverview->area().GetSize(&tableSize);
-    tableSize.Width += 4.0f;
+    tableSize.Width += 2.0f;
     tableSize.Height += MENU_HEIGHT + MENU_TABLE_SPACING;
     this->setContentSize(tableSize);
 
