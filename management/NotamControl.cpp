@@ -26,6 +26,8 @@
 
 #include "grammar/Notam.hpp"
 #include "grammar/Parser.hpp"
+#include "grammar/Runway.hpp"
+#include "grammar/Stand.hpp"
 
 using namespace std::chrono;
 using namespace topskytower;
@@ -106,12 +108,51 @@ NotamCategory NotamControl::parseQCode(const std::string& qCode) {
     }
 }
 
-std::shared_ptr<Notam> NotamControl::createNotamStructure(const std::string& qCode) {
+std::shared_ptr<Notam> NotamControl::createNotamStructure(const std::string& qCode, const std::string& content) {
     auto category = NotamControl::parseQCode(qCode);
+    if (NotamCategory::Unknown == category)
+        return nullptr;
 
-    std::shared_ptr<Notam> retval(new Notam());
+    std::shared_ptr<Notam> retval;
+    grammar::AstNode node;
+
+    /* check NOTAMs that close elements */
+    if ('L' == qCode[3] && 'C' == qCode[4]) {
+        switch (category) {
+        case NotamCategory::Runway:
+            retval = std::shared_ptr<Notam>(new RunwayNotam());
+            if (true == grammar::Parser::parse(content, grammar::RunwayGrammar(), node)) {
+                retval->state = NotamInterpreterState::Success;
+                const auto& runways = boost::get<grammar::AstRunway>(node);
+                static_cast<RunwayNotam*>(retval.get())->sections = std::move(runways.names);
+            }
+            else {
+                retval->state = NotamInterpreterState::Failed;
+            }
+            break;
+        case NotamCategory::Stands:
+            retval = std::shared_ptr<Notam>(new StandNotam());
+            if (true == grammar::Parser::parse(content, grammar::StandGrammar(), node)) {
+                retval->state = NotamInterpreterState::Success;
+                const auto& stands = boost::get<grammar::AstStand>(node);
+                static_cast<RunwayNotam*>(retval.get())->sections = std::move(stands.stands);
+            }
+            else {
+                retval->state = NotamInterpreterState::Failed;
+            }
+            break;
+        default:
+            retval = std::shared_ptr<Notam>(new Notam());
+            retval->state = NotamInterpreterState::Ignored;
+            break;
+        }
+    }
+    else {
+        retval = std::shared_ptr<Notam>(new Notam());
+        retval->state = NotamInterpreterState::Ignored;
+    }
+
     retval->category = category;
-
     return std::move(retval);
 }
 
@@ -123,7 +164,9 @@ bool NotamControl::createNotam(const std::string& notamText, std::shared_ptr<Not
     if (true == retval) {
         const auto& notamTree = boost::get<grammar::AstNotam>(node);
 
-        notam = NotamControl::createNotamStructure(notamTree.info.code);
+        notam = NotamControl::createNotamStructure(notamTree.info.code, notamTree.content);
+        if (nullptr == notam)
+            return false;
 
         /* translate the generic topics of the NOTAM */
         notam->title = notamTree.title;
