@@ -14,30 +14,30 @@ namespace topskytower {
     namespace management {
         using NotamTimePoint = std::chrono::system_clock::time_point; /**< Defines a more readable type for the time_point */
 
-            /**
-             * @brief Defines the NOTAM categories based on the FAA releases
-             */
+        /**
+         * @brief Defines the NOTAM categories based on the FAA releases
+         */
         enum class NotamCategory {
-            Unknown = 0,  /**< An unknown NOTAM */
-            Other = 1,  /**< Non-airport specific */
-            MovementArea = 2,  /**< Movement area specific */
-            BearingStrength = 3,  /**< Bearing strength of landing area */
-            Clearway = 4,  /**< Clearway for specific runway */
-            DeclaredDistances = 5,  /**< Declared distances for specific runway */
-            TaxiGuidance = 6,  /**< Taxi guidance system */
+            Unknown             = 0,  /**< An unknown NOTAM */
+            Other               = 1,  /**< Non-airport specific */
+            MovementArea        = 2,  /**< Movement area specific */
+            BearingStrength     = 3,  /**< Bearing strength of landing area */
+            Clearway            = 4,  /**< Clearway for specific runway */
+            DeclaredDistances   = 5,  /**< Declared distances for specific runway */
+            TaxiGuidance        = 6,  /**< Taxi guidance system */
             RunwayArrestingGear = 7,  /**< Runway arresting gear for specific runway */
-            Parking = 8,  /**< Parking area */
-            DaylightMarkings = 9,  /**< Daylight markings for threshold or centerline */
-            Apron = 10, /**< Apron specific */
-            Stopbar = 11, /**< Stopbar for specific runway */
-            Stands = 12, /**< Aircraft stand specific */
-            Runway = 13, /**< Runway for specific runway */
-            Stopway = 14, /**< Stopway for specific runway */
-            Threshold = 15, /**< Threshold for specific runway */
-            RunwayTurningBay = 16, /**< Runway turning bay for specific runway */
-            Strip = 17, /**< Strip or shoulder for specific runway */
-            Taxiway = 18, /**< Taxiway specific */
-            RapidExit = 19  /**< Rapid exit taxiway */
+            Parking             = 8,  /**< Parking area */
+            DaylightMarkings    = 9,  /**< Daylight markings for threshold or centerline */
+            Apron               = 10, /**< Apron specific */
+            Stopbar             = 11, /**< Stopbar for specific runway */
+            Stands              = 12, /**< Aircraft stand specific */
+            Runway              = 13, /**< Runway for specific runway */
+            Stopway             = 14, /**< Stopway for specific runway */
+            Threshold           = 15, /**< Threshold for specific runway */
+            RunwayTurningBay    = 16, /**< Runway turning bay for specific runway */
+            Strip               = 17, /**< Strip or shoulder for specific runway */
+            Taxiway             = 18, /**< Taxiway specific */
+            RapidExit           = 19  /**< Rapid exit taxiway */
         };
 
         /**
