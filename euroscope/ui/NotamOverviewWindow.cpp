@@ -34,12 +34,12 @@ NotamOverviewWindow::NotamOverviewWindow(RadarScreen* parent) :
                                                                                      200.0f, MENU_HEIGHT))),
         m_activeFilter(new Checkbox(this->m_parent, "Show active ", Gdiplus::RectF(this->m_contentArea.X + this->m_contentArea.Width - 115.0f, this->m_contentArea.Y + 15.0f,
                                                                                    100.0f, MENU_HEIGHT))),
-        m_notamOverview(new TableViewer(this->m_parent, { "ICAO", "CATEGORY", "TITLE", "START", "END" },
+        m_notamOverview(new TableViewer(this->m_parent, { "ICAO", "CATEGORY", "TITLE", "START", "END", "ON" },
                                         Gdiplus::RectF(this->m_contentArea.X + 1.0f, this->m_contentArea.Y + 10.0f + MENU_HEIGHT + MENU_CONTENT_SPACING,
                                                        this->m_contentArea.Width, this->m_contentArea.Height - MENU_TABLE_SPACING))) {
     this->m_notamOverview->setMinVisibleRows(10);
     this->m_notamOverview->setMaxVisibleRows(10);
-    this->m_notamOverview->setMinimumColumnWidths({35.0f, 105.0f, 165.0f, 115.0f, 115.0f});
+    this->m_notamOverview->setMinimumColumnWidths({35.0f, 105.0f, 165.0f, 115.0f, 115.0f, 20.0f});
 
     this->m_elements.push_back(this->m_airportFilter);
     this->m_elements.push_back(this->m_categoryFilter);
@@ -49,6 +49,7 @@ NotamOverviewWindow::NotamOverviewWindow(RadarScreen* parent) :
     this->m_categoryFilter->setEntries(
         {
             "All",
+            "Interpreted",
             "Other",
             "Movement area",
             "Bearing strength",
@@ -117,6 +118,24 @@ std::string NotamOverviewWindow::translateCategory(management::NotamCategory cat
     }
 }
 
+std::string NotamOverviewWindow::translateNotamActiveState(management::NotamActiveState active, management::NotamInterpreterState interpreter) {
+    if (management::NotamInterpreterState::Success == interpreter) {
+        switch (active) {
+        case management::NotamActiveState::Active:
+            return " Y";
+        case management::NotamActiveState::Inactive:
+            return " N";
+        case management::NotamActiveState::Automatic:
+            return " A";
+        default:
+            return " E";
+        }
+    }
+    else {
+        return " ";
+    }
+}
+
 void NotamOverviewWindow::setOverviewContent() {
     std::size_t oldSize = this->m_notamOverview->numberOfRows();
     std::string filter = this->m_airportFilter->content();
@@ -142,9 +161,13 @@ void NotamOverviewWindow::setOverviewContent() {
 
             /* check if the type filter is active */
             if (0 != this->m_categoryFilter->selected().length()) {
-                auto category = static_cast<management::NotamCategory>(this->m_categoryFilter->selectedIndex());
-                if (management::NotamCategory::Unknown != category && notam->category != category)
-                    continue;
+                auto category = this->m_categoryFilter->selectedIndex();
+                if (0 != category) {
+                    if (1 == category && management::NotamInterpreterState::Success != notam->interpreterState)
+                        continue;
+                    else if (1 != category && notam->category != static_cast<management::NotamCategory>(category - 1))
+                        continue;
+                }
             }
 
             /* check if the NOTAM exists */
@@ -180,14 +203,17 @@ void NotamOverviewWindow::setOverviewContent() {
                     break;
                 }
 
+                /* set the NOTAM information */
                 this->m_notamOverview->addRow();
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 0, notams.first);
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 1, NotamOverviewWindow::translateCategory(notam->category));
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 2, notam->title);
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 3, helper::Time::timeToString(notam->startTime, "%Y-%m-%d %H:%M"));
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 4, helper::Time::timeToString(notam->endTime, "%Y-%m-%d %H:%M"));
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 5, NotamOverviewWindow::translateNotamActiveState(notam->activationState, notam->interpreterState));
 
-                for (std::size_t i = 0; i < 5; ++i)
+                /* set the foreground colors */
+                for (std::size_t i = 0; i < 6; ++i)
                     this->m_notamOverview->setTextColor(this->m_notamOverview->numberOfRows() - 1, i, textColor);
             }
         }

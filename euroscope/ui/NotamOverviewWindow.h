@@ -32,6 +32,8 @@ namespace topskytower {
 
             void setOverviewContent();
             static std::string translateCategory(management::NotamCategory category);
+            static std::string translateNotamActiveState(management::NotamActiveState active, management::NotamInterpreterState interpreter);
+            static management::NotamActiveState switchActiveState(management::NotamActiveState active, management::NotamInterpreterState interpreter);
 
         public:
             /**
