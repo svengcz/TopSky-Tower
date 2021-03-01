@@ -88,3 +88,25 @@ BOOST_FUSION_ADAPT_STRUCT(
     (topskytower::management::grammar::AstNotamTime, dayTime)
     (std::string, content)
 )
+
+namespace std {
+    ostream& operator<<(ostream& stream, const topskytower::types::Coordinate& coord) {
+        stream << "Coordinate: " << coord.latitude().convert(topskytower::types::degree) << ", " << coord.longitude().convert(topskytower::types::degree);
+        return stream;
+    }
+
+    ostream& operator<<(ostream& stream, const topskytower::management::grammar::AstNotamAltitude& alt) {
+        stream << "Alt: " << alt.convert(topskytower::types::metre);
+        return stream;
+    }
+
+    ostream& operator<<(ostream& stream, const topskytower::management::grammar::AstNotamRadius& radius) {
+        stream << "Radius: " << radius.convert(topskytower::types::metre);
+        return stream;
+    }
+
+    ostream& operator<<(ostream& stream, const chrono::system_clock::time_point& time) {
+        stream << "Time: " << topskytower::helper::Time::timeToString(time);
+        return stream;
+    }
+}
