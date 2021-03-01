@@ -29,8 +29,6 @@ namespace topskytower {
             > AstNode;
 
             struct AstNull { };
-
-            struct AstNodeVector : public std::vector<AstNode> { };
         }
     }
 }
