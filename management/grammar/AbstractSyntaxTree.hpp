@@ -9,3 +9,4 @@
 #include "AstBase.hpp"
 #include "AstNotam.hpp"
 #include "AstRunway.hpp"
+#include "AstStand.hpp"
