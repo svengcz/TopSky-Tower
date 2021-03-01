@@ -157,12 +157,38 @@ void NotamOverviewWindow::setOverviewContent() {
 
             /* create a new entry */
             if (false == found) {
+                /* get the correct colorization of the row based on the interpreter state */
+                Gdiplus::Color textColor;
+                const std::uint8_t* rgb;
+
+                switch (notam->state) {
+                case management::NotamInterpreterState::Failed:
+                    rgb = system::ConfigurationRegistry::instance().systemConfiguration().uiWarningColor;
+                    textColor = Gdiplus::Color(rgb[0], rgb[1], rgb[2]);
+                    break;
+                case management::NotamInterpreterState::Ignored:
+                case management::NotamInterpreterState::Pending:
+                    textColor = UiElement::foregroundColor();
+                    textColor = Gdiplus::Color(120, textColor.GetR(), textColor.GetG(), textColor.GetB());
+                    break;
+                case management::NotamInterpreterState::Success:
+                    textColor = UiElement::foregroundColor();
+                    break;
+                default:
+                    rgb = system::ConfigurationRegistry::instance().systemConfiguration().uiErrorColor;
+                    textColor = Gdiplus::Color(rgb[0], rgb[1], rgb[2]);
+                    break;
+                }
+
                 this->m_notamOverview->addRow();
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 0, notams.first);
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 1, NotamOverviewWindow::translateCategory(notam->category));
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 2, notam->title);
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 3, helper::Time::timeToString(notam->startTime, "%Y-%m-%d %H:%M"));
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 4, helper::Time::timeToString(notam->endTime, "%Y-%m-%d %H:%M"));
+
+                for (std::size_t i = 0; i < 5; ++i)
+                    this->m_notamOverview->setTextColor(this->m_notamOverview->numberOfRows() - 1, i, textColor);
             }
         }
     }
