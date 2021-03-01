@@ -55,6 +55,57 @@ static std::size_t receiveCurl(void* ptr, std::size_t size, std::size_t nmemb, v
     return size * nmemb;
 }
 
+NotamControl::Category NotamControl::parseQCode(const std::string& qCode) {
+    /* found an invalid code */
+    if (5 != qCode.length() && 'Q' != qCode[0])
+        return NotamControl::Category::Unknown;
+
+    /* found a non-airport relevant NOTAM */
+    if ('M' != qCode[1])
+        return NotamControl::Category::Other;
+
+    switch (qCode[2]) {
+    case 'A':
+        return NotamControl::Category::MovementArea;
+    case 'B':
+        return NotamControl::Category::BearingStrength;
+    case 'C':
+        return NotamControl::Category::Clearway;
+    case 'D':
+        return NotamControl::Category::DeclaredDistances;
+    case 'G':
+        return NotamControl::Category::TaxiGuidance;
+    case 'H':
+        return NotamControl::Category::RunwayArrestingGear;
+    case 'K':
+        return NotamControl::Category::Parking;
+    case 'M':
+        return NotamControl::Category::DaylightMarkings;
+    case 'N':
+        return NotamControl::Category::Apron;
+    case 'O':
+        return NotamControl::Category::Stopbar;
+    case 'P':
+        return NotamControl::Category::Stands;
+    case 'R':
+        return NotamControl::Category::Runway;
+    case 'S':
+        return NotamControl::Category::Stopbar;
+    case 'T':
+        return NotamControl::Category::Threshold;
+    case 'U':
+        return NotamControl::Category::RunwayTurningBay;
+    case 'W':
+        return NotamControl::Category::Strip;
+    case 'X':
+        return NotamControl::Category::Taxiway;
+    case 'Y':
+        return NotamControl::Category::RapidExit;
+    default:
+        return NotamControl::Category::Unknown;
+    }
+}
+
 bool NotamControl::createNotam(const std::string& notamText, NotamControl::Notam& notam) {
     grammar::AstNode node;
     bool retval;
@@ -65,6 +116,7 @@ bool NotamControl::createNotam(const std::string& notamText, NotamControl::Notam
 
         /* translate the generic topics of the NOTAM */
         notam.title = notamTree.title;
+        notam.category = NotamControl::parseQCode(notamTree.info.code);
         notam.startTime = notamTree.startTime;
         notam.endTime = notamTree.endTime;
         notam.message = notamTree.content;
