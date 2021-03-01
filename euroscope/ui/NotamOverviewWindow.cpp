@@ -234,6 +234,17 @@ void NotamOverviewWindow::setOverviewContent() {
     }
 }
 
+management::NotamActiveState NotamOverviewWindow::switchActiveState(management::NotamActiveState active, management::NotamInterpreterState interpreter) {
+    if (management::NotamInterpreterState::Success != interpreter) {
+        return management::NotamActiveState::Inactive;
+    }
+    else {
+        int state = static_cast<int>(active) + 1;
+        state %= 3;
+        return static_cast<management::NotamActiveState>(state);
+    }
+}
+
 bool NotamOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     if (true == UiElement::isInRectangle(pt, this->m_contentArea)) {
         if (true == this->m_notamOverview->click(pt, button)) {
@@ -244,11 +255,18 @@ bool NotamOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButto
                 const auto& title = this->m_notamOverview->entry(row, 2);
 
                 auto notamsIt = management::NotamControl::instance().notams().find(airport);
-                if (management::NotamControl::instance().notams().cend() != notamsIt) {
-                    for (const auto& notam : std::as_const(notamsIt->second)) {
+                if (management::NotamControl::instance().notams().end() != notamsIt) {
+                    for (auto& notam : notamsIt->second) {
                         if (notam->title == title && false == this->m_parent->uiManager().windowIsActive(title)) {
-                            auto viewer = new MessageViewerWindow(this->m_parent, title, notam->rawMessage);
-                            viewer->setActive(true);
+                            if (5 == column) {
+                                notam->activationState = NotamOverviewWindow::switchActiveState(notam->activationState, notam->interpreterState);
+                                this->m_notamOverview->setElement(row, column, NotamOverviewWindow::translateNotamActiveState(notam->activationState, notam->interpreterState));
+                            }
+                            else {
+                                auto viewer = new MessageViewerWindow(this->m_parent, title, notam->rawMessage);
+                                viewer->setActive(true);
+                            }
+
                             return true;
                         }
                     }
