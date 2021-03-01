@@ -41,6 +41,16 @@ namespace topskytower {
         };
 
         /**
+         * @brief Defines the interpetation status of the NOTAM
+         */
+        enum class NotamInterpreterState {
+            Pending = 0, /**< The interpretation is pending */
+            Ignored = 1, /**< The NOTAM is ignored */
+            Failed  = 2, /**< The interpreter failed */
+            Success = 3  /**< The interpreter was successful and*/
+        };
+
+        /**
          * @brief Defines the parsed NOTAM information
          */
         struct NotamInformation {
@@ -70,15 +80,17 @@ namespace topskytower {
          * @brief Defines a parsed NOTAM
          */
         struct Notam {
-            std::string      title;       /**< The NOTAM's title */
-            NotamCategory    category;    /**< The NOTAM's category */
-            NotamInformation information; /**< The NOTAM's information */
-            NotamTimePoint   startTime;   /**< The NOTAM's start time */
-            NotamTimePoint   endTime;     /**< The NOTAM's end time */
-            std::string      message;     /**< The NOTAM's message */
-            std::string      rawMessage;  /**< The raw message received from the server */
+            NotamInterpreterState state;       /**< The interpretation state */
+            std::string           title;       /**< The NOTAM's title */
+            NotamCategory         category;    /**< The NOTAM's category */
+            NotamInformation      information; /**< The NOTAM's information */
+            NotamTimePoint        startTime;   /**< The NOTAM's start time */
+            NotamTimePoint        endTime;     /**< The NOTAM's end time */
+            std::string           message;     /**< The NOTAM's message */
+            std::string           rawMessage;  /**< The raw message received from the server */
 
             Notam() :
+                    state(NotamInterpreterState::Pending),
                     title(),
                     category(NotamCategory::Unknown),
                     information(),
