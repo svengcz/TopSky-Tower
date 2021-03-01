@@ -161,7 +161,7 @@ void NotamOverviewWindow::setOverviewContent() {
                 Gdiplus::Color textColor;
                 const std::uint8_t* rgb;
 
-                switch (notam->state) {
+                switch (notam->interpreterState) {
                 case management::NotamInterpreterState::Failed:
                     rgb = system::ConfigurationRegistry::instance().systemConfiguration().uiWarningColor;
                     textColor = Gdiplus::Color(rgb[0], rgb[1], rgb[2]);

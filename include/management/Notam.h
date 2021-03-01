@@ -53,6 +53,15 @@ namespace topskytower {
         };
 
         /**
+         * @brief Defines the activation state of the NOTAM
+         */
+        enum class NotamActiveState {
+            Inactive  = 0, /**< The NOTAM is inactive */
+            Active    = 1, /**< The NOTAM is active */
+            Automatic = 2  /**< The NOTAM is active or inactive based on the start and end time */
+        };
+
+        /**
          * @brief Defines the parsed NOTAM information
          */
         struct NotamInformation {
@@ -82,17 +91,19 @@ namespace topskytower {
          * @brief Defines a parsed NOTAM
          */
         struct Notam {
-            NotamInterpreterState state;       /**< The interpretation state */
-            std::string           title;       /**< The NOTAM's title */
-            NotamCategory         category;    /**< The NOTAM's category */
-            NotamInformation      information; /**< The NOTAM's information */
-            NotamTimePoint        startTime;   /**< The NOTAM's start time */
-            NotamTimePoint        endTime;     /**< The NOTAM's end time */
-            std::string           message;     /**< The NOTAM's message */
-            std::string           rawMessage;  /**< The raw message received from the server */
+            NotamActiveState      activationState;  /**< The activation state */
+            NotamInterpreterState interpreterState; /**< The interpretation state */
+            std::string           title;            /**< The NOTAM's title */
+            NotamCategory         category;         /**< The NOTAM's category */
+            NotamInformation      information;      /**< The NOTAM's information */
+            NotamTimePoint        startTime;        /**< The NOTAM's start time */
+            NotamTimePoint        endTime;          /**< The NOTAM's end time */
+            std::string           message;          /**< The NOTAM's message */
+            std::string           rawMessage;       /**< The raw message received from the server */
 
             Notam() :
-                    state(NotamInterpreterState::Pending),
+                    activationState(NotamActiveState::Inactive),
+                    interpreterState(NotamInterpreterState::Pending),
                     title(),
                     category(NotamCategory::Unknown),
                     information(),

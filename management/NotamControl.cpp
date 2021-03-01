@@ -122,34 +122,36 @@ std::shared_ptr<Notam> NotamControl::createNotamStructure(const std::string& qCo
         case NotamCategory::Runway:
             retval = std::shared_ptr<Notam>(new RunwayNotam());
             if (true == grammar::Parser::parse(content, grammar::RunwayGrammar(), node)) {
-                retval->state = NotamInterpreterState::Success;
+                retval->activationState = NotamActiveState::Automatic;
+                retval->interpreterState = NotamInterpreterState::Success;
                 const auto& runways = boost::get<grammar::AstRunway>(node);
                 static_cast<RunwayNotam*>(retval.get())->sections = std::move(runways.names);
             }
             else {
-                retval->state = NotamInterpreterState::Failed;
+                retval->interpreterState = NotamInterpreterState::Failed;
             }
             break;
         case NotamCategory::Stands:
             retval = std::shared_ptr<Notam>(new StandNotam());
             if (true == grammar::Parser::parse(content, grammar::StandGrammar(), node)) {
-                retval->state = NotamInterpreterState::Success;
+                retval->activationState = NotamActiveState::Automatic;
+                retval->interpreterState = NotamInterpreterState::Success;
                 const auto& stands = boost::get<grammar::AstStand>(node);
                 static_cast<RunwayNotam*>(retval.get())->sections = std::move(stands.stands);
             }
             else {
-                retval->state = NotamInterpreterState::Failed;
+                retval->interpreterState = NotamInterpreterState::Failed;
             }
             break;
         default:
             retval = std::shared_ptr<Notam>(new Notam());
-            retval->state = NotamInterpreterState::Ignored;
+            retval->interpreterState = NotamInterpreterState::Ignored;
             break;
         }
     }
     else {
         retval = std::shared_ptr<Notam>(new Notam());
-        retval->state = NotamInterpreterState::Ignored;
+        retval->interpreterState = NotamInterpreterState::Ignored;
     }
 
     retval->category = category;
