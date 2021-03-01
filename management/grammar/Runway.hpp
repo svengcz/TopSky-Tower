@@ -38,10 +38,10 @@ namespace topskytower {
                     this->runway = qi::repeat(2)[qi::char_("0-9")] >> -qi::char_("LRC");
 
 #ifdef DEBUG_GRAMMAR
-                    root.name("root");
-                    runways.name("runways");
-                    runwayNames.name("names");
-                    runway.name("runway");
+                    this->root.name("root");
+                    this->runways.name("runways");
+                    this->runwayNames.name("names");
+                    this->runway.name("runway");
 
                     qi::debug(this->root);
                     qi::debug(this->runways);
