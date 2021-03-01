@@ -12,7 +12,6 @@
 #include "stdafx.h"
 
 #include <helper/Time.h>
-#include <management/NotamControl.h>
 #include <system/ConfigurationRegistry.h>
 
 #include "../RadarScreen.h"
@@ -31,16 +30,91 @@ NotamOverviewWindow::NotamOverviewWindow(RadarScreen* parent) :
         m_firstRendering(true),
         m_airportFilter(new EditText(this->m_parent, "ICAO", Gdiplus::RectF(this->m_contentArea.X + 5.0f, this->m_contentArea.Y + 15.0f,
                                                                             100.0f, MENU_HEIGHT))),
+        m_categoryFilter(new DropDownMenu(this->m_parent, "CATEGORY", Gdiplus::RectF(this->m_contentArea.X + 130.0f, this->m_contentArea.Y + 15.0f,
+                                                                                     200.0f, MENU_HEIGHT))),
         m_activeFilter(new Checkbox(this->m_parent, "Show active ", Gdiplus::RectF(this->m_contentArea.X + this->m_contentArea.Width - 115.0f, this->m_contentArea.Y + 15.0f,
                                                                                    100.0f, MENU_HEIGHT))),
-        m_notamOverview(new TableViewer(this->m_parent, { "ICAO", "TITLE", "START", "END" },
+        m_notamOverview(new TableViewer(this->m_parent, { "ICAO", "CATEGORY", "TITLE", "START", "END" },
                                         Gdiplus::RectF(this->m_contentArea.X + 2.0f, this->m_contentArea.Y + 10.0f + MENU_HEIGHT + MENU_CONTENT_SPACING,
                                                        this->m_contentArea.Width, this->m_contentArea.Height - MENU_TABLE_SPACING))) {
+    this->m_notamOverview->setMinVisibleRows(10);
     this->m_notamOverview->setMaxVisibleRows(10);
+    this->m_notamOverview->setMinimumColumnWidths({35.0f, 105.0f, 165.0f, 115.0f, 115.0f});
 
     this->m_elements.push_back(this->m_airportFilter);
+    this->m_elements.push_back(this->m_categoryFilter);
     this->m_elements.push_back(this->m_activeFilter);
     this->m_elements.push_back(this->m_notamOverview);
+
+    this->m_categoryFilter->setEntries(
+        {
+            "All",
+            "Other",
+            "Movement area",
+            "Bearing strength",
+            "Clearway",
+            "Declared distances",
+            "Taxiing guidance system",
+            "Runway arresting gear",
+            "Parking area",
+            "Daylight markings",
+            "Apron",
+            "Stopbar",
+            "Aircraft stands",
+            "Runway",
+            "Stopbar",
+            "Threshold",
+            "Runway turning bay",
+            "Strip/shoulder",
+            "Taxiway",
+            "Rapid exit taxiway"
+        }
+    );
+}
+
+std::string NotamOverviewWindow::translateCategory(management::NotamControl::Category category) {
+    switch (category) {
+    case management::NotamControl::Category::Other:
+        return "Other";
+    case management::NotamControl::Category::MovementArea:
+        return "Movement area";
+    case management::NotamControl::Category::BearingStrength:
+        return "Bearing strength";
+    case management::NotamControl::Category::Clearway:
+        return "Clearway";
+    case management::NotamControl::Category::DeclaredDistances:
+        return "Declared distances";
+    case management::NotamControl::Category::TaxiGuidance:
+        return "Taxiing guidance system";
+    case management::NotamControl::Category::RunwayArrestingGear:
+        return "Runway arresting gear";
+    case management::NotamControl::Category::Parking:
+        return "Parking area";
+    case management::NotamControl::Category::DaylightMarkings:
+        return "Daylight markings";
+    case management::NotamControl::Category::Apron:
+        return "Apron";
+    case management::NotamControl::Category::Stopbar:
+        return "Stopbar";
+    case management::NotamControl::Category::Stands:
+        return "Aircraft stands";
+    case management::NotamControl::Category::Runway:
+        return "Runway";
+    case management::NotamControl::Category::Stopway:
+        return "Stopbar";
+    case management::NotamControl::Category::Threshold:
+        return "Threshold";
+    case management::NotamControl::Category::RunwayTurningBay:
+        return "Runway turning bay";
+    case management::NotamControl::Category::Strip:
+        return "Strip/shoulder";
+    case management::NotamControl::Category::Taxiway:
+        return "Taxiway";
+    case management::NotamControl::Category::RapidExit:
+        return "Rapid exit taxiway";
+    default:
+        return "Unknown";
+    }
 }
 
 void NotamOverviewWindow::setOverviewContent() {
@@ -66,9 +140,16 @@ void NotamOverviewWindow::setOverviewContent() {
                     continue;
             }
 
+            /* check if the type filter is active */
+            if (0 != this->m_categoryFilter->selected().length()) {
+                auto category = static_cast<management::NotamControl::Category>(this->m_categoryFilter->selectedIndex());
+                if (management::NotamControl::Category::Unknown != category && notam.category != category)
+                    continue;
+            }
+
             /* check if the NOTAM exists */
             for (std::size_t row = 0; row < this->m_notamOverview->numberOfRows(); ++row) {
-                if (this->m_notamOverview->entry(row, 0) == notams.first && this->m_notamOverview->entry(row, 1) == notam.title) {
+                if (this->m_notamOverview->entry(row, 0) == notams.first && this->m_notamOverview->entry(row, 2) == notam.title) {
                     foundIndices.push_back(row);
                     found = true;
                 }
@@ -78,9 +159,10 @@ void NotamOverviewWindow::setOverviewContent() {
             if (false == found) {
                 this->m_notamOverview->addRow();
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 0, notams.first);
-                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 1, notam.title);
-                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 2, helper::Time::timeToString(notam.startTime, "%Y-%m-%d %H:%M"));
-                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 3, helper::Time::timeToString(notam.endTime, "%Y-%m-%d %H:%M"));
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 1, NotamOverviewWindow::translateCategory(notam.category));
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 2, notam.title);
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 3, helper::Time::timeToString(notam.startTime, "%Y-%m-%d %H:%M"));
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 4, helper::Time::timeToString(notam.endTime, "%Y-%m-%d %H:%M"));
             }
         }
     }
@@ -107,7 +189,7 @@ bool NotamOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButto
 
             if (true == this->m_notamOverview->clickedEntry(row, column)) {
                 const auto& airport = this->m_notamOverview->entry(row, 0);
-                const auto& title = this->m_notamOverview->entry(row, 1);
+                const auto& title = this->m_notamOverview->entry(row, 2);
 
                 auto notamsIt = management::NotamControl::instance().notams().find(airport);
                 if (management::NotamControl::instance().notams().cend() != notamsIt) {
@@ -140,7 +222,7 @@ bool NotamOverviewWindow::visualize(Gdiplus::Graphics* graphics) {
 
         float width = static_cast<float>(area.right - area.left);
         float height = static_cast<float>(area.bottom - area.top);
-        float x = width - this->m_notamOverview->area().Width - 100.0f;
+        float x = width - this->m_notamOverview->area().Width - 250.0f;
         if (0.0f > x)
             x = 0.0f;
         float y = height - this->m_notamOverview->area().Height - 20.0f;
