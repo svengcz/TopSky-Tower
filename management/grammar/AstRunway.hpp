@@ -8,18 +8,13 @@
 
 #include <string>
 #include <utility>
-
-#include <types/Quantity.hpp>
-
-#include "AstBase.hpp"
+#include <vector>
 
 namespace topskytower {
     namespace management {
         namespace grammar {
-            struct AstRunwayDimension : public topskytower::types::Length { };
-
             struct AstRunway {
-                AstNodeVector      names;
+                std::vector<std::string> names;
             };
         }
     }
@@ -27,5 +22,5 @@ namespace topskytower {
 
 BOOST_FUSION_ADAPT_STRUCT(
     topskytower::management::grammar::AstRunway,
-    (topskytower::management::grammar::AstNodeVector, names)
+    (std::vector<std::string>, names)
 );
