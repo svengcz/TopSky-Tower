@@ -72,45 +72,45 @@ NotamOverviewWindow::NotamOverviewWindow(RadarScreen* parent) :
     );
 }
 
-std::string NotamOverviewWindow::translateCategory(management::NotamControl::Category category) {
+std::string NotamOverviewWindow::translateCategory(management::NotamCategory category) {
     switch (category) {
-    case management::NotamControl::Category::Other:
+    case management::NotamCategory::Other:
         return "Other";
-    case management::NotamControl::Category::MovementArea:
+    case management::NotamCategory::MovementArea:
         return "Movement area";
-    case management::NotamControl::Category::BearingStrength:
+    case management::NotamCategory::BearingStrength:
         return "Bearing strength";
-    case management::NotamControl::Category::Clearway:
+    case management::NotamCategory::Clearway:
         return "Clearway";
-    case management::NotamControl::Category::DeclaredDistances:
+    case management::NotamCategory::DeclaredDistances:
         return "Declared distances";
-    case management::NotamControl::Category::TaxiGuidance:
+    case management::NotamCategory::TaxiGuidance:
         return "Taxiing guidance system";
-    case management::NotamControl::Category::RunwayArrestingGear:
+    case management::NotamCategory::RunwayArrestingGear:
         return "Runway arresting gear";
-    case management::NotamControl::Category::Parking:
+    case management::NotamCategory::Parking:
         return "Parking area";
-    case management::NotamControl::Category::DaylightMarkings:
+    case management::NotamCategory::DaylightMarkings:
         return "Daylight markings";
-    case management::NotamControl::Category::Apron:
+    case management::NotamCategory::Apron:
         return "Apron";
-    case management::NotamControl::Category::Stopbar:
+    case management::NotamCategory::Stopbar:
         return "Stopbar";
-    case management::NotamControl::Category::Stands:
+    case management::NotamCategory::Stands:
         return "Aircraft stands";
-    case management::NotamControl::Category::Runway:
+    case management::NotamCategory::Runway:
         return "Runway";
-    case management::NotamControl::Category::Stopway:
+    case management::NotamCategory::Stopway:
         return "Stopbar";
-    case management::NotamControl::Category::Threshold:
+    case management::NotamCategory::Threshold:
         return "Threshold";
-    case management::NotamControl::Category::RunwayTurningBay:
+    case management::NotamCategory::RunwayTurningBay:
         return "Runway turning bay";
-    case management::NotamControl::Category::Strip:
+    case management::NotamCategory::Strip:
         return "Strip/shoulder";
-    case management::NotamControl::Category::Taxiway:
+    case management::NotamCategory::Taxiway:
         return "Taxiway";
-    case management::NotamControl::Category::RapidExit:
+    case management::NotamCategory::RapidExit:
         return "Rapid exit taxiway";
     default:
         return "Unknown";
@@ -136,20 +136,20 @@ void NotamOverviewWindow::setOverviewContent() {
 
             /* check if the NOTAM is active or not */
             if (true == this->m_activeFilter->checked()) {
-                if (notam.startTime > currentTime || notam.endTime < currentTime)
+                if (notam->startTime > currentTime || notam->endTime < currentTime)
                     continue;
             }
 
             /* check if the type filter is active */
             if (0 != this->m_categoryFilter->selected().length()) {
-                auto category = static_cast<management::NotamControl::Category>(this->m_categoryFilter->selectedIndex());
-                if (management::NotamControl::Category::Unknown != category && notam.category != category)
+                auto category = static_cast<management::NotamCategory>(this->m_categoryFilter->selectedIndex());
+                if (management::NotamCategory::Unknown != category && notam->category != category)
                     continue;
             }
 
             /* check if the NOTAM exists */
             for (std::size_t row = 0; row < this->m_notamOverview->numberOfRows(); ++row) {
-                if (this->m_notamOverview->entry(row, 0) == notams.first && this->m_notamOverview->entry(row, 2) == notam.title) {
+                if (this->m_notamOverview->entry(row, 0) == notams.first && this->m_notamOverview->entry(row, 2) == notam->title) {
                     foundIndices.push_back(row);
                     found = true;
                 }
@@ -159,10 +159,10 @@ void NotamOverviewWindow::setOverviewContent() {
             if (false == found) {
                 this->m_notamOverview->addRow();
                 this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 0, notams.first);
-                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 1, NotamOverviewWindow::translateCategory(notam.category));
-                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 2, notam.title);
-                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 3, helper::Time::timeToString(notam.startTime, "%Y-%m-%d %H:%M"));
-                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 4, helper::Time::timeToString(notam.endTime, "%Y-%m-%d %H:%M"));
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 1, NotamOverviewWindow::translateCategory(notam->category));
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 2, notam->title);
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 3, helper::Time::timeToString(notam->startTime, "%Y-%m-%d %H:%M"));
+                this->m_notamOverview->setElement(this->m_notamOverview->numberOfRows() - 1, 4, helper::Time::timeToString(notam->endTime, "%Y-%m-%d %H:%M"));
             }
         }
     }
@@ -194,8 +194,8 @@ bool NotamOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButto
                 auto notamsIt = management::NotamControl::instance().notams().find(airport);
                 if (management::NotamControl::instance().notams().cend() != notamsIt) {
                     for (const auto& notam : std::as_const(notamsIt->second)) {
-                        if (notam.title == title && false == this->m_parent->uiManager().windowIsActive(title)) {
-                            auto viewer = new MessageViewerWindow(this->m_parent, title, notam.rawMessage);
+                        if (notam->title == title && false == this->m_parent->uiManager().windowIsActive(title)) {
+                            auto viewer = new MessageViewerWindow(this->m_parent, title, notam->rawMessage);
                             viewer->setActive(true);
                             return true;
                         }

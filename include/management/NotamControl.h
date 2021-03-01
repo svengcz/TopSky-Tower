@@ -11,8 +11,10 @@
 #include <thread>
 #include <list>
 #include <map>
+#include <memory>
 #include <mutex>
 
+#include <management/Notam.h>
 #include <types/Coordinate.h>
 #include <types/SystemConfiguration.h>
 
@@ -37,95 +39,20 @@ namespace topskytower {
         class NotamControl {
         public:
 #ifndef DOXYGEN_IGNORE
-            using TimePoint = std::chrono::system_clock::time_point; /**< Defines a more readable type for the time_point */
-
-            /**
-             * @brief Defines the NOTAM categories based on the FAA releases
-             */
-            enum class Category {
-                Unknown             = 0,  /**< An unknown NOTAM */
-                Other               = 1,  /**< Non-airport specific */
-                MovementArea        = 2,  /**< Movement area specific */
-                BearingStrength     = 3,  /**< Bearing strength of landing area */
-                Clearway            = 4,  /**< Clearway for specific runway */
-                DeclaredDistances   = 5,  /**< Declared distances for specific runway */
-                TaxiGuidance        = 6,  /**< Taxi guidance system */
-                RunwayArrestingGear = 7,  /**< Runway arresting gear for specific runway */
-                Parking             = 8,  /**< Parking area */
-                DaylightMarkings    = 9,  /**< Daylight markings for threshold or centerline */
-                Apron               = 10, /**< Apron specific */
-                Stopbar             = 11, /**< Stopbar for specific runway */
-                Stands              = 12, /**< Aircraft stand specific */
-                Runway              = 13, /**< Runway for specific runway */
-                Stopway             = 14, /**< Stopway for specific runway */
-                Threshold           = 15, /**< Threshold for specific runway */
-                RunwayTurningBay    = 16, /**< Runway turning bay for specific runway */
-                Strip               = 17, /**< Strip or shoulder for specific runway */
-                Taxiway             = 18, /**< Taxiway specific */
-                RapidExit           = 19  /**< Rapid exit taxiway */
-            };
-
-            /**
-             * @brief Defines the parsed NOTAM information
-             */
-            struct NotamInformation {
-                std::string       fir;           /**< Relevant FIR */
-                std::string       code;          /**< The Q-code of the information */
-                std::uint8_t      flightRule;    /**< Bitmask for the flight rule of the NOTAM */
-                std::string       purpose;       /**< Purpose of the NOTAM */
-                std::string       scope;         /**< Scope of the NOTAM */
-                types::Length     lowerAltitude; /**< The lower border of the NOTAM handled area */
-                types::Length     upperAltitude; /**< The upper border of the NOTAM handled area */
-                types::Coordinate coordinate;    /**< The coordinate of the of the NOTAM */
-                types::Length     radius;        /**< The active radius of the NOTAM */
-
-                NotamInformation() :
-                        fir(),
-                        code(),
-                        flightRule(0),
-                        purpose(),
-                        scope(),
-                        lowerAltitude(),
-                        upperAltitude(),
-                        coordinate(),
-                        radius() { }
-            };
-
-            /**
-             * @brief Defines a parsed NOTAM
-             */
-            struct Notam {
-                std::string      title;       /**< The NOTAM's title */
-                Category         category;    /**< The NOTAM's category */
-                NotamInformation information; /**< The NOTAM's information */
-                TimePoint        startTime;   /**< The NOTAM's start time */
-                TimePoint        endTime;     /**< The NOTAM's end time */
-                std::string      message;     /**< The NOTAM's message */
-                std::string      rawMessage;  /**< The raw message received from the server */
-
-                Notam() :
-                        title(),
-                        category(Category::Unknown),
-                        information(),
-                        startTime(),
-                        endTime(),
-                        message(),
-                        rawMessage() { }
-            };
-
         private:
-            volatile bool                           m_stopNotamThread;
-            std::map<std::string, TimePoint>        m_airportUpdates;
-            std::mutex                              m_pendingQueueLock;
-            std::list<std::string>                  m_enqueuePending;
-            std::list<std::string>                  m_dequeuePending;
-            std::map<std::string, std::list<Notam>> m_notams;
-            std::thread                             m_notamThread;
+            volatile bool                                            m_stopNotamThread;
+            std::map<std::string, NotamTimePoint>                    m_airportUpdates;
+            std::mutex                                               m_pendingQueueLock;
+            std::list<std::string>                                   m_enqueuePending;
+            std::list<std::string>                                   m_dequeuePending;
+            std::map<std::string, std::list<std::shared_ptr<Notam>>> m_notams;
+            std::thread                                              m_notamThread;
 
             NotamControl();
 
-            static Category parseQCode(const std::string& qCode);
-            static bool createNotam(const std::string& notamText, NotamControl::Notam& notam);
+            static NotamCategory parseQCode(const std::string& qCode);
+            static std::shared_ptr<Notam> createNotamStructure(const std::string& qCode);
+            static bool createNotam(const std::string& notamText, std::shared_ptr<Notam>& notam);
             bool parseNotams(const std::string& airport);
             bool receiveNotams(const std::string& airport);
             void run();
@@ -156,7 +83,7 @@ namespace topskytower {
              * @brief Returns all received NOTAMs
              * @return The NOTAMs
              */
-            const std::map<std::string, std::list<Notam>>& notams() const;
+            const std::map<std::string, std::list<std::shared_ptr<Notam>>>& notams() const;
             /**
              * @brief Returns the NOTAM control singleton
              * @return The NOTAM control system

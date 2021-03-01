@@ -31,7 +31,7 @@ namespace topskytower {
             TableViewer*  m_notamOverview;
 
             void setOverviewContent();
-            static std::string translateCategory(management::NotamControl::Category category);
+            static std::string translateCategory(management::NotamCategory category);
 
         public:
             /**
