@@ -22,6 +22,7 @@
 #include <curl/curl.h>
 
 #include <helper/String.h>
+#include <management/NotamControl.h>
 #include <management/PdcControl.h>
 #include <surveillance/FlightPlanControl.h>
 #include <surveillance/RadioControl.h>
@@ -141,9 +142,13 @@ PlugIn::PlugIn() :
         if (S_OK != GetLastError())
             this->DisplayUserMessage("Message", PLUGIN_NAME, "Unable to open RDF communication", true, true, true, false, false);
     }
+
+    management::NotamControl::instance().registerNotificationCallback(this, &PlugIn::checkNotamsOfActiveRunways);
 }
 
 PlugIn::~PlugIn() {
+    management::NotamControl::instance().deleteNotificationCallback(this);
+
     this->m_screens.clear();
 
     if (false == this->m_errorMode) {
@@ -168,6 +173,48 @@ static __inline void __markRunwayActive(EuroScopePlugIn::CSectorElement& runway,
 
     if (true == runway.IsElementActive(false, idx))
         arrivalRunways[airport].push_back(runway.GetRunwayName(idx));
+}
+
+void PlugIn::checkNotamsOfActiveRunways() {
+    /* find the current screen */
+    auto screen = this->findLastActiveScreen(false);
+    if (nullptr == screen)
+        return;
+
+    const auto& config = system::ConfigurationRegistry::instance().runtimeConfiguration();
+
+    /* check if runway NOTAM violates the active runways */
+    for (const auto& airportNotams : std::as_const(management::NotamControl::instance().notams())) {
+        auto depRunways = config.activeDepartureRunways.find(airportNotams.first);
+        auto arrRunways = config.activeArrivalRunways.find(airportNotams.first);
+
+        /* aiport of NOTAM not active */
+        if (config.activeDepartureRunways.cend() == depRunways && config.activeArrivalRunways.cend() == arrRunways)
+            continue;
+
+        /* test all NOTAMs */
+        for (const auto& notam : std::as_const(airportNotams.second)) {
+            /* ignore irrelevant or non-parsed NOTAMs */
+            if (management::NotamCategory::Runway != notam->category)
+                continue;
+            if (management::NotamInterpreterState::Success != notam->interpreterState)
+                continue;
+
+            /* check the runways */
+            const auto& runways = static_cast<management::RunwayNotam*>(notam.get())->sections;
+            for (const auto& runway : std::as_const(runways)) {
+                auto dIt = std::find(depRunways->second.cbegin(), depRunways->second.cend(), runway);
+                auto aIt = std::find(arrRunways->second.cbegin(), arrRunways->second.cend(), runway);
+
+                if (depRunways->second.cend() != dIt || arrRunways->second.cend() != aIt) {
+                    auto viewer = new MessageViewerWindow(screen, "NOTAM violation",
+                        "Active runway " + runway + " is deactivated by NOTAM " + notam->title);
+                    viewer->setActive(true);
+                    return;
+                }
+            }
+        }
+    }
 }
 
 void PlugIn::OnAirportRunwayActivityChanged() {

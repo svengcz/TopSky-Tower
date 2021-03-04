@@ -129,6 +129,7 @@ namespace topskytower {
             void updateStand(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
             void updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
             void updateSectorHandoff(const types::Flight& flight);
+            void checkNotamsOfActiveRunways();
 
         public:
             /**
