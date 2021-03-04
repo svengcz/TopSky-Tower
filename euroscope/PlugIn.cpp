@@ -201,10 +201,11 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
     static bool firstCall = true;
 
     if (false == this->m_errorMode) {
-        if (0 == this->m_screens.size())
+        this->m_screens.push_back(new RadarScreen());
+
+        if (1 == this->m_screens.size())
             this->OnAirportRunwayActivityChanged();
 
-        this->m_screens.push_back(new RadarScreen());
         if (true == firstCall) {
             VersionChecker::checkForUpdates(this->m_screens.back());
             firstCall = false;
@@ -422,7 +423,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
     /* get the screen and the converted flight information */
     const types::Flight& flight = system::FlightRegistry::instance().flight(callsign);
-    auto flightScreen = this->findLastActiveScreen();
+    auto flightScreen = this->findLastActiveScreen(true);
     if (nullptr == flightScreen)
         return;
 
@@ -696,12 +697,12 @@ void PlugIn::updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& radarTarget, co
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchPad.c_str());
 }
 
-RadarScreen* PlugIn::findLastActiveScreen() {
+RadarScreen* PlugIn::findLastActiveScreen(bool needsInitialization) {
     std::chrono::system_clock::time_point newest;
     RadarScreen* retval = nullptr;
 
     for (auto& screen : this->m_screens) {
-        if (screen->lastRenderingTime() >= newest && true == screen->isInitialized()) {
+        if (screen->lastRenderingTime() >= newest && (false == needsInitialization || true == screen->isInitialized())) {
             newest = screen->lastRenderingTime();
             retval = screen;
         }
@@ -896,7 +897,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
     /* check if we are tracking and search the flight */
     const types::Flight& flight = system::FlightRegistry::instance().flight(callsign);
-    auto flightScreen = this->findLastActiveScreen();
+    auto flightScreen = this->findLastActiveScreen(true);
 
     /* nothing to do */
     if (nullptr == flightScreen)
@@ -1092,7 +1093,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                     pt,
                     area
                 };
-                this->findLastActiveScreen()->registerEuroscopeEvent(std::move(esEvent));
+                flightScreen->registerEuroscopeEvent(std::move(esEvent));
             }
         }
         break;
@@ -1130,9 +1131,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     {
         auto message = management::PdcControl::instance().nextMessage(flight);
         if (nullptr != message) {
-            auto screen = this->findLastActiveScreen();
-
-            auto viewer = new PdcMessageViewerWindow(screen, message);
+            auto viewer = new PdcMessageViewerWindow(flightScreen, message);
             viewer->setActive(true);
         }
         break;
@@ -1142,15 +1141,13 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::PdcSendClearance:
     {
-        auto screen = this->findLastActiveScreen();
-
         management::PdcControl::ClearanceMessagePtr message(new management::PdcControl::ClearanceMessage());
         message->sender = flight.flightPlan().origin();
         message->receiver = flight.callsign();
         message->destination = flight.flightPlan().destination();
         message->sid = flight.flightPlan().departureRoute();
         message->runway = radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().GetDepartureRwy();
-        message->frequency = screen->sectorControl().ownSector().primaryFrequency();
+        message->frequency = flightScreen->sectorControl().ownSector().primaryFrequency();
         message->squawk = std::to_string(flight.flightPlan().assignedSquawk());
 
         if (this->GetTransitionAltitude() <= flight.flightPlan().clearanceLimit().convert(types::feet)) {
@@ -1162,7 +1159,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             message->clearanceLimit = std::to_string(static_cast<int>(flight.flightPlan().clearanceLimit().convert(types::feet)));
         }
 
-        auto viewer = new PdcDepartureClearanceWindow(screen, message);
+        auto viewer = new PdcDepartureClearanceWindow(flightScreen, message);
         viewer->setActive(true);
 
         break;
@@ -1191,8 +1188,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::FlightPlanCheckErrorLog:
     {
         auto messageLog = PlugIn::flightPlanCheckResultLog(surveillance::FlightPlanControl::instance().errorCodes(flight.callsign()));
-        auto viewer = new MessageViewerWindow(this->findLastActiveScreen(), "FP check: " + flight.callsign(),
-                                              messageLog);
+        auto viewer = new MessageViewerWindow(flightScreen, "FP check: " + flight.callsign(), messageLog);
         viewer->setActive(true);
         break;
     }
