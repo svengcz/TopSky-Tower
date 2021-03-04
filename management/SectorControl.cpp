@@ -761,19 +761,20 @@ std::list<types::ControllerInfo> SectorControl::handoffSectors() const {
 }
 
 void SectorControl::handoffSectorSelect(const types::Flight& flight, const std::string& identifier) {
+    ControllerInfo info(identifier, "", "", "");
+    auto node = SectorControl::findNode(this->m_rootNode, info);
+    if (nullptr == node)
+        return;
+
     auto it = this->m_handoffs.find(flight.callsign());
     if (this->m_handoffs.end() == it) {
         this->m_handoffs[flight.callsign()] = std::move(FlightData(flight, nullptr));
         it = this->m_handoffs.find(flight.callsign());
     }
 
-    ControllerInfo info(identifier, "", "", "");
-    auto node = SectorControl::findNode(this->m_rootNode, info);
-    if (nullptr != node) {
-        it->second.manuallyChanged = true;
-        it->second.handoffPerformed = false;
-        it->second.nextSector = node;
-    }
+    it->second.manuallyChanged = true;
+    it->second.handoffPerformed = false;
+    it->second.nextSector = node;
 }
 
 bool SectorControl::sectorHandoverPossible() const {
