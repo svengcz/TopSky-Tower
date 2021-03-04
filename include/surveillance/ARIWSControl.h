@@ -36,10 +36,13 @@ namespace topskytower {
         class ARIWSControl {
         private:
 #ifndef DOXYGEN_IGNORE
+            std::string                                               m_airportIcao;
             management::HoldingPointMap<management::HoldingPointData> m_holdingPoints;
             std::list<std::string>                                    m_incursionWarnings;
+            std::list<std::string>                                    m_inactiveRunways;
 
             void reinitialize(system::ConfigurationRegistry::UpdateType type);
+            void notamsChanged();
 
         public:
             /**
