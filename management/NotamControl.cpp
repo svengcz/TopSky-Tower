@@ -42,6 +42,7 @@ NotamControl::NotamControl() :
         m_enqueuePending(),
         m_dequeuePending(),
         m_notams(),
+        m_notificationCallbacks(),
         m_notamThread(&NotamControl::run, this) { }
 
 NotamControl::~NotamControl() {
@@ -191,6 +192,7 @@ bool NotamControl::createNotam(const std::string& notamText, std::shared_ptr<Not
         notam->information.upperAltitude = notamTree.info.upperAltitude;
         notam->information.coordinate = notamTree.info.coordinate;
         notam->information.radius = notamTree.info.radius;
+        notam->activeDueTime = NotamControl::activeDueTime(notam);
 
         notam->rawMessage = notamText;
     }
@@ -270,9 +272,37 @@ bool NotamControl::receiveNotams(const std::string& airport) {
     return CURLE_OK == result && true == this->parseNotams(airport);
 }
 
+bool NotamControl::activeDueTime(const std::shared_ptr<Notam>& notam) {
+    auto now = helper::Time::currentUtc();
+    return notam->startTime <= now && notam->endTime > now;
+}
+
+void NotamControl::updateActiveDueTime() {
+    bool updated = false;
+
+    for (const auto& airport : std::as_const(this->m_notams)) {
+        for (auto& notam : airport.second) {
+            if (NotamActiveState::Automatic == notam->activationState) {
+                auto newState = this->activeDueTime(notam);
+                updated |= newState != notam->activeDueTime;
+                notam->activeDueTime = newState;
+            }
+        }
+    }
+
+    if (true == updated)
+        this->notamActivationChanged();
+}
+
 void NotamControl::run() {
+    std::size_t counter = 0;
+
     while (false == this->m_stopNotamThread) {
+        bool updated = false;
+
         this->m_pendingQueueLock.lock();
+
+        updated |= 0 != this->m_dequeuePending.size();
 
         /* check if we have to delete airports */
         for (const auto& dequeue : this->m_dequeuePending) {
@@ -302,12 +332,23 @@ void NotamControl::run() {
         for (auto it = this->m_airportUpdates.begin(); this->m_airportUpdates.end() != it; ++it) {
             /* perform the update step */
             if (60 <= std::chrono::duration_cast<std::chrono::minutes>(now - it->second).count()) {
-                if (true == this->receiveNotams(it->first))
+                if (true == this->receiveNotams(it->first)) {
                     it->second = now;
+                    updated = true;
+                }
             }
         }
 
+        if (true == updated)
+            this->notamActivationChanged();
+
         std::this_thread::sleep_for(1s);
+
+        /* check if all automated NOTAM activations are still stable */
+        if (10 <= counter++) {
+            this->updateActiveDueTime();
+            counter = 0;
+        }
     }
 }
 
@@ -323,6 +364,25 @@ void NotamControl::removeAirport(const std::string& airport) {
 
 const std::map<std::string, std::list<std::shared_ptr<Notam>>>& NotamControl::notams() const {
     return this->m_notams;
+}
+
+std::list<std::shared_ptr<Notam>> NotamControl::notams(const std::string& airport, NotamCategory category) {
+    std::list<std::shared_ptr<Notam>> retval;
+    auto it = this->m_notams.find(airport);
+
+    if (this->m_notams.cend() != it) {
+        for (const auto& notam : it->second) {
+            if (NotamCategory::Unknown == category || notam->category == category)
+                retval.push_back(notam);
+        }
+    }
+
+    return retval;
+}
+
+void NotamControl::notamActivationChanged() {
+    for (auto& callback : this->m_notificationCallbacks)
+        callback.second();
 }
 
 NotamControl& NotamControl::instance() {
