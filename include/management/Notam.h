@@ -100,6 +100,7 @@ namespace topskytower {
             NotamTimePoint        endTime;          /**< The NOTAM's end time */
             std::string           message;          /**< The NOTAM's message */
             std::string           rawMessage;       /**< The raw message received from the server */
+            bool                  activeDueTime;    /**< The notam is active due to the activation times */
 
             Notam() :
                     activationState(NotamActiveState::Inactive),
@@ -110,7 +111,17 @@ namespace topskytower {
                     startTime(),
                     endTime(),
                     message(),
-                    rawMessage() { }
+                    rawMessage(),
+                    activeDueTime(false) { }
+
+            bool active() {
+                if (management::NotamActiveState::Inactive == this->activationState)
+                    return false;
+                else if (management::NotamActiveState::Automatic == this->activationState)
+                    return this->activeDueTime;
+                else
+                    return true;
+            }
         };
 
         /**
