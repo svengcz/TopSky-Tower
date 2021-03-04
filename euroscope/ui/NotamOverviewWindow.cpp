@@ -12,6 +12,7 @@
 #include "stdafx.h"
 
 #include <helper/Time.h>
+#include <management/NotamControl.h>
 #include <system/ConfigurationRegistry.h>
 
 #include "../RadarScreen.h"
@@ -235,14 +236,21 @@ void NotamOverviewWindow::setOverviewContent() {
 }
 
 management::NotamActiveState NotamOverviewWindow::switchActiveState(management::NotamActiveState active, management::NotamInterpreterState interpreter) {
+    management::NotamActiveState retval;
+
     if (management::NotamInterpreterState::Success != interpreter) {
-        return management::NotamActiveState::Inactive;
+        retval = management::NotamActiveState::Inactive;
     }
     else {
         int state = static_cast<int>(active) + 1;
         state %= 3;
-        return static_cast<management::NotamActiveState>(state);
+        retval = static_cast<management::NotamActiveState>(state);
     }
+
+    if (retval != active)
+        management::NotamControl::instance().notamActivationChanged();
+
+    return retval;
 }
 
 bool NotamOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
