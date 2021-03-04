@@ -13,6 +13,7 @@
 
 #include <GeographicLib/Gnomonic.hpp>
 
+#include <management/NotamControl.h>
 #include <management/StandControl.h>
 #include <system/ConfigurationRegistry.h>
 #include <types/Quantity.hpp>
@@ -29,12 +30,14 @@ StandControl::StandControl(const std::string& airport, const types::Coordinate& 
         m_centerPosition(center),
         m_gatPosition() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &StandControl::reinitialize);
+    management::NotamControl::instance().registerNotificationCallback(this, &StandControl::notamsChanged);
 
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
 }
 
 StandControl::~StandControl() {
     system::ConfigurationRegistry::instance().deleteNotificationCallback(this);
+    management::NotamControl::instance().deleteNotificationCallback(this);
 
     if (nullptr != this->m_standTreeAdaptor)
         delete this->m_standTreeAdaptor;
@@ -108,6 +111,8 @@ void StandControl::reinitialize(system::ConfigurationRegistry::UpdateType type) 
     /* copy the airlines */
     for (const auto& airline : std::as_const(config.airlines))
         this->m_standPriorities[airline.airlineIcao] = airline;
+
+    this->notamsChanged();
 }
 
 void StandControl::markStandAsOccupied(std::map<std::string, StandData>::iterator& iter, const types::Flight& flight, types::Flight::Type type) {
@@ -135,6 +140,10 @@ std::list<std::string> StandControl::findAvailableAndUsableStands(const types::F
 
     /* test all stands */
     for (const auto& stand : std::as_const(this->m_standTree.stands)) {
+        /* ignore deactivated stands */
+        if (true == stand.second.deactivated)
+            continue;
+
         /* ingore the stand for the automatic assignment */
         if (false == ignoreManualFlag && true == stand.second.manualAssignment)
             continue;
@@ -414,7 +423,7 @@ std::list<std::pair<std::string, bool>> StandControl::allStands() const {
         retval.push_back(std::make_pair(this->m_gatPosition.name, false));
 
     for (const auto& stand : std::as_const(this->m_standTree.stands))
-        retval.push_back(std::make_pair(stand.first, 0 != stand.second.occupancyFlights.size()));
+        retval.push_back(std::make_pair(stand.first, 0 != stand.second.occupancyFlights.size() || true == stand.second.deactivated));
 
     return std::move(retval);
 }
@@ -422,7 +431,30 @@ std::list<std::pair<std::string, bool>> StandControl::allStands() const {
 bool StandControl::standIsBlocked(const std::string& stand) const {
     auto it = this->m_standTree.stands.find(stand);
     if (this->m_standTree.stands.cend() != it)
-        return 1 < it->second.occupancyFlights.size();
+        return 1 < it->second.occupancyFlights.size() || true == it->second.deactivated;
     else
         return false;
+}
+
+void StandControl::notamsChanged() {
+    auto notams = management::NotamControl::instance().notams(this->m_airportIcao, management::NotamCategory::Stands);
+
+    /* reset the old deactivated state to ensure correct states */
+    for (auto& stand : this->m_standTree.stands)
+        stand.second.deactivated = false;
+
+    for (const auto& notam : std::as_const(notams)) {
+        if (management::NotamInterpreterState::Success != notam->interpreterState)
+            continue;
+        if (false == notam->active())
+            continue;
+
+        /* deactivate all stands of the NOTAM */
+        const auto& stands = static_cast<management::StandNotam*>(notam.get())->sections;
+        for (const auto& standName : std::as_const(stands)) {
+            auto it = this->m_standTree.stands.find(standName);
+            if (this->m_standTree.stands.end() != it)
+                it->second.deactivated = true;
+        }
+    }
 }
