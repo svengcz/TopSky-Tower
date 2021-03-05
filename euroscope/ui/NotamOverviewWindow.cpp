@@ -235,22 +235,21 @@ void NotamOverviewWindow::setOverviewContent() {
     }
 }
 
-management::NotamActiveState NotamOverviewWindow::switchActiveState(management::NotamActiveState active, management::NotamInterpreterState interpreter) {
-    management::NotamActiveState retval;
+void NotamOverviewWindow::switchActiveState(std::shared_ptr<management::Notam>& notam) {
+    management::NotamActiveState newState;
 
-    if (management::NotamInterpreterState::Success != interpreter) {
-        retval = management::NotamActiveState::Inactive;
+    if (management::NotamInterpreterState::Success != notam->interpreterState) {
+        notam->activationState = management::NotamActiveState::Inactive;
     }
     else {
-        int state = static_cast<int>(active) + 1;
-        state %= 3;
-        retval = static_cast<management::NotamActiveState>(state);
+        int state = static_cast<int>(notam->activationState) + 1;
+        newState = static_cast<management::NotamActiveState>(state % 3);
     }
 
-    if (retval != active)
+    if (newState != notam->activationState) {
+        notam->activationState = newState;
         management::NotamControl::instance().notamActivationChanged();
-
-    return retval;
+    }
 }
 
 bool NotamOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
@@ -267,7 +266,7 @@ bool NotamOverviewWindow::click(const Gdiplus::PointF& pt, UiManager::MouseButto
                     for (auto& notam : notamsIt->second) {
                         if (notam->title == title && false == this->m_parent->uiManager().windowIsActive(title)) {
                             if (5 == column) {
-                                notam->activationState = NotamOverviewWindow::switchActiveState(notam->activationState, notam->interpreterState);
+                                NotamOverviewWindow::switchActiveState(notam);
                                 this->m_notamOverview->setElement(row, column, NotamOverviewWindow::translateNotamActiveState(notam->activationState, notam->interpreterState));
                             }
                             else {
