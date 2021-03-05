@@ -194,10 +194,12 @@ void PlugIn::checkNotamsOfActiveRunways() {
 
         /* test all NOTAMs */
         for (const auto& notam : std::as_const(airportNotams.second)) {
-            /* ignore irrelevant or non-parsed NOTAMs */
+            /* ignore irrelevant, non-parsed NOTAMs or inactive */
             if (management::NotamCategory::Runway != notam->category)
                 continue;
             if (management::NotamInterpreterState::Success != notam->interpreterState)
+                continue;
+            if (false == notam->isActive())
                 continue;
 
             /* check the runways */
