@@ -102,6 +102,9 @@ namespace topskytower {
             std::string           rawMessage;       /**< The raw message received from the server */
             bool                  activeDueTime;    /**< The notam is active due to the activation times */
 
+            /**
+             * @brief Creates an uninitialized NOTAM
+             */
             Notam() :
                     activationState(NotamActiveState::Inactive),
                     interpreterState(NotamInterpreterState::Pending),
@@ -115,6 +118,10 @@ namespace topskytower {
                     activeDueTime(false) { }
 
             bool active() {
+            /**
+             * @brief Checks if the NOTAM is active
+             * @return True if it is active, else false
+             */
                 if (management::NotamActiveState::Inactive == this->activationState)
                     return false;
                 else if (management::NotamActiveState::Automatic == this->activationState)
