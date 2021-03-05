@@ -36,6 +36,7 @@ RadarScreen::RadarScreen() :
         m_sectorFileIsMissing(false),
         m_airport(),
         m_elevation(),
+        m_runways(),
         m_userInterface(new UiManager(this)),
         m_sectorControl(nullptr),
         m_standControl(nullptr),
@@ -321,7 +322,10 @@ void RadarScreen::initialize() {
 
         if (nullptr != this->m_stcdControl)
             delete this->m_stcdControl;
-        this->m_stcdControl = new surveillance::STCDControl(this->m_airport, this->m_elevation, center, file.runways(this->m_airport), this->m_departureControl);
+        this->m_stcdControl = new surveillance::STCDControl(this->m_airport, this->m_elevation, center,
+                                                            file.runways(this->m_airport), this->m_departureControl);
+
+        this->m_runways = file.runways(this->m_airport);
 
         this->m_initialized = true;
     }
