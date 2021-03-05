@@ -114,6 +114,9 @@ bool SettingsFileFormat::parse(types::SystemConfiguration& config) {
         else if ("UI_ErrorColor" == entry[0]) {
             retval = this->parseColor(value, config.uiErrorColor, lineOffset);
         }
+        else if ("UI_NotamDeactivationColor" == entry[0]) {
+            retval = this->parseColor(value, config.uiNotamDeactivationColor, lineOffset);
+        }
         else if ("HTTP_HoppiesURL" == entry[0]) {
             config.hoppiesUrl = value;
         }

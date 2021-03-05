@@ -29,6 +29,7 @@ namespace topskytower {
             std::uint8_t        uiNtzColor[3];                         /**< Defines the NTZ color */
             std::uint8_t        uiWarningColor[3];                     /**< Defines the warning color */
             std::uint8_t        uiErrorColor[3];                       /**< Defines the error color */
+            std::uint8_t        uiNotamDeactivationColor[3];           /**< Defines the NOTAM deactivation error color */
             std::string         hoppiesUrl;                            /**< Defines the Hoppies URL to enable PDC */
             std::string         versionCheckUrl;                       /**< Defines the version check URL */
             std::string         notamUrl;                              /**< Defines the URL to receive airport-specific NOTAMs */
@@ -78,6 +79,7 @@ namespace topskytower {
                     uiNtzColor{ 200, 0, 0 },
                     uiWarningColor{ 255, 223, 3 },
                     uiErrorColor{ 255, 0, 0 },
+                    uiNotamDeactivationColor{ 255, 0, 0 },
                     hoppiesUrl("http://www.hoppie.nl/acars/system/connect.html?logon=%LOGON%&from=%SENDER%"),
                     versionCheckUrl("https://raw.githubusercontent.com/svengcz/Versioning/master/TopSky-Tower.txt"),
                     notamUrl("https://www.notams.faa.gov/PilotWeb/notamRetrievalByICAOAction.do?method=displayByICAOs&reportType=RAW&formatType=DOMESTIC&retrieveLocId=%AIRPORT%&actionType=notamRetrievalByICAOs"),
