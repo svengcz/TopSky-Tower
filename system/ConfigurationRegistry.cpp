@@ -35,12 +35,6 @@ void ConfigurationRegistry::cleanup(UpdateType type) {
     if (UpdateType::All == type || UpdateType::Airports == type)
         this->m_airportConfigurations.clear();
 
-    if (UpdateType::All == type || UpdateType::Aircrafts == type) {
-        if (nullptr != this->m_aircraftConfiguration)
-            delete this->m_aircraftConfiguration;
-        this->m_aircraftConfiguration = nullptr;
-    }
-
     if (UpdateType::All == type || UpdateType::System == type)
         this->m_systemConfig.valid = false;
 }
@@ -106,10 +100,10 @@ bool ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
         }
 
         if (UpdateType::All == type || UpdateType::Aircrafts == type) {
-            this->m_aircraftConfiguration = new formats::AircraftFileFormat(path + "\\TopSkyTowerAircrafts.txt");
-            if (true == this->m_aircraftConfiguration->errorFound()) {
-                this->m_errorLine = this->m_aircraftConfiguration->errorLine();
-                this->m_errorMessage = +"TopSkyTowerAircrafts.txt:\n" + this->m_aircraftConfiguration->errorMessage();
+            this->m_aircraftConfiguration = formats::AircraftFileFormat(path + "\\TopSkyTowerAircrafts.txt");
+            if (true == this->m_aircraftConfiguration.errorFound()) {
+                this->m_errorLine = this->m_aircraftConfiguration.errorLine();
+                this->m_errorMessage = +"TopSkyTowerAircrafts.txt:\n" + this->m_aircraftConfiguration.errorMessage();
                 return false;
             }
         }
@@ -176,7 +170,7 @@ const types::AirportConfiguration& ConfigurationRegistry::airportConfiguration(c
 
 const std::map<std::string, types::Aircraft>& ConfigurationRegistry::aircrafts() {
     std::lock_guard guard(this->m_configurationLock);
-    return this->m_aircraftConfiguration->aircrafts();
+    return this->m_aircraftConfiguration.aircrafts();
 }
 
 const types::EventRoutesConfiguration& ConfigurationRegistry::eventRoutesConfiguration() {
