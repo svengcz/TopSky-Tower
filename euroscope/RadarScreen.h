@@ -58,6 +58,7 @@ namespace topskytower {
             bool                                           m_sectorFileIsMissing;
             std::string                                    m_airport;
             types::Length                                  m_elevation;
+            std::list<types::Runway>                       m_runways;
             UiManager*                                     m_userInterface;
             management::SectorControl*                     m_sectorControl;
             management::StandControl*                      m_standControl;
@@ -91,6 +92,10 @@ namespace topskytower {
                           bool surveillanceData, Gdiplus::Graphics& graphics);
             void drawNoTransgressionZones(Gdiplus::Graphics& graphics);
             void drawTransmittingFlights(Gdiplus::Graphics& graphics);
+            void drawRunwayOverlay(const types::Runway& runway, Gdiplus::Graphics& graphics);
+            void drawDeactivatedRunways(Gdiplus::Graphics& graphics);
+            void drawStandOverlay(const types::Stand& stand, Gdiplus::Graphics& graphics);
+            void drawDeactivatedStands(Gdiplus::Graphics& graphics);
             std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign);
 
         public:

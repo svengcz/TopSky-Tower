@@ -76,6 +76,50 @@ namespace topskytower {
                     this->altitude = qi::int_;
                     this->coordinate = qi::repeat(4)[qi::char_("0-9")] >> qi::char_("NS") >> qi::repeat(5)[qi::char_("0-9")] >> qi::char_("WE");
                     this->radius = -qi::int_;
+
+#ifdef DEBUG_GRAMMAR
+                    this->root.name("root");
+                    this->title.name("title");
+                    this->qEntry.name("qEntry");
+                    this->icaoEntry.name("icaoEntry");
+                    this->startEntry.name("startEntry");
+                    this->endEntry.name("endEntry");
+                    this->dayTimeEntry.name("dayTimeEntry");
+                    this->notamEntry.name("notamEntry");
+                    this->clockDefinition.name("clockDefinition");
+                    this->endOfEntry.name("endOfEntry");
+                    this->dateDefinition.name("dateDefinition");
+                    this->timestamp.name("timestamp");
+                    this->firEntry.name("firEntry");
+                    this->qCode.name("qCode");
+                    this->flightRule.name("flightRule");
+                    this->purpose.name("purpose");
+                    this->scope.name("scope");
+                    this->altitude.name("altitude");
+                    this->coordinate.name("coordinate");
+                    this->radius.name("radius");
+
+                    qi::debug(this->root);
+                    qi::debug(this->title);
+                    qi::debug(this->qEntry);
+                    qi::debug(this->icaoEntry);
+                    qi::debug(this->startEntry);
+                    qi::debug(this->endEntry);
+                    qi::debug(this->dayTimeEntry);
+                    qi::debug(this->notamEntry);
+                    qi::debug(this->clockDefinition);
+                    qi::debug(this->endOfEntry);
+                    qi::debug(this->dateDefinition);
+                    qi::debug(this->timestamp);
+                    qi::debug(this->firEntry);
+                    qi::debug(this->qCode);
+                    qi::debug(this->flightRule);
+                    qi::debug(this->purpose);
+                    qi::debug(this->scope);
+                    qi::debug(this->altitude);
+                    qi::debug(this->coordinate);
+                    qi::debug(this->radius);
+#endif
                 }
             };
         }

@@ -8,7 +8,10 @@
 
 #pragma once
 
+#include <management/NotamControl.h>
+
 #include "elements/Checkbox.h"
+#include "elements/DropDownMenu.h"
 #include "elements/EditText.h"
 #include "elements/TableViewer.h"
 #include "InsetWindow.h"
@@ -21,12 +24,16 @@ namespace topskytower {
          */
         class NotamOverviewWindow : public InsetWindow {
         private:
-            bool         m_firstRendering;
-            EditText*    m_airportFilter;
-            Checkbox*    m_activeFilter;
-            TableViewer* m_notamOverview;
+            bool          m_firstRendering;
+            EditText*     m_airportFilter;
+            DropDownMenu* m_categoryFilter;
+            Checkbox*     m_activeFilter;
+            TableViewer*  m_notamOverview;
 
             void setOverviewContent();
+            static std::string translateCategory(management::NotamCategory category);
+            static std::string translateNotamActiveState(management::NotamActiveState active, management::NotamInterpreterState interpreter);
+            static management::NotamActiveState switchActiveState(management::NotamActiveState active, management::NotamInterpreterState interpreter);
 
         public:
             /**

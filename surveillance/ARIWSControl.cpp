@@ -9,6 +9,7 @@
  *   GNU General Public License v3 (GPLv3)
  */
 
+#include <management/NotamControl.h>
 #include <surveillance/ARIWSControl.h>
 #include <system/ConfigurationRegistry.h>
 
@@ -17,15 +18,19 @@ using namespace topskytower::surveillance;
 using namespace topskytower::types;
 
 ARIWSControl::ARIWSControl(const std::string& airport, const types::Coordinate& center) :
+        m_airportIcao(airport),
         m_holdingPoints(airport, center),
-        m_incursionWarnings() {
+        m_incursionWarnings(),
+        m_inactiveRunways() {
     system::ConfigurationRegistry::instance().registerNotificationCallback(this, &ARIWSControl::reinitialize);
+    management::NotamControl::instance().registerNotificationCallback(this, &ARIWSControl::notamsChanged);
 
     this->reinitialize(system::ConfigurationRegistry::UpdateType::All);
 }
 
 ARIWSControl::~ARIWSControl() {
     system::ConfigurationRegistry::instance().deleteNotificationCallback(this);
+    management::NotamControl::instance().deleteNotificationCallback(this);
 }
 
 void ARIWSControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
@@ -33,6 +38,25 @@ void ARIWSControl::reinitialize(system::ConfigurationRegistry::UpdateType type) 
         return;
 
     this->m_holdingPoints.reinitialize();
+}
+
+void ARIWSControl::notamsChanged() {
+    auto notams = management::NotamControl::instance().notams(this->m_airportIcao, management::NotamCategory::Runway);
+
+    this->m_inactiveRunways.clear();
+    for (const auto& notam : std::as_const(notams)) {
+        if (management::NotamInterpreterState::Success != notam->interpreterState)
+            continue;
+        if (false == notam->isActive())
+            continue;
+
+        const auto& runways = static_cast<management::RunwayNotam*>(notam.get())->sections;
+        for (const auto& runway : std::as_const(runways)) {
+            auto it = std::find(this->m_inactiveRunways.cbegin(), this->m_inactiveRunways.cend(), runway);
+            if (this->m_inactiveRunways.cend() == it)
+                this->m_inactiveRunways.push_back(runway);
+        }
+    }
 }
 
 void ARIWSControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
@@ -61,9 +85,14 @@ void ARIWSControl::updateFlight(const types::Flight& flight, types::Flight::Type
         return;
     }
 
+    std::size_t index;
     auto deadband = system::ConfigurationRegistry::instance().systemConfiguration().ariwsDistanceDeadband;
-    if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, false, deadband, 15.0_deg, nullptr))
-        this->m_incursionWarnings.push_back(flight.callsign());
+    if (true == this->m_holdingPoints.passedHoldingPoint(flight, type, false, deadband, 15.0_deg, &index)) {
+        auto point = this->m_holdingPoints.holdingPoint(system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures, index);
+        auto it = std::find(this->m_inactiveRunways.cbegin(), this->m_inactiveRunways.cend(), point.runway);
+        if (this->m_inactiveRunways.cend() == it)
+            this->m_incursionWarnings.push_back(flight.callsign());
+    }
 }
 
 void ARIWSControl::removeFlight(const std::string& callsign) {

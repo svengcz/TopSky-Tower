@@ -36,6 +36,7 @@ RadarScreen::RadarScreen() :
         m_sectorFileIsMissing(false),
         m_airport(),
         m_elevation(),
+        m_runways(),
         m_userInterface(new UiManager(this)),
         m_sectorControl(nullptr),
         m_standControl(nullptr),
@@ -321,7 +322,10 @@ void RadarScreen::initialize() {
 
         if (nullptr != this->m_stcdControl)
             delete this->m_stcdControl;
-        this->m_stcdControl = new surveillance::STCDControl(this->m_airport, this->m_elevation, center, file.runways(this->m_airport), this->m_departureControl);
+        this->m_stcdControl = new surveillance::STCDControl(this->m_airport, this->m_elevation, center,
+                                                            file.runways(this->m_airport), this->m_departureControl);
+
+        this->m_runways = file.runways(this->m_airport);
 
         this->m_initialized = true;
     }
@@ -646,6 +650,81 @@ void RadarScreen::drawTransmittingFlights(Gdiplus::Graphics& graphics) {
     }
 }
 
+void RadarScreen::drawRunwayOverlay(const types::Runway& runway, Gdiplus::Graphics& graphics) {
+    auto& config = system::ConfigurationRegistry::instance().systemConfiguration();
+
+    Gdiplus::Color color(config.uiNotamDeactivationColor[0], config.uiNotamDeactivationColor[1], config.uiNotamDeactivationColor[2]);
+    Gdiplus::PointF corners[4];
+
+    corners[0] = this->convertCoordinate(runway.start().projection(runway.heading() + 90.0_deg, 50.0_m));
+    corners[1] = this->convertCoordinate(runway.start().projection(runway.heading() - 90.0_deg, 50.0_m));
+    corners[2] = this->convertCoordinate(runway.end().projection(runway.heading() - 90.0_deg, 50.0_m));
+    corners[3] = this->convertCoordinate(runway.end().projection(runway.heading() + 90.0_deg, 50.0_m));
+
+    Gdiplus::SolidBrush brush(color);
+    graphics.FillPolygon(&brush, corners, 4);
+}
+
+void RadarScreen::drawDeactivatedRunways(Gdiplus::Graphics& graphics) {
+    if (0 == this->m_runways.size())
+        return;
+
+    /* iterate over all NOTAMs */
+    auto notams = management::NotamControl::instance().notams(this->m_airport, management::NotamCategory::Runway);
+    for (const auto& notam : std::as_const(notams)) {
+        if (management::NotamInterpreterState::Success == notam->interpreterState && true == notam->isActive()) {
+            auto& runways = static_cast<management::RunwayNotam*>(notam.get())->sections;
+
+            /* find the correct runways */
+            for (std::size_t i = 0; i < runways.size(); i += 2) {
+                for (const auto& runway : std::as_const(this->m_runways)) {
+                    if (runway.name() == runways[i]) {
+                        this->drawRunwayOverlay(runway, graphics);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void RadarScreen::drawStandOverlay(const types::Stand& stand, Gdiplus::Graphics& graphics) {
+    if (0 != stand.name.length()) {
+        auto& config = system::ConfigurationRegistry::instance().systemConfiguration();
+        Gdiplus::Color color(config.uiNotamDeactivationColor[0], config.uiNotamDeactivationColor[1], config.uiNotamDeactivationColor[2]);
+        Gdiplus::SolidBrush brush(color);
+
+        /* calculate the rectangle for the ellipse */
+        auto topCenter = this->convertCoordinate(stand.position.projection(360.0_deg, stand.assignmentRadius));
+        auto center = this->convertCoordinate(stand.position);
+        float radius = center.Y - topCenter.Y;
+        Gdiplus::PointF topLeft(center.X - radius, center.Y - radius);
+        Gdiplus::RectF rect(topLeft, Gdiplus::SizeF(radius * 2.0f, radius * 2.0f));
+
+        graphics.FillEllipse(&brush, rect);
+    }
+}
+
+void RadarScreen::drawDeactivatedStands(Gdiplus::Graphics& graphics) {
+    if (nullptr == this->m_standControl)
+        return;
+
+    /* iterate over the NOTAMs */
+    auto notams = management::NotamControl::instance().notams(this->m_airport, management::NotamCategory::Stands);
+    for (const auto& notam : std::as_const(notams)) {
+        /* process active NOTAM */
+        if (management::NotamInterpreterState::Success == notam->interpreterState && true == notam->isActive()) {
+            auto& stands = static_cast<management::StandNotam*>(notam.get())->sections;
+
+            /* find the stand and draw the area */
+            for (const auto& name : std::as_const(stands)) {
+                auto& stand = this->m_standControl->stand(name);
+                this->drawStandOverlay(stand, graphics);
+            }
+        }
+    }
+}
+
 void RadarScreen::OnRefresh(HDC hdc, int phase) {
     (void)hdc;
 
@@ -660,6 +739,8 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     this->drawData(this->m_shortTermConflictVisualizationsLock, this->m_shortTermConflictVisualizations, true, graphics);
     this->drawData(this->m_departureRouteVisualizationsLock, this->m_departureRouteVisualizations, false, graphics);
     this->drawNoTransgressionZones(graphics);
+    this->drawDeactivatedRunways(graphics);
+    this->drawDeactivatedStands(graphics);
     this->drawTransmittingFlights(graphics);
 
     this->m_lastRenderingTime = std::chrono::system_clock::now();

@@ -172,10 +172,10 @@ namespace topskytower {
             std::list<std::string>                  m_airports;
             std::int32_t                            m_cpdlcCounter;
             volatile bool                           m_stopHoppiesThread;
-            std::thread                             m_hoppiesThread;
             std::mutex                              m_comChannelsLock;
             std::map<std::string, MessageQueue>     m_comChannels;
             std::function<void()>                   m_notification;
+            std::thread                             m_hoppiesThread;
 
             PdcControl();
             void receiveMessages();

@@ -10,6 +10,7 @@
 SET(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/include/management/DepartureSequenceControl.h
     ${CMAKE_SOURCE_DIR}/include/management/HoldingPointMap.h
+    ${CMAKE_SOURCE_DIR}/include/management/Notam.h
     ${CMAKE_SOURCE_DIR}/include/management/NotamControl.h
     ${CMAKE_SOURCE_DIR}/include/management/PdcControl.h
     ${CMAKE_SOURCE_DIR}/include/management/SectorControl.h
@@ -20,10 +21,12 @@ SET(SOURCE_GRAMMAR_FILES
     grammar/AstBase.hpp
     grammar/AstNotam.hpp
     grammar/AstRunway.hpp
+    grammar/AstStand.hpp
     grammar/AstTransformation.hpp
     grammar/Notam.hpp
     grammar/Parser.hpp
     grammar/Runway.hpp
+    grammar/Stand.hpp
 )
 SET(SOURCE_FILES
     DepartureSequenceControl.cpp

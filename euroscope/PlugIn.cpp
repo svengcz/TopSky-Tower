@@ -22,6 +22,7 @@
 #include <curl/curl.h>
 
 #include <helper/String.h>
+#include <management/NotamControl.h>
 #include <management/PdcControl.h>
 #include <surveillance/FlightPlanControl.h>
 #include <surveillance/RadioControl.h>
@@ -141,9 +142,13 @@ PlugIn::PlugIn() :
         if (S_OK != GetLastError())
             this->DisplayUserMessage("Message", PLUGIN_NAME, "Unable to open RDF communication", true, true, true, false, false);
     }
+
+    management::NotamControl::instance().registerNotificationCallback(this, &PlugIn::checkNotamsOfActiveRunways);
 }
 
 PlugIn::~PlugIn() {
+    management::NotamControl::instance().deleteNotificationCallback(this);
+
     this->m_screens.clear();
 
     if (false == this->m_errorMode) {
@@ -168,6 +173,48 @@ static __inline void __markRunwayActive(EuroScopePlugIn::CSectorElement& runway,
 
     if (true == runway.IsElementActive(false, idx))
         arrivalRunways[airport].push_back(runway.GetRunwayName(idx));
+}
+
+void PlugIn::checkNotamsOfActiveRunways() {
+    /* find the current screen */
+    auto screen = this->findLastActiveScreen(false);
+    if (nullptr == screen)
+        return;
+
+    const auto& config = system::ConfigurationRegistry::instance().runtimeConfiguration();
+
+    /* check if runway NOTAM violates the active runways */
+    for (const auto& airportNotams : std::as_const(management::NotamControl::instance().notams())) {
+        auto depRunways = config.activeDepartureRunways.find(airportNotams.first);
+        auto arrRunways = config.activeArrivalRunways.find(airportNotams.first);
+
+        /* aiport of NOTAM not active */
+        if (config.activeDepartureRunways.cend() == depRunways && config.activeArrivalRunways.cend() == arrRunways)
+            continue;
+
+        /* test all NOTAMs */
+        for (const auto& notam : std::as_const(airportNotams.second)) {
+            /* ignore irrelevant or non-parsed NOTAMs */
+            if (management::NotamCategory::Runway != notam->category)
+                continue;
+            if (management::NotamInterpreterState::Success != notam->interpreterState)
+                continue;
+
+            /* check the runways */
+            const auto& runways = static_cast<management::RunwayNotam*>(notam.get())->sections;
+            for (const auto& runway : std::as_const(runways)) {
+                auto dIt = std::find(depRunways->second.cbegin(), depRunways->second.cend(), runway);
+                auto aIt = std::find(arrRunways->second.cbegin(), arrRunways->second.cend(), runway);
+
+                if (depRunways->second.cend() != dIt || arrRunways->second.cend() != aIt) {
+                    auto viewer = new MessageViewerWindow(screen, "NOTAM violation",
+                        "Active runway " + runway + " is deactivated by NOTAM " + notam->title);
+                    viewer->setActive(true);
+                    return;
+                }
+            }
+        }
+    }
 }
 
 void PlugIn::OnAirportRunwayActivityChanged() {
@@ -201,10 +248,11 @@ EuroScopePlugIn::CRadarScreen* PlugIn::OnRadarScreenCreated(const char* displayN
     static bool firstCall = true;
 
     if (false == this->m_errorMode) {
-        if (0 == this->m_screens.size())
+        this->m_screens.push_back(new RadarScreen());
+
+        if (1 == this->m_screens.size())
             this->OnAirportRunwayActivityChanged();
 
-        this->m_screens.push_back(new RadarScreen());
         if (true == firstCall) {
             VersionChecker::checkForUpdates(this->m_screens.back());
             firstCall = false;
@@ -422,7 +470,7 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
 
     /* get the screen and the converted flight information */
     const types::Flight& flight = system::FlightRegistry::instance().flight(callsign);
-    auto flightScreen = this->findLastActiveScreen();
+    auto flightScreen = this->findLastActiveScreen(true);
     if (nullptr == flightScreen)
         return;
 
@@ -696,12 +744,12 @@ void PlugIn::updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& radarTarget, co
     radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetScratchPadString(scratchPad.c_str());
 }
 
-RadarScreen* PlugIn::findLastActiveScreen() {
+RadarScreen* PlugIn::findLastActiveScreen(bool needsInitialization) {
     std::chrono::system_clock::time_point newest;
     RadarScreen* retval = nullptr;
 
     for (auto& screen : this->m_screens) {
-        if (screen->lastRenderingTime() >= newest && true == screen->isInitialized()) {
+        if (screen->lastRenderingTime() >= newest && (false == needsInitialization || true == screen->isInitialized())) {
             newest = screen->lastRenderingTime();
             retval = screen;
         }
@@ -865,6 +913,17 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             if (nullptr != this->m_uiCallback)
                 this->OpenPopupEdit(area, static_cast<int>(PlugIn::TagItemFunction::UiEditTextResponse), itemString);
             break;
+        case PlugIn::TagItemFunction::UiDropDownRequest:
+        {
+            this->OpenPopupList(area, "", 1);
+            auto split = helper::String::splitString(itemString, ";");
+            for (const auto& element : std::as_const(split)) {
+                if (0 != element.length())
+                    this->AddPopupListElement(element.c_str(), "", static_cast<int>(PlugIn::TagItemFunction::UiDropDownResponse));
+            }
+            break;
+        }
+        case PlugIn::TagItemFunction::UiDropDownResponse:
         case PlugIn::TagItemFunction::UiEditTextResponse:
             if (nullptr != this->m_uiCallback) {
                 this->m_uiCallback(itemString);
@@ -885,7 +944,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
 
     /* check if we are tracking and search the flight */
     const types::Flight& flight = system::FlightRegistry::instance().flight(callsign);
-    auto flightScreen = this->findLastActiveScreen();
+    auto flightScreen = this->findLastActiveScreen(true);
 
     /* nothing to do */
     if (nullptr == flightScreen)
@@ -1083,7 +1142,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
                     pt,
                     area
                 };
-                this->findLastActiveScreen()->registerEuroscopeEvent(std::move(esEvent));
+                flightScreen->registerEuroscopeEvent(std::move(esEvent));
             }
         }
         break;
@@ -1121,9 +1180,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     {
         auto message = management::PdcControl::instance().nextMessage(flight);
         if (nullptr != message) {
-            auto screen = this->findLastActiveScreen();
-
-            auto viewer = new PdcMessageViewerWindow(screen, message);
+            auto viewer = new PdcMessageViewerWindow(flightScreen, message);
             viewer->setActive(true);
         }
         break;
@@ -1133,15 +1190,13 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::PdcSendClearance:
     {
-        auto screen = this->findLastActiveScreen();
-
         management::PdcControl::ClearanceMessagePtr message(new management::PdcControl::ClearanceMessage());
         message->sender = flight.flightPlan().origin();
         message->receiver = flight.callsign();
         message->destination = flight.flightPlan().destination();
         message->sid = flight.flightPlan().departureRoute();
         message->runway = radarTarget.GetCorrelatedFlightPlan().GetFlightPlanData().GetDepartureRwy();
-        message->frequency = screen->sectorControl().ownSector().primaryFrequency();
+        message->frequency = flightScreen->sectorControl().ownSector().primaryFrequency();
         message->squawk = std::to_string(flight.flightPlan().assignedSquawk());
 
         if (this->GetTransitionAltitude() <= flight.flightPlan().clearanceLimit().convert(types::feet)) {
@@ -1153,7 +1208,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
             message->clearanceLimit = std::to_string(static_cast<int>(flight.flightPlan().clearanceLimit().convert(types::feet)));
         }
 
-        auto viewer = new PdcDepartureClearanceWindow(screen, message);
+        auto viewer = new PdcDepartureClearanceWindow(flightScreen, message);
         viewer->setActive(true);
 
         break;
@@ -1182,8 +1237,7 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
     case PlugIn::TagItemFunction::FlightPlanCheckErrorLog:
     {
         auto messageLog = PlugIn::flightPlanCheckResultLog(surveillance::FlightPlanControl::instance().errorCodes(flight.callsign()));
-        auto viewer = new MessageViewerWindow(this->findLastActiveScreen(), "FP check: " + flight.callsign(),
-                                              messageLog);
+        auto viewer = new MessageViewerWindow(flightScreen, "FP check: " + flight.callsign(), messageLog);
         viewer->setActive(true);
         break;
     }

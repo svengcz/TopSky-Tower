@@ -8,11 +8,14 @@
 
 #pragma once
 
+#include <functional>
 #include <thread>
 #include <list>
 #include <map>
+#include <memory>
 #include <mutex>
 
+#include <management/Notam.h>
 #include <types/Coordinate.h>
 #include <types/SystemConfiguration.h>
 
@@ -37,68 +40,25 @@ namespace topskytower {
         class NotamControl {
         public:
 #ifndef DOXYGEN_IGNORE
-            using TimePoint = std::chrono::system_clock::time_point; /**< Defines a more readable type for the time_point */
-
-            /**
-             * @brief Defines the parsed NOTAM information
-             */
-            struct NotamInformation {
-                std::string       fir;           /**< Relevant FIR */
-                std::string       code;          /**< The Q-code of the information */
-                std::uint8_t      flightRule;    /**< Bitmask for the flight rule of the NOTAM */
-                std::string       purpose;       /**< Purpose of the NOTAM */
-                std::string       scope;         /**< Scope of the NOTAM */
-                types::Length     lowerAltitude; /**< The lower border of the NOTAM handled area */
-                types::Length     upperAltitude; /**< The upper border of the NOTAM handled area */
-                types::Coordinate coordinate;    /**< The coordinate of the of the NOTAM */
-                types::Length     radius;        /**< The active radius of the NOTAM */
-
-                NotamInformation() :
-                        fir(),
-                        code(),
-                        flightRule(0),
-                        purpose(),
-                        scope(),
-                        lowerAltitude(),
-                        upperAltitude(),
-                        coordinate(),
-                        radius() { }
-            };
-
-            /**
-             * @brief Defines a parsed NOTAM
-             */
-            struct Notam {
-                std::string      title;       /**< The NOTAM's title */
-                NotamInformation information; /**< The NOTAM's information */
-                TimePoint        startTime;   /**< The NOTAM's start time */
-                TimePoint        endTime;     /**< The NOTAM's end time */
-                std::string      message;     /**< The NOTAM's message */
-                std::string      rawMessage;  /**< The raw message received from the server */
-
-                Notam() :
-                        title(),
-                        information(),
-                        startTime(),
-                        endTime(),
-                        message(),
-                        rawMessage() { }
-            };
-
         private:
-            volatile bool                           m_stopNotamThread;
-            std::map<std::string, TimePoint>        m_airportUpdates;
-            std::mutex                              m_pendingQueueLock;
-            std::list<std::string>                  m_enqueuePending;
-            std::list<std::string>                  m_dequeuePending;
-            std::map<std::string, std::list<Notam>> m_notams;
-            std::thread                             m_notamThread;
+            volatile bool                                            m_stopNotamThread;
+            std::map<std::string, NotamTimePoint>                    m_airportUpdates;
+            std::mutex                                               m_pendingQueueLock;
+            std::list<std::string>                                   m_enqueuePending;
+            std::list<std::string>                                   m_dequeuePending;
+            std::map<std::string, std::list<std::shared_ptr<Notam>>> m_notams;
+            std::map<void*, std::function<void()>>                   m_notificationCallbacks;
+            std::thread                                              m_notamThread;
 
             NotamControl();
 
-            static bool createNotam(const std::string& notamText, NotamControl::Notam& notam);
+            static NotamCategory parseQCode(const std::string& qCode);
+            static std::shared_ptr<Notam> createNotamStructure(const std::string& qCode, const std::string& content);
+            static bool createNotam(const std::string& notamText, std::shared_ptr<Notam>& notam);
             bool parseNotams(const std::string& airport);
             bool receiveNotams(const std::string& airport);
+            static bool activeDueTime(const std::shared_ptr<Notam>& notam);
+            void updateActiveDueTime();
             void run();
 
         public:
@@ -127,7 +87,42 @@ namespace topskytower {
              * @brief Returns all received NOTAMs
              * @return The NOTAMs
              */
-            const std::map<std::string, std::list<Notam>>& notams() const;
+            const std::map<std::string, std::list<std::shared_ptr<Notam>>>& notams() const;
+            /**
+             * @brief Returns all notams of a specific airport and a specific category
+             * @note If the category is defined as NotamCategory::Unknown are all NOTAMs of an airport returned
+             * @param[in] airport The airport's ICAO code
+             * @param[in] category The requested category
+             * @return All found NOTAMs
+             */
+            std::list<std::shared_ptr<Notam>> notams(const std::string& airport, NotamCategory category);
+            /**
+             * @brief This function has to be called, if a NOTAMs activation state is changed
+             */
+            void notamActivationChanged();
+            /**
+             * @brief Registers a callback that is triggered as soon as the NOTAMs are updated
+             * @tparam T The element which registers the callback
+             * @tparam F The callback function
+             * @param[in] instance The instance which registers the callback
+             * @param[in] cbFunction The callback function
+             */
+            template <typename T, typename F>
+            void registerNotificationCallback(T* instance, F cbFunction) {
+                std::function<void()> func = std::bind(cbFunction, instance);
+                this->m_notificationCallbacks[static_cast<void*>(instance)] = func;
+            }
+            /**
+             * @brief Deletes a callback that is triggered as soon as the NOTAMs are updated
+             * @tparam T The element which registered the callback
+             * @param[in] instance The instance which registers the callback
+             */
+            template <typename T>
+            void deleteNotificationCallback(T* instance) {
+                auto it = this->m_notificationCallbacks.find(static_cast<void*>(instance));
+                if (this->m_notificationCallbacks.end() != it)
+                    this->m_notificationCallbacks.erase(it);
+            }
             /**
              * @brief Returns the NOTAM control singleton
              * @return The NOTAM control system

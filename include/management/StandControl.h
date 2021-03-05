@@ -41,10 +41,12 @@ namespace topskytower {
             struct StandData : public types::Stand {
                 float                                                    cartesianPosition[2];
                 std::list<std::pair<types::Flight, types::Flight::Type>> occupancyFlights;
+                bool                                                     deactivated;
 
                 StandData() :
                         cartesianPosition{ 0.0f, 0.0f },
-                        occupancyFlights() { }
+                        occupancyFlights(),
+                        deactivated(false) { }
             };
 
             struct StandTree {
@@ -84,6 +86,7 @@ namespace topskytower {
             bool findOptimalStand(const types::Flight& flight, types::Flight::Type type, const std::list<std::string>& availableStands);
             bool assignStand(const types::Flight& flight, types::Flight::Type type, const std::list<types::StandPriorities>& priorities,
                              const std::list<std::string>& availableStands);
+            void notamsChanged();
 
         public:
             /**

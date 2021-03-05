@@ -67,7 +67,7 @@ TEST(RunwayGrammar, ClosedUnrestrictedMultiple) {
     RunwayGrammar grammar;
     AstNode node;
 
-    std::string entry("RUNWAYS 09R/27L AND 09L/27R CLOSED");
+    std::string entry("RWY 09R/27L AND 09L/27R CLOSED");
 
     ASSERT_TRUE(Parser::parse(entry, grammar, node));
 

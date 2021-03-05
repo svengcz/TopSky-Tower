@@ -80,7 +80,9 @@ namespace topskytower {
                 HoldingPointCandidatesSelect        = 3801, /**< Sets the new used holding point */
                 UiElementIds                        = 4000, /**< Elements of the UI entries */
                 UiEditTextRequest                   = 4001, /**< Request an edit-field */
-                UiEditTextResponse                  = 4002  /**< Get the answer of the requested edit-field */
+                UiEditTextResponse                  = 4002, /**< Get the answer of the requested edit-field */
+                UiDropDownRequest                   = 4003, /**< Request a drop down menu */
+                UiDropDownResponse                  = 4004  /**< Get the answer of the drop down menu */
             };
 
         private:
@@ -117,7 +119,7 @@ namespace topskytower {
                                       RadarScreen* screen);
             static bool visualizeManuallyAlerts(const types::Flight& flight, int idx, char itemString[16]);
             static void updateManuallyAlerts(EuroScopePlugIn::CRadarTarget& target, const std::string& marker);
-            RadarScreen* findLastActiveScreen();
+            RadarScreen* findLastActiveScreen(bool needsInitialization);
             static bool summarizeFlightPlanCheck(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes,
                                                  char* itemString, int* colorCode);
             static std::string flightPlanCheckResultLog(const std::list<surveillance::FlightPlanControl::ErrorCode>& codes);
@@ -127,6 +129,7 @@ namespace topskytower {
             void updateStand(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
             void updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CFlightPlan& plan);
             void updateSectorHandoff(const types::Flight& flight);
+            void checkNotamsOfActiveRunways();
 
         public:
             /**

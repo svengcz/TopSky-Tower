@@ -23,11 +23,13 @@ TableViewer::TableViewer(RadarScreen* parent, const std::vector<std::string>& he
         m_header(),
         m_rowContent(),
         m_rows(),
+        m_minimumVisibleRows(0),
         m_visibleRows(std::numeric_limits<std::size_t>::max()),
         m_visibleRowOffset(0),
         m_scrollUp(),
         m_scrollDown(),
         m_sliderRectangle(),
+        m_minimumColumnWidths(header.size(), 0.0f),
         m_columnWidths(header.size(), 0.0f),
         m_rowHeight(0.0f),
         m_clickedRow(std::numeric_limits<std::size_t>::max()),
@@ -61,10 +63,31 @@ void TableViewer::visualizeHeader(bool visible) {
     this->m_visualizeHeader = visible;
 }
 
+void TableViewer::setMinVisibleRows(std::size_t count) {
+    this->m_calculateArea = true;
+    this->m_minimumVisibleRows = count;
+}
+
 void TableViewer::setMaxVisibleRows(std::size_t count) {
     this->m_calculateArea = true;
     this->m_visibleRowOffset = 0;
     this->m_visibleRows = count;
+}
+
+void TableViewer::setMinimumColumnWidths(std::initializer_list<float> widths) {
+    if (widths.size() == this->m_minimumColumnWidths.size()) {
+        auto it = widths.begin();
+
+        for (std::size_t i = 0; i < widths.size(); ++i) {
+            this->m_minimumColumnWidths[i] = *it;
+            it += 1;
+        }
+    }
+}
+
+void TableViewer::setMinimumColumnWidth(std::size_t idx, float width) {
+    if (this->m_minimumColumnWidths.size() > idx)
+        this->m_minimumColumnWidths[idx] = width;
 }
 
 void TableViewer::addRow() {
@@ -237,18 +260,23 @@ bool TableViewer::calculateRequiredArea(Gdiplus::Graphics* graphics) {
 
     /* get the overall width */
     float overallWidth = 0.0f;
-    for (const auto& width : std::as_const(this->m_columnWidths))
-        overallWidth += width;
+    for (std::size_t i = 0; i < this->m_columnWidths.size(); ++i) {
+        if (this->m_columnWidths[i] < this->m_minimumColumnWidths[i])
+            this->m_columnWidths[i] = this->m_minimumColumnWidths[i];
+        overallWidth += this->m_columnWidths[i];
+    }
 
     std::size_t rowCount = 0 == maxRowCount ? this->m_visibleRows : (this->m_rows.size() - emptyLines);
+    if (this->m_visibleRows != std::numeric_limits<std::size_t>::max() && rowCount < this->m_minimumVisibleRows)
+        rowCount = this->m_minimumVisibleRows;
     if (true == this->m_visualizeHeader)
         rowCount += 1;
-    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth + 3.0f * (this->m_header.size() - 1), rowCount * this->m_rowHeight);
+    this->m_area = Gdiplus::RectF(this->m_area.X, this->m_area.Y, overallWidth, rowCount * this->m_rowHeight);
 
-    this->m_overallWidth = overallWidth + 3.0f * (this->m_header.size() - 1);
+    this->m_overallWidth = overallWidth;
     if (this->m_rows.size() > this->m_visibleRows) {
-        this->m_overallWidth += 10.0f;
-        this->m_area.Width += 10.0f;
+        this->m_overallWidth += 8.0f;
+        this->m_area.Width += 8.0f;
     }
 
     return true;
@@ -287,7 +315,7 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
             this->m_header[i].setPosition(Gdiplus::PointF(offsetX, offsetY));
             this->m_header[i].setGraphics(graphics);
             this->m_header[i].visualize();
-            offsetX += this->m_columnWidths[i] + 3.0f;
+            offsetX += this->m_columnWidths[i];
         }
         offsetY += this->m_rowHeight;
         graphics->DrawLine(&pen, Gdiplus::PointF(this->m_area.X, offsetY),
@@ -316,7 +344,7 @@ bool TableViewer::visualize(Gdiplus::Graphics* graphics) {
                 (*it)[i].content.visualize();
                 emptyRow = false;
             }
-            offsetX += this->m_columnWidths[i] + 3.0f;
+            offsetX += this->m_columnWidths[i];
         }
 
         if (false == emptyRow) {

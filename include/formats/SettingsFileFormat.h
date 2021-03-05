@@ -69,6 +69,21 @@ namespace topskytower {
          *     <td>200, 0, 0</td><td>R,G,B</td>
          *   </tr>
          *   <tr>
+         *     <td>UI_WarningColor</td>
+         *     <td>Defines the color to visualize warnings in the TopSky-Tower windows.</td>
+         *     <td>255, 223, 3</td><td>R,G,B</td>
+         *   </tr>
+         *   <tr>
+         *     <td>UI_ErrorColor</td>
+         *     <td>Defines the color to visualize errors in the TopSky-Tower windows.</td>
+         *     <td>255, 0, 0</td><td>R,G,B</td>
+         *   </tr>
+         *   <tr>
+         *     <td>UI_NotamDeactivationColor</td>
+         *     <td>Defines the color to visualize elements that are deactivated by NOTAMs.</td>
+         *     <td>255, 0, 0</td><td>R,G,B</td>
+         *   </tr>
+         *   <tr>
          *     <td>HTTP_HoppiesURL</td>
          *     <td>Defines the Hoppies URL. It requires the marker %LOGON% for the Hoppies code and %SENDER% for the station.</td>
          *     <td>http://www.hoppie.nl/acars/system/connect.html?logon=%LOGON%&from=%SENDER%</td><td></td>

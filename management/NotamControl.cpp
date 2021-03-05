@@ -26,6 +26,8 @@
 
 #include "grammar/Notam.hpp"
 #include "grammar/Parser.hpp"
+#include "grammar/Runway.hpp"
+#include "grammar/Stand.hpp"
 
 using namespace std::chrono;
 using namespace topskytower;
@@ -40,6 +42,7 @@ NotamControl::NotamControl() :
         m_enqueuePending(),
         m_dequeuePending(),
         m_notams(),
+        m_notificationCallbacks(),
         m_notamThread(&NotamControl::run, this) { }
 
 NotamControl::~NotamControl() {
@@ -55,7 +58,108 @@ static std::size_t receiveCurl(void* ptr, std::size_t size, std::size_t nmemb, v
     return size * nmemb;
 }
 
-bool NotamControl::createNotam(const std::string& notamText, NotamControl::Notam& notam) {
+NotamCategory NotamControl::parseQCode(const std::string& qCode) {
+    /* found an invalid code */
+    if (5 != qCode.length() && 'Q' != qCode[0])
+        return NotamCategory::Unknown;
+
+    /* found a non-airport relevant NOTAM */
+    if ('M' != qCode[1])
+        return NotamCategory::Other;
+
+    switch (qCode[2]) {
+    case 'A':
+        return NotamCategory::MovementArea;
+    case 'B':
+        return NotamCategory::BearingStrength;
+    case 'C':
+        return NotamCategory::Clearway;
+    case 'D':
+        return NotamCategory::DeclaredDistances;
+    case 'G':
+        return NotamCategory::TaxiGuidance;
+    case 'H':
+        return NotamCategory::RunwayArrestingGear;
+    case 'K':
+        return NotamCategory::Parking;
+    case 'M':
+        return NotamCategory::DaylightMarkings;
+    case 'N':
+        return NotamCategory::Apron;
+    case 'O':
+        return NotamCategory::Stopbar;
+    case 'P':
+        return NotamCategory::Stands;
+    case 'R':
+        return NotamCategory::Runway;
+    case 'S':
+        return NotamCategory::Stopbar;
+    case 'T':
+        return NotamCategory::Threshold;
+    case 'U':
+        return NotamCategory::RunwayTurningBay;
+    case 'W':
+        return NotamCategory::Strip;
+    case 'X':
+        return NotamCategory::Taxiway;
+    case 'Y':
+        return NotamCategory::RapidExit;
+    default:
+        return NotamCategory::Unknown;
+    }
+}
+
+std::shared_ptr<Notam> NotamControl::createNotamStructure(const std::string& qCode, const std::string& content) {
+    auto category = NotamControl::parseQCode(qCode);
+    if (NotamCategory::Unknown == category)
+        return nullptr;
+
+    std::shared_ptr<Notam> retval;
+    grammar::AstNode node;
+
+    /* check NOTAMs that close elements */
+    if ('L' == qCode[3] && 'C' == qCode[4]) {
+        switch (category) {
+        case NotamCategory::Runway:
+            retval = std::shared_ptr<Notam>(new RunwayNotam());
+            if (true == grammar::Parser::parse(content, grammar::RunwayGrammar(), node)) {
+                retval->activationState = NotamActiveState::Automatic;
+                retval->interpreterState = NotamInterpreterState::Success;
+                const auto& runways = boost::get<grammar::AstRunway>(node);
+                static_cast<RunwayNotam*>(retval.get())->sections = std::move(runways.names);
+            }
+            else {
+                retval->interpreterState = NotamInterpreterState::Failed;
+            }
+            break;
+        case NotamCategory::Stands:
+            retval = std::shared_ptr<Notam>(new StandNotam());
+            if (true == grammar::Parser::parse(content, grammar::StandGrammar(), node)) {
+                retval->activationState = NotamActiveState::Automatic;
+                retval->interpreterState = NotamInterpreterState::Success;
+                const auto& stands = boost::get<grammar::AstStand>(node);
+                static_cast<RunwayNotam*>(retval.get())->sections = std::move(stands.stands);
+            }
+            else {
+                retval->interpreterState = NotamInterpreterState::Failed;
+            }
+            break;
+        default:
+            retval = std::shared_ptr<Notam>(new Notam());
+            retval->interpreterState = NotamInterpreterState::Ignored;
+            break;
+        }
+    }
+    else {
+        retval = std::shared_ptr<Notam>(new Notam());
+        retval->interpreterState = NotamInterpreterState::Ignored;
+    }
+
+    retval->category = category;
+    return std::move(retval);
+}
+
+bool NotamControl::createNotam(const std::string& notamText, std::shared_ptr<Notam>& notam) {
     grammar::AstNode node;
     bool retval;
 
@@ -63,28 +167,34 @@ bool NotamControl::createNotam(const std::string& notamText, NotamControl::Notam
     if (true == retval) {
         const auto& notamTree = boost::get<grammar::AstNotam>(node);
 
+        notam = NotamControl::createNotamStructure(notamTree.info.code, notamTree.content);
+        if (nullptr == notam)
+            return false;
+
         /* translate the generic topics of the NOTAM */
-        notam.title = notamTree.title;
-        notam.startTime = notamTree.startTime;
-        notam.endTime = notamTree.endTime;
-        notam.message = notamTree.content;
+        notam->title = notamTree.title;
+        notam->category = NotamControl::parseQCode(notamTree.info.code);
+        notam->startTime = notamTree.startTime;
+        notam->endTime = notamTree.endTime;
+        notam->message = notamTree.content;
 
         /* translate the NOTAM information */
-        notam.information.fir = notamTree.info.fir;
-        notam.information.code = notamTree.info.code;
-        notam.information.flightRule = 0;
+        notam->information.fir = notamTree.info.fir;
+        notam->information.code = notamTree.info.code;
+        notam->information.flightRule = 0;
         if (std::string::npos != notamTree.info.flightRule.find("I"))
-            notam.information.flightRule |= static_cast<std::uint8_t>(types::FlightPlan::Type::IFR);
+            notam->information.flightRule |= static_cast<std::uint8_t>(types::FlightPlan::Type::IFR);
         if (std::string::npos != notamTree.info.flightRule.find("V"))
-            notam.information.flightRule |= static_cast<std::uint8_t>(types::FlightPlan::Type::VFR);
-        notam.information.purpose = notamTree.info.purpose;
-        notam.information.scope = notamTree.info.scope;
-        notam.information.lowerAltitude = notamTree.info.lowerAltitude;
-        notam.information.upperAltitude = notamTree.info.upperAltitude;
-        notam.information.coordinate = notamTree.info.coordinate;
-        notam.information.radius = notamTree.info.radius;
+            notam->information.flightRule |= static_cast<std::uint8_t>(types::FlightPlan::Type::VFR);
+        notam->information.purpose = notamTree.info.purpose;
+        notam->information.scope = notamTree.info.scope;
+        notam->information.lowerAltitude = notamTree.info.lowerAltitude;
+        notam->information.upperAltitude = notamTree.info.upperAltitude;
+        notam->information.coordinate = notamTree.info.coordinate;
+        notam->information.radius = notamTree.info.radius;
+        notam->activeDueTime = NotamControl::activeDueTime(notam);
 
-        notam.rawMessage = notamText;
+        notam->rawMessage = notamText;
     }
     else {
         return false;
@@ -106,9 +216,9 @@ bool NotamControl::parseNotams(const std::string& airport) {
 
         if (std::string::npos != startPos) {
             if (2 == foundMarker) {
-                this->m_notams[airport].push_back(NotamControl::Notam());
-                if (false == NotamControl::createNotam(notam, this->m_notams[airport].back()))
-                    this->m_notams[airport].pop_back();
+                std::shared_ptr<Notam> notamPtr;
+                if (true == NotamControl::createNotam(notam, notamPtr))
+                    this->m_notams[airport].push_back(notamPtr);
             }
             notam.clear();
 
@@ -162,9 +272,37 @@ bool NotamControl::receiveNotams(const std::string& airport) {
     return CURLE_OK == result && true == this->parseNotams(airport);
 }
 
+bool NotamControl::activeDueTime(const std::shared_ptr<Notam>& notam) {
+    auto now = helper::Time::currentUtc();
+    return notam->startTime <= now && notam->endTime > now;
+}
+
+void NotamControl::updateActiveDueTime() {
+    bool updated = false;
+
+    for (const auto& airport : std::as_const(this->m_notams)) {
+        for (auto& notam : airport.second) {
+            if (NotamActiveState::Automatic == notam->activationState) {
+                auto newState = this->activeDueTime(notam);
+                updated |= newState != notam->activeDueTime;
+                notam->activeDueTime = newState;
+            }
+        }
+    }
+
+    if (true == updated)
+        this->notamActivationChanged();
+}
+
 void NotamControl::run() {
+    std::size_t counter = 0;
+
     while (false == this->m_stopNotamThread) {
+        bool updated = false;
+
         this->m_pendingQueueLock.lock();
+
+        updated |= 0 != this->m_dequeuePending.size();
 
         /* check if we have to delete airports */
         for (const auto& dequeue : this->m_dequeuePending) {
@@ -182,7 +320,7 @@ void NotamControl::run() {
         for (const auto& enqueue : this->m_enqueuePending) {
             auto it = this->m_airportUpdates.find(enqueue);
             if (this->m_airportUpdates.end() == it)
-                this->m_airportUpdates[enqueue] = TimePoint();
+                this->m_airportUpdates[enqueue] = NotamTimePoint();
         }
         this->m_enqueuePending.clear();
 
@@ -194,12 +332,23 @@ void NotamControl::run() {
         for (auto it = this->m_airportUpdates.begin(); this->m_airportUpdates.end() != it; ++it) {
             /* perform the update step */
             if (60 <= std::chrono::duration_cast<std::chrono::minutes>(now - it->second).count()) {
-                if (true == this->receiveNotams(it->first))
+                if (true == this->receiveNotams(it->first)) {
                     it->second = now;
+                    updated = true;
+                }
             }
         }
 
+        if (true == updated)
+            this->notamActivationChanged();
+
         std::this_thread::sleep_for(1s);
+
+        /* check if all automated NOTAM activations are still stable */
+        if (10 <= counter++) {
+            this->updateActiveDueTime();
+            counter = 0;
+        }
     }
 }
 
@@ -213,8 +362,27 @@ void NotamControl::removeAirport(const std::string& airport) {
     this->m_dequeuePending.push_back(airport);
 }
 
-const std::map<std::string, std::list<NotamControl::Notam>>& NotamControl::notams() const {
+const std::map<std::string, std::list<std::shared_ptr<Notam>>>& NotamControl::notams() const {
     return this->m_notams;
+}
+
+std::list<std::shared_ptr<Notam>> NotamControl::notams(const std::string& airport, NotamCategory category) {
+    std::list<std::shared_ptr<Notam>> retval;
+    auto it = this->m_notams.find(airport);
+
+    if (this->m_notams.cend() != it) {
+        for (const auto& notam : it->second) {
+            if (NotamCategory::Unknown == category || notam->category == category)
+                retval.push_back(notam);
+        }
+    }
+
+    return retval;
+}
+
+void NotamControl::notamActivationChanged() {
+    for (auto& callback : this->m_notificationCallbacks)
+        callback.second();
 }
 
 NotamControl& NotamControl::instance() {

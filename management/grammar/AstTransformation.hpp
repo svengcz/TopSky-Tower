@@ -69,21 +69,6 @@ namespace boost {
             };
 
             template<>
-            struct transform_attribute<topskytower::management::grammar::AstRunwayDimension, int, qi::domain> {
-                typedef std::string type;
-
-                static int pre(topskytower::management::grammar::AstRunwayDimension) {
-                    return int();
-                }
-
-                static void post(topskytower::management::grammar::AstRunwayDimension& dim, int const& value) {
-                    static_cast<topskytower::types::Length&>(dim) = static_cast<float>(value) * topskytower::types::feet;
-                }
-
-                static void fail(topskytower::management::grammar::AstRunwayDimension&) { }
-            };
-
-            template<>
             struct transform_attribute<topskytower::types::Coordinate, std::string, qi::domain> {
                 typedef std::string type;
 

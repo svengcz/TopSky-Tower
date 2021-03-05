@@ -93,6 +93,8 @@ SET(SOURCE_FILES_UI_ELEMENTS
     ui/elements/Button.h
     ui/elements/Checkbox.cpp
     ui/elements/Checkbox.h
+    ui/elements/DropDownMenu.cpp
+    ui/elements/DropDownMenu.h
     ui/elements/EditText.cpp
     ui/elements/EditText.h
     ui/elements/TableViewer.cpp

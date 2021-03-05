@@ -93,10 +93,10 @@ PdcControl::PdcControl() :
         m_airports(),
         m_cpdlcCounter(0),
         m_stopHoppiesThread(false),
-        m_hoppiesThread(&PdcControl::run, this),
         m_comChannelsLock(),
         m_comChannels(),
-        m_notification() {
+        m_notification(),
+        m_hoppiesThread(&PdcControl::run, this) {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     this->m_cpdlcCounter = std::rand() % 10000 + 1789;
 }
