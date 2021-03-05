@@ -236,7 +236,7 @@ void NotamOverviewWindow::setOverviewContent() {
 }
 
 void NotamOverviewWindow::switchActiveState(const std::shared_ptr<management::Notam>& notam) {
-    management::NotamActiveState newState;
+    management::NotamActiveState newState = management::NotamActiveState::Inactive;
 
     if (management::NotamInterpreterState::Success != notam->interpreterState) {
         notam->activationState = management::NotamActiveState::Inactive;
