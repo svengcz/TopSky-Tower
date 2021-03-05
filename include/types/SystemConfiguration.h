@@ -75,7 +75,7 @@ namespace topskytower {
                     uiScreenClickColor{ 0, 0, 200 },
                     uiNtzColor{ 200, 0, 0 },
                     hoppiesUrl("http://www.hoppie.nl/acars/system/connect.html?logon=%LOGON%&from=%SENDER%"),
-                    versionCheckUrl("https://raw.githubusercontent.com/svengcz/Versioning/master/TopSky-Tower.txt"),
+                    versionCheckUrl("https://raw.githubusercontent.com/svengcz/TopSky-Tower/master/version.txt"),
                     notamUrl("https://www.notams.faa.gov/PilotWeb/notamRetrievalByICAOAction.do?method=displayByICAOs&reportType=RAW&formatType=DOMESTIC&retrieveLocId=%AIRPORT%&actionType=notamRetrievalByICAOs"),
                     notamMarkerStart("<PRE>"),
                     notamMarkerEnd("</PRE>"),
