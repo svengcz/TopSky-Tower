@@ -44,7 +44,7 @@ namespace topskytower {
             types::SystemConfiguration                         m_systemConfig;
             types::RuntimeConfiguration                        m_runtimeConfig;
             types::EventRoutesConfiguration                    m_eventsConfig;
-            std::map<std::string, formats::AirportFileFormat*> m_airportConfigurations;
+            std::map<std::string, types::AirportConfiguration> m_airportConfigurations;
             formats::AircraftFileFormat*                       m_aircraftConfiguration;
             std::map<void*, std::function<void(UpdateType)>>   m_notificationCallbacks;
 

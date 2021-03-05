@@ -32,11 +32,8 @@ ConfigurationRegistry::~ConfigurationRegistry() {
 }
 
 void ConfigurationRegistry::cleanup(UpdateType type) {
-    if (UpdateType::All == type || UpdateType::Airports == type) {
-        for (auto it = this->m_airportConfigurations.begin(); this->m_airportConfigurations.end() != it; ++it)
-            delete it->second;
+    if (UpdateType::All == type || UpdateType::Airports == type)
         this->m_airportConfigurations.clear();
-    }
 
     if (UpdateType::All == type || UpdateType::Aircrafts == type) {
         if (nullptr != this->m_aircraftConfiguration)
@@ -96,12 +93,14 @@ bool ConfigurationRegistry::configure(const std::string& path, UpdateType type) 
 #pragma warning(default: 4244)
 
                     /* read the configuration */
-                    this->m_airportConfigurations[icao] = new formats::AirportFileFormat(entry.path().string());
-                    if (true == this->m_airportConfigurations[icao]->errorFound()) {
-                        this->m_errorLine = this->m_airportConfigurations[icao]->errorLine();
-                        this->m_errorMessage = filename + ".txt:\n" + this->m_airportConfigurations[icao]->errorMessage();
+                    formats::AirportFileFormat airport(entry.path().string());
+                    types::AirportConfiguration airportConfig;
+                    if (false == airport.parse(airportConfig)) {
+                        this->m_errorLine = airport.errorLine();
+                        this->m_errorMessage = filename + ".txt:\n" + airport.errorMessage();
                         return false;
                     }
+                    this->m_airportConfigurations[icao] = std::move(airportConfig);
                 }
             }
         }
@@ -170,7 +169,7 @@ const types::AirportConfiguration& ConfigurationRegistry::airportConfiguration(c
 
     auto it = this->m_airportConfigurations.find(icao);
     if (this->m_airportConfigurations.cend() != it)
-        return it->second->configuration();
+        return it->second;
     else
         return __fallback;
 }
