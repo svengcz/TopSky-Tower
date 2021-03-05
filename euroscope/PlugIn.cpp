@@ -427,9 +427,9 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         return;
 
     if (true == flightScreen->sectorControl().handoffRequired(flight)) {
-        std::string_view view(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff)));
+        auto entry  = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff));
 
-        if ("H" == view)
+        if (nullptr != entry && 'H' == entry[0])
             this->updateSectorHandoff(flight);
     }
 
@@ -671,7 +671,7 @@ void PlugIn::handleHandoffPerform(POINT point, RECT area, const types::Flight& f
             this->updateSectorHandoff(flight);
             radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
         }
-        else {
+        else if (0 != controllers.size()) {
             RadarScreen::EuroscopeEvent eventEntry = {
                 static_cast<int>(PlugIn::TagItemFunction::HandoffControllerSelectEvent),
                 flight.callsign(),
@@ -1045,10 +1045,12 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         {
             auto sectors = flightScreen->sectorControl().handoffSectors();
 
-            this->OpenPopupList(area, "Handoff sectors", 2);
-            for (const auto& sector : std::as_const(sectors)) {
-                this->AddPopupListElement(sector.identifier().c_str(), sector.primaryFrequency().c_str(),
-                                          static_cast<int>(PlugIn::TagItemFunction::HandoffSectorSelect));
+            if (0 != sectors.size()) {
+                this->OpenPopupList(area, "Handoff sectors", 2);
+                for (const auto& sector : std::as_const(sectors)) {
+                    this->AddPopupListElement(sector.identifier().c_str(), sector.primaryFrequency().c_str(),
+                                              static_cast<int>(PlugIn::TagItemFunction::HandoffSectorSelect));
+                }
             }
         }
         break;
