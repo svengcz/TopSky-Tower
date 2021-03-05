@@ -446,7 +446,7 @@ void StandControl::notamsChanged() {
     for (const auto& notam : std::as_const(notams)) {
         if (management::NotamInterpreterState::Success != notam->interpreterState)
             continue;
-        if (false == notam->active())
+        if (false == notam->isActive())
             continue;
 
         /* deactivate all stands of the NOTAM */

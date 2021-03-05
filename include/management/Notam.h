@@ -117,11 +117,11 @@ namespace topskytower {
                     rawMessage(),
                     activeDueTime(false) { }
 
-            bool active() {
             /**
              * @brief Checks if the NOTAM is active
              * @return True if it is active, else false
              */
+            bool isActive() {
                 if (management::NotamActiveState::Inactive == this->activationState)
                     return false;
                 else if (management::NotamActiveState::Automatic == this->activationState)

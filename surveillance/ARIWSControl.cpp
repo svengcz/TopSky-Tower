@@ -47,7 +47,7 @@ void ARIWSControl::notamsChanged() {
     for (const auto& notam : std::as_const(notams)) {
         if (management::NotamInterpreterState::Success != notam->interpreterState)
             continue;
-        if (false == notam->active())
+        if (false == notam->isActive())
             continue;
 
         const auto& runways = static_cast<management::RunwayNotam*>(notam.get())->sections;
