@@ -688,6 +688,43 @@ void RadarScreen::drawDeactivatedRunways(Gdiplus::Graphics& graphics) {
     }
 }
 
+void RadarScreen::drawStandOverlay(const types::Stand& stand, Gdiplus::Graphics& graphics) {
+    if (0 != stand.name.length()) {
+        auto& config = system::ConfigurationRegistry::instance().systemConfiguration();
+        Gdiplus::Color color(config.uiNotamDeactivationColor[0], config.uiNotamDeactivationColor[1], config.uiNotamDeactivationColor[2]);
+        Gdiplus::SolidBrush brush(color);
+
+        /* calculate the rectangle for the ellipse */
+        auto topCenter = this->convertCoordinate(stand.position.projection(360.0_deg, stand.assignmentRadius));
+        auto center = this->convertCoordinate(stand.position);
+        float radius = center.Y - topCenter.Y;
+        Gdiplus::PointF topLeft(center.X - radius, center.Y - radius);
+        Gdiplus::RectF rect(topLeft, Gdiplus::SizeF(radius * 2.0f, radius * 2.0f));
+
+        graphics.FillEllipse(&brush, rect);
+    }
+}
+
+void RadarScreen::drawDeactivatedStands(Gdiplus::Graphics& graphics) {
+    if (nullptr == this->m_standControl)
+        return;
+
+    /* iterate over the NOTAMs */
+    auto notams = management::NotamControl::instance().notams(this->m_airport, management::NotamCategory::Stands);
+    for (const auto& notam : std::as_const(notams)) {
+        /* process active NOTAM */
+        if (management::NotamInterpreterState::Success == notam->interpreterState && true == notam->isActive()) {
+            auto& stands = static_cast<management::StandNotam*>(notam.get())->sections;
+
+            /* find the stand and draw the area */
+            for (const auto& name : std::as_const(stands)) {
+                auto& stand = this->m_standControl->stand(name);
+                this->drawStandOverlay(stand, graphics);
+            }
+        }
+    }
+}
+
 void RadarScreen::OnRefresh(HDC hdc, int phase) {
     (void)hdc;
 
@@ -703,6 +740,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     this->drawData(this->m_departureRouteVisualizationsLock, this->m_departureRouteVisualizations, false, graphics);
     this->drawNoTransgressionZones(graphics);
     this->drawDeactivatedRunways(graphics);
+    this->drawDeactivatedStands(graphics);
     this->drawTransmittingFlights(graphics);
 
     this->m_lastRenderingTime = std::chrono::system_clock::now();
