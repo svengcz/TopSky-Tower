@@ -92,6 +92,8 @@ namespace topskytower {
                           bool surveillanceData, Gdiplus::Graphics& graphics);
             void drawNoTransgressionZones(Gdiplus::Graphics& graphics);
             void drawTransmittingFlights(Gdiplus::Graphics& graphics);
+            void drawRunwayOverlay(const types::Runway& runway, Gdiplus::Graphics& graphics);
+            void drawDeactivatedRunways(Gdiplus::Graphics& graphics);
             std::vector<types::Coordinate> extractPredictedSID(const std::string& callsign);
 
         public:

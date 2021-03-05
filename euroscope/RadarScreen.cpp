@@ -650,6 +650,44 @@ void RadarScreen::drawTransmittingFlights(Gdiplus::Graphics& graphics) {
     }
 }
 
+void RadarScreen::drawRunwayOverlay(const types::Runway& runway, Gdiplus::Graphics& graphics) {
+    auto& config = system::ConfigurationRegistry::instance().systemConfiguration();
+
+    Gdiplus::Color color(config.uiNotamDeactivationColor[0], config.uiNotamDeactivationColor[1], config.uiNotamDeactivationColor[2]);
+    Gdiplus::PointF corners[4];
+
+    corners[0] = this->convertCoordinate(runway.start().projection(runway.heading() + 90.0_deg, 50.0_m));
+    corners[1] = this->convertCoordinate(runway.start().projection(runway.heading() - 90.0_deg, 50.0_m));
+    corners[2] = this->convertCoordinate(runway.end().projection(runway.heading() - 90.0_deg, 50.0_m));
+    corners[3] = this->convertCoordinate(runway.end().projection(runway.heading() + 90.0_deg, 50.0_m));
+
+    Gdiplus::SolidBrush brush(color);
+    graphics.FillPolygon(&brush, corners, 4);
+}
+
+void RadarScreen::drawDeactivatedRunways(Gdiplus::Graphics& graphics) {
+    if (0 == this->m_runways.size())
+        return;
+
+    /* iterate over all NOTAMs */
+    auto notams = management::NotamControl::instance().notams(this->m_airport, management::NotamCategory::Runway);
+    for (const auto& notam : std::as_const(notams)) {
+        if (management::NotamInterpreterState::Success == notam->interpreterState && true == notam->isActive()) {
+            auto& runways = static_cast<management::RunwayNotam*>(notam.get())->sections;
+
+            /* find the correct runways */
+            for (std::size_t i = 0; i < runways.size(); i += 2) {
+                for (const auto& runway : std::as_const(this->m_runways)) {
+                    if (runway.name() == runways[i]) {
+                        this->drawRunwayOverlay(runway, graphics);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void RadarScreen::OnRefresh(HDC hdc, int phase) {
     (void)hdc;
 
@@ -664,6 +702,7 @@ void RadarScreen::OnRefresh(HDC hdc, int phase) {
     this->drawData(this->m_shortTermConflictVisualizationsLock, this->m_shortTermConflictVisualizations, true, graphics);
     this->drawData(this->m_departureRouteVisualizationsLock, this->m_departureRouteVisualizations, false, graphics);
     this->drawNoTransgressionZones(graphics);
+    this->drawDeactivatedRunways(graphics);
     this->drawTransmittingFlights(graphics);
 
     this->m_lastRenderingTime = std::chrono::system_clock::now();
