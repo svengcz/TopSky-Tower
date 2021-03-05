@@ -61,19 +61,22 @@ static __inline types::Aircraft __translate(const std::string& code, char wtc) {
     else {
         switch (wtc) {
         case 'L':
-            retval = aircrafts.find("C172")->second;
+            it = aircrafts.find("C172");
             break;
         case 'H':
-            retval = aircrafts.find("B744")->second;
+            it = aircrafts.find("B744");
             break;
         case 'J':
-            retval = aircrafts.find("A388")->second;
+            it = aircrafts.find("A388");
             break;
         case 'M':
         default:
-            retval = aircrafts.find("A320")->second;
+            it = aircrafts.find("A320");
             break;
         }
+
+        if (aircrafts.cend() != it)
+            retval = it->second;
     }
 
     switch (wtc) {
