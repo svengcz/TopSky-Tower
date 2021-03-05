@@ -76,7 +76,7 @@ namespace topskytower {
          *   <tr>
          *     <td>HTTP_VersionCheckURL</td>
          *     <td>Defines the URL which contains TopSky-Tower version information</td>
-         *     <td>https://raw.githubusercontent.com/svengcz/Versioning/master/TopSky-Tower.txt</td><td></td>
+         *     <td>https://raw.githubusercontent.com/svengcz/TopSky-Tower/master/version.txt</td><td></td>
          *   </tr>
          *   <tr>
          *     <td>HTTP_NotamURL</td>

@@ -14,7 +14,6 @@
 #include <formats/AircraftFileFormat.h>
 #include <formats/AirportFileFormat.h>
 #include <formats/EventRoutesFileFormat.h>
-#include <formats/FileFormat.h>
 #include <types/RuntimeConfiguration.h>
 #include <types/SystemConfiguration.h>
 
@@ -24,7 +23,7 @@ namespace topskytower {
          * @brief Describes a flight registry that contains all visible flights
          * @ingroup system
          */
-        class ConfigurationRegistry : public formats::FileFormat {
+        class ConfigurationRegistry {
         public:
             /**
              * @brief Defines the different configuration types that can be updated
@@ -40,12 +39,13 @@ namespace topskytower {
             };
 
         private:
+            std::list<std::string>                             m_errorMessages;
             std::mutex                                         m_configurationLock;
             types::SystemConfiguration                         m_systemConfig;
             types::RuntimeConfiguration                        m_runtimeConfig;
             types::EventRoutesConfiguration                    m_eventsConfig;
-            std::map<std::string, formats::AirportFileFormat*> m_airportConfigurations;
-            formats::AircraftFileFormat*                       m_aircraftConfiguration;
+            std::map<std::string, types::AirportConfiguration> m_airportConfigurations;
+            formats::AircraftFileFormat                        m_aircraftConfiguration;
             std::map<void*, std::function<void(UpdateType)>>   m_notificationCallbacks;
 
             ConfigurationRegistry();
@@ -70,6 +70,16 @@ namespace topskytower {
              * @return True if the configuration is parsed, else false
              */
             bool configure(const std::string& path, UpdateType type);
+            /**
+             * @brief Checks if an error was found during the configuration
+             * @return True if an error was found, else false
+             */
+            bool errorFound() const;
+            /**
+             * @brief Returns all error messages of configuration calls
+             * @return The error messages including the lines and files
+             */
+            const std::list<std::string>& errorMessages() const;
             /**
              * @brief Returns the system configuration
              * @return The constant reference to the system configuration

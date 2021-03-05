@@ -287,23 +287,23 @@ namespace topskytower {
         class AirportFileFormat : public FileFormat {
         private:
 #ifndef DOXYGEN_IGNORE
-            types::AirportConfiguration m_configuration;
+            std::string m_filename;
 
             static bool parseSid(const std::vector<std::string>& elements, types::StandardInstrumentDeparture& sid);
             static bool parseConstraint(const std::vector<std::string>& elements, types::DestinationConstraint& constraint);
-            bool parseDepartures(const std::vector<std::string>& lines, std::uint32_t lineOffset);
+            bool parseDepartures(types::AirportConfiguration& config, const std::vector<std::string>& lines, std::uint32_t lineOffset);
             static bool parseStandDefinition(const std::vector<std::string>& elements, types::Stand& stand);
             static bool parseWingspan(const std::vector<std::string>& elements, types::Stand& stand);
             static bool parseLength(const std::vector<std::string>& elements, types::Stand& stand);
             static bool parseHeight(const std::vector<std::string>& elements, types::Stand& stand);
             static bool parseWtc(const std::string& categories, std::list<types::Aircraft::WTC>& list);
             static bool parseEngineType(const std::string& types, std::list<types::Aircraft::EngineType>& list);
-            bool parseStands(const std::vector<std::string>& lines, std::uint32_t lineOffset);
+            bool parseStands(types::AirportConfiguration& config, const std::vector<std::string>& lines, std::uint32_t lineOffset);
             static bool parsePriorities(const std::vector<std::string>& elements, types::StandPriorities& priorities);
-            bool parsePriorities(const std::vector<std::string>& lines, std::uint32_t lineOffset);
+            bool parsePriorities(types::AirportConfiguration& config, const std::vector<std::string>& lines, std::uint32_t lineOffset);
             static bool parseHoldingPoint(const std::vector<std::string>& elements, types::HoldingPoint& holdingPoint);
-            bool parseTaxiways(const std::vector<std::string>& lines, std::uint32_t lineOffset);
-            bool parseAirportData(const std::vector<std::string>& lines, std::uint32_t lineOffset);
+            bool parseTaxiways(types::AirportConfiguration& config, const std::vector<std::string>& lines, std::uint32_t lineOffset);
+            bool parseAirportData(types::AirportConfiguration& config, const std::vector<std::string>& lines, std::uint32_t lineOffset);
 
         public:
             /**
@@ -314,10 +314,11 @@ namespace topskytower {
             AirportFileFormat(const std::string& filename);
 
             /**
-             * @brief Returns the airport configuration
-             * @return The airport configuration
+             * @brief Parses the set configuration file
+             * @param[out] config The resulting configuration
+             * @return True if the configuration file was valid, else false
              */
-            const types::AirportConfiguration& configuration() const;
+            bool parse(types::AirportConfiguration& config);
 #endif
         };
     }

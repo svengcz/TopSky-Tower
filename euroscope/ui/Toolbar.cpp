@@ -115,11 +115,12 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         return false;
     }
 
-    bool resetUi = true, retval = true, cfgValid = true;
+    bool resetUi = true, retval = true, cfgValid = true, parsedConfig = true;
 
     switch (Toolbar::findClickedElement(this->m_toplevel, pt)) {
     case Toolbar::ClickId::Settings:
     case Toolbar::ClickId::Windows:
+        parsedConfig = false;
         resetUi = false;
         break;
     case Toolbar::ClickId::Reload:
@@ -147,16 +148,19 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
             auto viewer = new NotamOverviewWindow(this->m_parent);
             viewer->setActive(true);
         }
+        parsedConfig = false;
         break;
     case Toolbar::ClickId::Events:
         if (false == this->m_parent->uiManager().windowIsActive("Events")) {
             auto viewer = new EventOverviewWindow(this->m_parent);
             viewer->setActive(true);
         }
+        parsedConfig = false;
         break;
     case Toolbar::ClickId::Group:
     case Toolbar::ClickId::Undefined:
     default:
+        parsedConfig = false;
         retval = false;
         break;
     }
@@ -165,7 +169,7 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
     if (true == resetUi)
         this->resetClickStates();
 
-    if (false == cfgValid && system::ConfigurationRegistry::instance().errorFound()) {
+    if (true == parsedConfig) {
         auto viewer = new ConfigurationErrorWindow(this->m_parent);
         viewer->setActive(true);
     }
