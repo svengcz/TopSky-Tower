@@ -25,7 +25,7 @@ ConfigurationRegistry::ConfigurationRegistry() :
         m_systemConfig(),
         m_runtimeConfig(),
         m_airportConfigurations(),
-        m_aircraftConfiguration(nullptr) { }
+        m_aircraftConfiguration("") { }
 
 ConfigurationRegistry::~ConfigurationRegistry() {
     this->cleanup(UpdateType::All);
