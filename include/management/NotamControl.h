@@ -32,10 +32,31 @@ namespace topskytower {
          *
          * ![NOTAM table](doc/imgs/NotamOverview.png)
          *
+         * The different text colorations show which NOTAMs are processed by the system and which are ignored.
+         * The darker once are ignored and cannot be activated or deactivated.
+         * The current system parsed NOTAMs that close runways or stands and assumes a FAA compliant syntax.
+         *
+         * If the system finds a processable NOTAM, but is unable to interprete it, does it visualize the NOTAM
+         * with a warning color that is defined in the configuration as "UI_WarningColor".
+         * This means, that the system is supposed to understand the NOTAM, but was unable.
+         *
          * A click on a specific NOTAM opens the entry and visualizes a second window that
          * shows the content of the specific NOTAM.
          *
          * ![NOTAM details](doc/imgs/NotamReader.png)
+         *
+         * The "ON"-column shows the current state of the NOTAM for the system.
+         * It is possible to click on the element and change the activation state of the NOTAM.
+         * The following entries are defined:
+         *  - 'Y': The NOTAM is active, independent from the start and end time
+         *  - 'A': The NOTAM is active, if the start and end time fit to the current time
+         *  - 'N:: The NOTAM is completely deactivated
+         *
+         * Automated or active NOTAMs are also visualized on the screen.
+         * The screen visualizes all deactivated elements.
+         * An image below shows how a runway and a stand are inactive due to a NOTAMs.
+         *
+         * ![NOTAM details](doc/imgs/NotamAreas.png)
          */
         class NotamControl {
         public:
