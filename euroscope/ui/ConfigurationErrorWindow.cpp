@@ -26,12 +26,12 @@ ConfigurationErrorWindow::ConfigurationErrorWindow(RadarScreen* parent) :
 
     std::string message;
     if (false == ConfigurationRegistry::instance().errorFound()) {
-        message = "No error found!";
+        message = "Configuration successfully parsed!";
     }
     else {
-        message = ConfigurationRegistry::instance().errorMessage();
-        if (0 != ConfigurationRegistry::instance().errorLine())
-            message += "\nLine: " + std::to_string(ConfigurationRegistry::instance().errorLine());
+        auto& messages = ConfigurationRegistry::instance().errorMessages();
+        for (const auto& error : std::as_const(messages))
+            message += error + "\n";
     }
 
     viewer->setText(message);
