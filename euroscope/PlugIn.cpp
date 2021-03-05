@@ -427,9 +427,9 @@ void PlugIn::OnGetTagItem(EuroScopePlugIn::CFlightPlan flightPlan, EuroScopePlug
         return;
 
     if (true == flightScreen->sectorControl().handoffRequired(flight)) {
-        std::string_view view(radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff)));
+        auto entry  = radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().GetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff));
 
-        if ("H" == view)
+        if (nullptr != entry && 'H' == entry[0])
             this->updateSectorHandoff(flight);
     }
 
