@@ -22,10 +22,13 @@ using namespace topskytower;
 using namespace topskytower::system;
 
 ConfigurationRegistry::ConfigurationRegistry() :
+        m_configurationLock(),
         m_systemConfig(),
         m_runtimeConfig(),
+        m_eventsConfig(),
         m_airportConfigurations(),
-        m_aircraftConfiguration("") { }
+        m_aircraftConfiguration(""),
+        m_notificationCallbacks() { }
 
 ConfigurationRegistry::~ConfigurationRegistry() {
     this->cleanup(UpdateType::All);
