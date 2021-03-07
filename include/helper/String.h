@@ -66,6 +66,23 @@ namespace topskytower {
                                                    return v.find_first_of(separators, p);
                                                });
             }
+
+            /**
+             * @brief Removes leading and trailing whitespaces
+             * @param[in] value The trimable string
+             * @param[in] spaces The characters that need to be removed
+             * @return The trimmed version of value
+             */
+            static auto trim(const std::string& value, const std::string& spaces = " \t") -> std::string {
+                const auto begin = value.find_first_not_of(spaces, 0);
+                if (std::string::npos == begin)
+                    return "";
+
+                const auto end = value.find_last_not_of(spaces, 0);
+                const auto range = end - begin + 1;
+
+                return value.substr(begin, range);
+            }
         };
     }
 }
