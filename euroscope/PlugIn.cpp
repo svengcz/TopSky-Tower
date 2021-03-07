@@ -448,7 +448,7 @@ void PlugIn::updateHoldingPoint(const types::Flight& flight, EuroScopePlugIn::CF
 
 void PlugIn::updateSectorHandoff(const types::Flight& flight) {
     for (auto& screen : this->m_screens) {
-        if (true == screen->sectorControl().handoffRequired(flight))
+        if (true == screen->isInitialized() && true == screen->sectorControl().handoffRequired(flight))
             screen->sectorControl().handoffPerformed(flight);
     }
 }
@@ -709,6 +709,8 @@ void PlugIn::handleHandoffPerform(POINT point, RECT area, const types::Flight& f
 
         /* check if handoff or a release is needed */
         if (1 == controllers.size()) {
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
+
             /* handoff to unicom */
             if (true == tracked) {
                 if (0 == controllers.front().size())
@@ -719,7 +721,6 @@ void PlugIn::handleHandoffPerform(POINT point, RECT area, const types::Flight& f
 
             /* update all screens */
             this->updateSectorHandoff(flight);
-            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
         }
         else if (0 != controllers.size()) {
             RadarScreen::EuroscopeEvent eventEntry = {
@@ -1038,20 +1039,19 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::HandoffPerform:
         if (0 == std::strncmp(itemString, "Release", 7)) {
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
             radarTarget.GetCorrelatedFlightPlan().EndTracking();
 
             /* check if a handoff to UNICOM is ongoing */
             if (true == flightScreen->sectorControl().handoffRequired(flight)) {
                 auto controllers = flightScreen->sectorControl().handoffStations(flight);
-                if (0 == controllers.front().size()) {
+                if (0 == controllers.front().size())
                     this->updateSectorHandoff(flight);
-                    radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
-                }
             }
         }
         else if (0 == std::strncmp(itemString, "Assume", 6)) {
-            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "");
             radarTarget.GetCorrelatedFlightPlan().StartTracking();
+            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "");
             this->OnRadarTargetPositionUpdate(radarTarget);
         }
         else if (0 == std::strncmp(itemString, "Accept", 6)) {
@@ -1079,11 +1079,12 @@ void PlugIn::OnFunctionCall(int functionId, const char* itemString, POINT pt, RE
         break;
     case PlugIn::TagItemFunction::HandoffControllerSelect:
         if (true == flightScreen->sectorControl().handoffRequired(flight)) {
-            if (true == flight.isTracked())
+            if (true == flight.isTracked()) {
+                radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
                 radarTarget.GetCorrelatedFlightPlan().InitiateHandoff(itemString);
+            }
 
             this->updateSectorHandoff(flight);
-            radarTarget.GetCorrelatedFlightPlan().GetControllerAssignedData().SetFlightStripAnnotation(static_cast<int>(PlugIn::AnnotationIndex::Handoff), "H");
         }
         break;
     case PlugIn::TagItemFunction::HandoffSectorChangeEvent:
