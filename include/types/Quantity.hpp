@@ -46,7 +46,7 @@ namespace topskytower {
              * @brief Initializes the quantity with a given value
              * @param[in] value The set value
              */
-            constexpr Quantity(float value) : m_value(value) { }
+            explicit constexpr Quantity(float value) : m_value(value) { }
 
             /**
              * @brief Adds rhs into this instance and returns the updated instance
@@ -344,7 +344,7 @@ namespace topskytower {
         /**< Defines the literal of PI */
         constexpr float operator"" _pi(unsigned long long int value) { return static_cast<float>(value) * 3.1415926535897932384626433832795f; }
         /**< Defines a degree */
-        constexpr Angle degree = 1.0f;
+        constexpr Angle degree = Angle(1.0f);
         /**< Defines a radian */
         constexpr Angle radian = 180.0f / 1_pi * degree;
         /**< Defines the literal of radians */

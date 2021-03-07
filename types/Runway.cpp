@@ -9,7 +9,7 @@
  *   GNU General Public License v3 (GPLv3)
  */
 
-#include <types/runway.h>
+#include <types/Runway.h>
 
 using namespace topskytower::types;
 

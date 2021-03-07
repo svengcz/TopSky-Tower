@@ -9,8 +9,6 @@
  *   GNU General Public License v3 (GPLv3)
  */
 
-#pragma once
-
 #include <system/Separation.h>
 
 using namespace topskytower;

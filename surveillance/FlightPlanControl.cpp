@@ -92,8 +92,7 @@ std::string FlightPlanControl::optimizeFiledRoute(const std::string& route) {
     if (0 != nextWaypoint.length())
         retval += nextWaypoint;
 
-    if (0 != retval.length() && ' ' == retval[retval.length() - 1])
-        retval.erase(retval.find_last_of(' '));
+    retval = helper::String::trim(retval);
 
     return retval;
 }
@@ -225,7 +224,7 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
         bool foundDestinationConstraint = false;
         for (const auto& constraint : std::as_const(config.destinationConstraints)) {
             if (constraint.destination == flight.flightPlan().destination()) {
-                if (true == constraint.evenCruiseLevel && false == even || false == constraint.evenCruiseLevel && true == even)
+                if ((true == constraint.evenCruiseLevel && false == even) || (false == constraint.evenCruiseLevel && true == even))
                     it->second.errorCodes.push_back(ErrorCode::EvenOddLevel);
 
                 foundDestinationConstraint = true;
@@ -245,7 +244,7 @@ bool FlightPlanControl::validate(const types::Flight& flight) {
                 auto bearing = waypoints[0].position().bearingTo(waypoints.back().position());
 
                 /* use the half circle rule*/
-                if (180_deg > bearing && true == even || 180_deg <= bearing && false == even)
+                if ((180_deg > bearing && true == even) || (180_deg <= bearing && false == even))
                     it->second.errorCodes.push_back(ErrorCode::EvenOddLevel);
             }
         }

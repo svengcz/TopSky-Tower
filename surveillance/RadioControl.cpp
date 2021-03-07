@@ -46,7 +46,7 @@ std::list<std::string> RadioControl::transmittingFlights() {
     std::lock_guard guard(this->m_transmissionsLock);
     retval = this->m_activeTransmissions;
 
-    return std::move(retval);
+    return retval;
 }
 
 RadioControl& RadioControl::instance() {

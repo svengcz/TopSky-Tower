@@ -47,7 +47,7 @@ namespace topskytower {
              * If the file does not exist, the constructor throws an exeption.
              * @param[in] filename The filename of the configuration
              */
-            AircraftFileFormat(const std::string& filename);
+            explicit AircraftFileFormat(const std::string& filename);
 
             /**
              * @brief Returns the map of aircrafts
