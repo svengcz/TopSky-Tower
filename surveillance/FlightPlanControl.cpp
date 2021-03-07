@@ -92,8 +92,7 @@ std::string FlightPlanControl::optimizeFiledRoute(const std::string& route) {
     if (0 != nextWaypoint.length())
         retval += nextWaypoint;
 
-    if (0 != retval.length() && ' ' == retval[retval.length() - 1])
-        retval.erase(retval.find_last_of(' '));
+    retval = helper::String::trim(retval);
 
     return retval;
 }
