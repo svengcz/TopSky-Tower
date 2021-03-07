@@ -31,8 +31,8 @@ Flight::Flight() :
 
 Flight::Flight(const std::string& callsign) :
         m_flightPlan(),
-        m_airborne(false),
         m_callsign(callsign),
+        m_airborne(false),
         m_currentPosition(),
         m_groundSpeed(),
         m_verticalSpeed(),

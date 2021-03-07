@@ -24,6 +24,10 @@ namespace topskytower {
             struct Receiver {
                 std::string name;
                 HANDLE      receiver;
+
+                Receiver() :
+                        name(),
+                        receiver(NULL) { }
             };
 
             PlugIn*             m_plugin;

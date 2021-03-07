@@ -57,6 +57,17 @@ namespace topskytower {
                 TimePoint            actualTakeOffTime;
                 types::Coordinate    lastReportedPosition;
                 types::Length        flewDistance;
+
+                DepartureInformation() :
+                        callsign(),
+                        reachedHoldingPoint(false),
+                        passedHoldingPoint(false),
+                        normalProcedureHoldingPoint(false),
+                        holdingPoint(),
+                        wtc(types::Aircraft::WTC::Unknown),
+                        actualTakeOffTime(),
+                        lastReportedPosition(),
+                        flewDistance() { }
             };
 
             std::string                                 m_airport;

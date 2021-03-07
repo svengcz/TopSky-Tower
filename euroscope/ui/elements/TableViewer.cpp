@@ -91,8 +91,8 @@ void TableViewer::setMinimumColumnWidth(std::size_t idx, float width) {
 }
 
 void TableViewer::addRow() {
-    this->m_rowContent.push_back(std::move(std::vector<std::string>(this->m_header.size())));
-    this->m_rows.push_back(std::move(std::vector<TableViewer::Cell>(this->m_header.size())));
+    this->m_rowContent.push_back(std::vector<std::string>(this->m_header.size()));
+    this->m_rows.push_back(std::vector<TableViewer::Cell>(this->m_header.size()));
     this->m_calculateArea = true;
 }
 

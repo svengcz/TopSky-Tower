@@ -956,7 +956,7 @@ std::vector<types::Coordinate> RadarScreen::extractPredictedSID(const std::strin
             return std::vector<types::Coordinate>();
     }
 
-    return std::move(retval);
+    return retval;
 }
 
 void RadarScreen::activateStandOnScreenSelection(bool activate, const std::string& callsign) {

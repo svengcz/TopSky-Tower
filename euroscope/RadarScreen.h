@@ -106,7 +106,7 @@ namespace topskytower {
             /**
              * @brief Destroys all internal structures
              */
-            ~RadarScreen();
+            virtual ~RadarScreen();
 
             /**
              * @brief Called as soon as an ASR file is loaded

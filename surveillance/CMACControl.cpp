@@ -37,17 +37,6 @@ void CMACControl::reinitialize(system::ConfigurationRegistry::UpdateType type) {
     this->m_holdingPoints.reinitialize();
 }
 
-static __inline types::Angle __normalize(const types::Angle& angle) {
-    auto retval(angle);
-
-    while (180.0_deg < retval)
-        retval -= 360.0_deg;
-    while (-1.0f * 180.0_deg > retval)
-        retval += 360.0_deg;
-
-    return retval;
-}
-
 void CMACControl::updateFlight(const types::Flight& flight, types::Flight::Type type) {
     /* check if the system is active */
     if (false == system::ConfigurationRegistry::instance().systemConfiguration().cmacActive ||

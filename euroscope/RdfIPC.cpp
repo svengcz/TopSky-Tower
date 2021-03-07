@@ -11,7 +11,7 @@
 
 #include "stdafx.h"
 
-#include "Plugin.h"
+#include "PlugIn.h"
 #include "RdfIPC.h"
 
 using namespace topskytower::euroscope;
@@ -63,10 +63,9 @@ void RdfIPC::syncThread() {
                 }
 
                 if (false == found) {
-                    Receiver receiver = {
-                        buffer,
-                        CreateFileA(buffer, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL)
-                    };
+                    Receiver receiver;
+                    receiver.name = buffer;
+                    receiver.receiver = CreateFileA(buffer, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
                     this->m_slaves.push_back(std::move(receiver));
                 }
             }
@@ -112,8 +111,10 @@ RdfIPC::~RdfIPC() {
         CloseHandle(this->m_recvHandle);
     }
     else {
-        for (auto& slave : this->m_slaves)
-            CloseHandle(slave.receiver);
+        for (auto& slave : this->m_slaves) {
+            if (NULL != slave.receiver)
+                CloseHandle(slave.receiver);
+        }
         this->m_slaves.clear();
     }
 

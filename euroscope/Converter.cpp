@@ -37,16 +37,14 @@ static void __analyzeScratchPad(std::string_view& scratchPad, types::Flight& fli
     if (std::string::npos == scratchPad.find('_'))
         return;
 
-    std::size_t idx;
-
     /* check the different entries */
-    if (std::string::npos != (idx = scratchPad.find("MISAP_")))
+    if (std::string::npos != scratchPad.find("MISAP_"))
         flight.setOnMissedApproach(true);
-    if (std::string::npos != (idx = scratchPad.find("IRREG_")))
+    if (std::string::npos != scratchPad.find("IRREG_"))
         flight.setIrregularHandoff(true);
-    if (std::string::npos != (idx = scratchPad.find("EST_")))
+    if (std::string::npos != scratchPad.find("EST_"))
         flight.setEstablishedOnILS(true);
-    if (std::string::npos != (idx = scratchPad.find("RDY_")))
+    if (std::string::npos != scratchPad.find("RDY_"))
         flight.setReadyForDeparture(true);
 }
 
@@ -278,8 +276,8 @@ types::FlightPlan Converter::convert(const EuroScopePlugIn::CFlightPlan& plan) {
     std::vector<types::Waypoint> waypoints;
     waypoints.reserve(plan.GetExtractedRoute().GetPointsNumber());
     for (int i = 0; i < plan.GetExtractedRoute().GetPointsNumber(); ++i) {
-        waypoints.push_back(std::move(types::Waypoint(plan.GetExtractedRoute().GetPointName(i),
-                                                      Converter::convert(plan.GetExtractedRoute().GetPointPosition(i)))));
+        waypoints.push_back(types::Waypoint(plan.GetExtractedRoute().GetPointName(i),
+                                            Converter::convert(plan.GetExtractedRoute().GetPointPosition(i))));
     }
     types::Route route(std::move(waypoints));
     retval.setRoute(std::move(route));

@@ -425,7 +425,7 @@ std::list<std::pair<std::string, bool>> StandControl::allStands() const {
     for (const auto& stand : std::as_const(this->m_standTree.stands))
         retval.push_back(std::make_pair(stand.first, 0 != stand.second.occupancyFlights.size() || true == stand.second.deactivated));
 
-    return std::move(retval);
+    return retval;
 }
 
 bool StandControl::standIsBlocked(const std::string& stand) const {

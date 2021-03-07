@@ -33,8 +33,8 @@ using namespace topskytower::euroscope;
 
 Toolbar::Toolbar(RadarScreen* parent, UiManager* manager) :
         UiElement(parent, Gdiplus::RectF()),
-        m_toplevel(nullptr),
         m_manager(manager),
+        m_toplevel(nullptr),
         m_buttons() { }
 
 Toolbar::~Toolbar() {
@@ -115,7 +115,7 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         return false;
     }
 
-    bool resetUi = true, retval = true, cfgValid = true, parsedConfig = true;
+    bool resetUi = true, retval = true, parsedConfig = true;
 
     switch (Toolbar::findClickedElement(this->m_toplevel, pt)) {
     case Toolbar::ClickId::Settings:
@@ -124,24 +124,24 @@ bool Toolbar::click(const Gdiplus::PointF& pt, UiManager::MouseButton button) {
         resetUi = false;
         break;
     case Toolbar::ClickId::Reload:
-        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
-                                                                       system::ConfigurationRegistry::UpdateType::All);
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                            system::ConfigurationRegistry::UpdateType::All);
         break;
     case Toolbar::ClickId::ReloadSystem:
-        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
-                                                                       system::ConfigurationRegistry::UpdateType::System);
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                            system::ConfigurationRegistry::UpdateType::System);
         break;
     case Toolbar::ClickId::ReloadAirports:
-        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
-                                                                       system::ConfigurationRegistry::UpdateType::Airports);
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                            system::ConfigurationRegistry::UpdateType::Airports);
         break;
     case Toolbar::ClickId::ReloadAircrafts:
-        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
-                                                                       system::ConfigurationRegistry::UpdateType::Aircrafts);
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                            system::ConfigurationRegistry::UpdateType::Aircrafts);
         break;
     case Toolbar::ClickId::ReloadEvents:
-        cfgValid = system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
-                                                                       system::ConfigurationRegistry::UpdateType::Events);
+        system::ConfigurationRegistry::instance().configure(static_cast<PlugIn*>(this->m_parent->GetPlugIn())->settingsPath(),
+                                                            system::ConfigurationRegistry::UpdateType::Events);
         break;
     case Toolbar::ClickId::Notams:
         if (false == this->m_parent->uiManager().windowIsActive("NOTAMs")) {

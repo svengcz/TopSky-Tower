@@ -34,7 +34,7 @@ bool EventRoutesFileFormat::mergeEvents(std::map<std::string, types::Event>& eve
     auto it = events.find(event.name);
     if (events.end() == it) {
         std::string name = event.name;
-        events[name] = std::move(event);
+        events[name] = event;
         return true;
     }
 
@@ -75,6 +75,7 @@ bool EventRoutesFileFormat::parse(types::EventRoutesConfiguration& config) {
             if (0 != event.name.length()) {
                 if (false == this->mergeEvents(events, event, lineOffset))
                     return false;
+                event = types::Event();
             }
 
             for (std::size_t i = 1; i < split.size() - 1; ++i)
