@@ -92,7 +92,7 @@ Coordinate Coordinate::projection(const Angle& heading, const Length& distance) 
     float lat, lon;
     GeographicLib::Geodesic::WGS84().Direct(this->latitude().convert(types::degree), this->longitude().convert(types::degree),
                                             heading.convert(types::degree), distance.convert(types::metre), lat, lon);
-    return std::move(Coordinate(lon * types::degree, lat * types::degree));
+    return Coordinate(lon * types::degree, lat * types::degree);
 }
 
 Length Coordinate::distanceTo(const Coordinate& other) const {

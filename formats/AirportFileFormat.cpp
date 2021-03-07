@@ -331,7 +331,7 @@ bool AirportFileFormat::parsePriorities(types::AirportConfiguration& config, con
 
                 types::AirlineStandAssignments assignment;
                 assignment.airlineIcao = std::move(airlines[i]);
-                assignment.standPriorities = std::move(priorities);
+                assignment.standPriorities = priorities;
 
                 config.airlines.push_back(std::move(assignment));
             }
@@ -360,7 +360,7 @@ bool AirportFileFormat::parsePriorities(types::AirportConfiguration& config, con
     for (std::size_t i = 1; i < airlines.size(); ++i) {
         types::AirlineStandAssignments assignment;
         assignment.airlineIcao = std::move(airlines[i]);
-        assignment.standPriorities = std::move(priorities);
+        assignment.standPriorities = priorities;
         config.airlines.push_back(std::move(assignment));
     }
 

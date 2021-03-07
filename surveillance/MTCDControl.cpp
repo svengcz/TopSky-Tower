@@ -33,11 +33,11 @@ std::list<DepartureModel>::iterator MTCDControl::insertFlight(const types::Fligh
         if (0 == route.size())
             return this->m_departures.end();
 
-        this->m_departures.push_back(std::move(DepartureModel(flight, this->m_center, route)));
+        this->m_departures.push_back(DepartureModel(flight, this->m_center, route));
     }
     /* check if it is a departure candidate */
     else if (true == this->m_departureControl->readyForDeparture(flight)) {
-        this->m_departures.push_back(std::move(DepartureModel(flight, this->m_center, this->m_sidExtractionCallback(flight.callsign()))));
+        this->m_departures.push_back(DepartureModel(flight, this->m_center, this->m_sidExtractionCallback(flight.callsign())));
     }
     else {
         return this->m_departures.end();

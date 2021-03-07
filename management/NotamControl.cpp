@@ -126,7 +126,7 @@ std::shared_ptr<Notam> NotamControl::createNotamStructure(const std::string& qCo
                 retval->activationState = NotamActiveState::Automatic;
                 retval->interpreterState = NotamInterpreterState::Success;
                 const auto& runways = boost::get<grammar::AstRunway>(node);
-                static_cast<RunwayNotam*>(retval.get())->sections = std::move(runways.names);
+                static_cast<RunwayNotam*>(retval.get())->sections = runways.names;
             }
             else {
                 retval->interpreterState = NotamInterpreterState::Failed;
@@ -138,7 +138,7 @@ std::shared_ptr<Notam> NotamControl::createNotamStructure(const std::string& qCo
                 retval->activationState = NotamActiveState::Automatic;
                 retval->interpreterState = NotamInterpreterState::Success;
                 const auto& stands = boost::get<grammar::AstStand>(node);
-                static_cast<RunwayNotam*>(retval.get())->sections = std::move(stands.stands);
+                static_cast<RunwayNotam*>(retval.get())->sections = stands.stands;
             }
             else {
                 retval->interpreterState = NotamInterpreterState::Failed;
@@ -156,7 +156,7 @@ std::shared_ptr<Notam> NotamControl::createNotamStructure(const std::string& qCo
     }
 
     retval->category = category;
-    return std::move(retval);
+    return retval;
 }
 
 bool NotamControl::createNotam(const std::string& notamText, std::shared_ptr<Notam>& notam) {

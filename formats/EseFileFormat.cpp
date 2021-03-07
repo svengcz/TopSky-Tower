@@ -169,11 +169,11 @@ void EseFileFormat::parseSectors(const std::vector<std::string>& positions, cons
 
         /* found a position with a center */
         if (13 == elements.size())
-            sector = std::move(types::Sector(std::move(elements[3]), std::move(elements[5]), std::move(elements[4]),
-                                             std::move(elements[6]), std::move(elements[2]), elements[11], elements[12]));
+            sector = types::Sector(std::move(elements[3]), std::move(elements[5]), std::move(elements[4]),
+                                   std::move(elements[6]), std::move(elements[2]), elements[11], elements[12]);
         else
-            sector = std::move(types::Sector(std::move(elements[3]), std::move(elements[5]), std::move(elements[4]),
-                                             std::move(elements[6]), std::move(elements[2])));
+            sector = types::Sector(std::move(elements[3]), std::move(elements[5]), std::move(elements[4]),
+                                   std::move(elements[6]), std::move(elements[2]));
 
         /* found an invalid sector */
         if (types::Sector::Type::Undefined == sector.type())
@@ -200,7 +200,6 @@ void EseFileFormat::parseRunways(const std::vector<std::string>& runways) {
 
         /* create the relevant information */
         types::Coordinate p0(split[5], split[4]), p1(split[7], split[6]);
-        types::Length rwyLength = p0.distanceTo(p1);
         types::Runway rwy0(std::move(split[0]), p0, p1);
         types::Runway rwy1(std::move(split[1]), p1, p0);
 

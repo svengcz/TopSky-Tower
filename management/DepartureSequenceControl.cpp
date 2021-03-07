@@ -126,15 +126,13 @@ void DepartureSequenceControl::updateFlight(const types::Flight& flight, types::
     else if (40_kn > flight.groundSpeed() && (true == flight.readyForDeparture() || true == atHoldingPoint)) {
         bool normalProcedure = false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
 
-        DepartureInformation info = {
-            flight.callsign(),
-            atHoldingPoint,
-            passedHoldingPoint,
-            normalProcedure,
-            true == atHoldingPoint ? this->m_holdingPoints.holdingPoint(normalProcedure, holdingPointIdx) : types::HoldingPoint(),
-            flight.flightPlan().aircraft().wtc(),
-            TimePoint()
-        };
+        DepartureInformation info;
+        info.callsign = flight.callsign();
+        info.reachedHoldingPoint = atHoldingPoint;
+        info.passedHoldingPoint = passedHoldingPoint;
+        info.normalProcedureHoldingPoint = normalProcedure;
+        info.holdingPoint = true == atHoldingPoint ? this->m_holdingPoints.holdingPoint(normalProcedure, holdingPointIdx) : types::HoldingPoint();
+        info.wtc = flight.flightPlan().aircraft().wtc();
 
         this->m_departureReady[flight.callsign()] = std::move(info);
     }
@@ -164,7 +162,7 @@ void DepartureSequenceControl::removeFlight(const std::string& callsign) {
 }
 
 std::list<types::HoldingPoint> DepartureSequenceControl::holdingPointCandidates(const types::Flight& flight) const {
-    return std::move(this->m_holdingPoints.departureHoldingPoints(flight));
+    return this->m_holdingPoints.departureHoldingPoints(flight);
 }
 
 std::list<std::string> DepartureSequenceControl::allReadyForDepartureFlights() const {
@@ -175,7 +173,7 @@ std::list<std::string> DepartureSequenceControl::allReadyForDepartureFlights() c
             retval.push_back(it->first);
     }
 
-    return std::move(retval);
+    return retval;
 }
 
 bool DepartureSequenceControl::readyForDeparture(const types::Flight& flight) const {
@@ -217,17 +215,15 @@ void DepartureSequenceControl::setHoldingPoint(const types::Flight& flight, cons
     if (this->m_departureReady.end() == it) {
         bool normalProc = false == system::ConfigurationRegistry::instance().runtimeConfiguration().lowVisibilityProcedures;
 
-        this->m_departureReady[flight.callsign()] = {
-            flight.callsign(),
-            false,
-            false,
-            normalProc,
-            holdingPoint,
-            flight.flightPlan().aircraft().wtc(),
-            TimePoint(),
-            flight.currentPosition().coordinate(),
-            0.0_m
-        };
+        this->m_departureReady[flight.callsign()] = DepartureInformation();
+        this->m_departureReady[flight.callsign()].callsign = flight.callsign();
+        this->m_departureReady[flight.callsign()].reachedHoldingPoint = false;
+        this->m_departureReady[flight.callsign()].passedHoldingPoint = false;
+        this->m_departureReady[flight.callsign()].normalProcedureHoldingPoint = normalProc;
+        this->m_departureReady[flight.callsign()].holdingPoint = holdingPoint;
+        this->m_departureReady[flight.callsign()].wtc = flight.flightPlan().aircraft().wtc();
+        this->m_departureReady[flight.callsign()].lastReportedPosition = flight.currentPosition().coordinate();
+        this->m_departureReady[flight.callsign()].flewDistance = 0.0_m;
     }
     else {
         it->second.holdingPoint = holdingPoint;

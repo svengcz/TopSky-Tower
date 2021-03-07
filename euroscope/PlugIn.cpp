@@ -315,7 +315,6 @@ bool PlugIn::visualizeManuallyAlerts(const types::Flight& flight, int idx, char 
 
         if (16 <= localOffset) {
             localIdx += localOffset / 16;
-            localOffset = 0;
             if (idx < localIdx)
                 return inserted;
         }
