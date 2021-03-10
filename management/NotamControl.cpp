@@ -203,12 +203,11 @@ bool NotamControl::createNotam(const std::string& notamText, std::shared_ptr<Not
     return retval;
 }
 
-bool NotamControl::parseNotams(const std::string& airport) {
+void NotamControl::parseNotams(const std::string& airport) {
+    std::list<std::shared_ptr<Notam>> parsedNotams;
     std::istringstream stream(__receivedData);
     int foundMarker = 0; /* 0 - no marker found, 1 - start marker found, 2 - end marker found */
     std::string line, notam;
-
-    this->m_notams[airport].clear();
 
     while (std::getline(stream, line)) {
         std::size_t startPos = line.find(system::ConfigurationRegistry::instance().systemConfiguration().notamMarkerStart);
@@ -218,7 +217,7 @@ bool NotamControl::parseNotams(const std::string& airport) {
             if (2 == foundMarker) {
                 std::shared_ptr<Notam> notamPtr;
                 if (true == NotamControl::createNotam(notam, notamPtr))
-                    this->m_notams[airport].push_back(notamPtr);
+                    parsedNotams.push_back(notamPtr);
             }
             notam.clear();
 
@@ -238,7 +237,27 @@ bool NotamControl::parseNotams(const std::string& airport) {
         }
     }
 
-    return 0 != this->m_notams[airport].size();
+    /* delete obsolete NOTAMs in the old list and already existing NOTAMs in the new list */
+    for (auto it = this->m_notams[airport].begin(); this->m_notams[airport].end() != it;) {
+        bool found = false;
+
+        for (auto nit = parsedNotams.begin(); parsedNotams.end() != nit; ++nit) {
+            if ((*nit)->title == (*it)->title) {
+                parsedNotams.erase(nit);
+                found = true;
+                break;
+            }
+        }
+
+        if (false == found)
+            it = this->m_notams[airport].erase(it);
+        else
+            ++it;
+    }
+
+    /* insert missing NOTAMs */
+    if (0 != parsedNotams.size())
+        this->m_notams[airport].insert(this->m_notams[airport].end(), parsedNotams.begin(), parsedNotams.end());
 }
 
 bool NotamControl::receiveNotams(const std::string& airport) {
@@ -269,7 +288,9 @@ bool NotamControl::receiveNotams(const std::string& airport) {
         curl_easy_cleanup(curl);
     }
 
-    return CURLE_OK == result && true == this->parseNotams(airport);
+    this->parseNotams(airport);
+
+    return CURLE_OK == result;
 }
 
 bool NotamControl::activeDueTime(const std::shared_ptr<Notam>& notam) {
