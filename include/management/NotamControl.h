@@ -76,7 +76,7 @@ namespace topskytower {
             static NotamCategory parseQCode(const std::string& qCode);
             static std::shared_ptr<Notam> createNotamStructure(const std::string& qCode, const std::string& content);
             static bool createNotam(const std::string& notamText, std::shared_ptr<Notam>& notam);
-            bool parseNotams(const std::string& airport);
+            void parseNotams(const std::string& airport);
             bool receiveNotams(const std::string& airport);
             static bool activeDueTime(const std::shared_ptr<Notam>& notam);
             void updateActiveDueTime();
